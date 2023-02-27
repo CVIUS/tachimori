@@ -251,7 +251,7 @@ object SettingsMainScreen : Screen() {
             titleRes = R.string.pref_category_about,
             subtitleRes = 0,
             formatSubtitle = {
-                "${stringResource(R.string.app_name)} ${AboutScreen.getVersionName(withBuildDate = false)}"
+                "${stringResource(R.string.tadami_app_name)} ${AboutScreen.getVersionName(withBuildDate = false)}"
             },
             icon = Icons.Outlined.Info,
             screen = AboutScreen,

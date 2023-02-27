@@ -60,7 +60,7 @@ class AppUpdateService : Service() {
         if (intent == null) return START_NOT_STICKY
 
         val url = intent.getStringExtra(EXTRA_DOWNLOAD_URL) ?: return START_NOT_STICKY
-        val title = intent.getStringExtra(EXTRA_DOWNLOAD_TITLE) ?: getString(R.string.app_name)
+        val title = intent.getStringExtra(EXTRA_DOWNLOAD_TITLE) ?: getString(R.string.tadami_app_name)
 
         runningJob = launchIO {
             downloadApk(title, url)
@@ -162,7 +162,7 @@ class AppUpdateService : Service() {
          * @param context the application context.
          * @param url the url to the new update.
          */
-        fun start(context: Context, url: String, title: String? = context.getString(R.string.app_name)) {
+        fun start(context: Context, url: String, title: String? = context.getString(R.string.tadami_app_name)) {
             if (isRunning(context)) return
 
             val intent = Intent(context, AppUpdateService::class.java).apply {

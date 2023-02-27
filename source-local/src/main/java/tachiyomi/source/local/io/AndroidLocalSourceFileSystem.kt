@@ -9,7 +9,7 @@ class AndroidLocalSourceFileSystem(
     private val context: Context,
 ) : LocalSourceFileSystem {
 
-    private val baseFolderLocation = "${context.getString(R.string.app_name)}${File.separator}local"
+    private val baseFolderLocation = "${context.getString(R.string.tadami_app_name)}${File.separator}local"
 
     override fun getBaseDirectories(): Sequence<File> {
         return DiskUtil.getExternalStorages(context)

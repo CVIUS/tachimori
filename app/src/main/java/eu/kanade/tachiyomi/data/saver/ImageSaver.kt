@@ -42,7 +42,7 @@ class ImageSaver(
         val pictureDir =
             MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
 
-        val folderRelativePath = "${Environment.DIRECTORY_PICTURES}/${context.getString(R.string.app_name)}/"
+        val folderRelativePath = "${Environment.DIRECTORY_PICTURES}/${context.getString(R.string.tadami_app_name)}/"
         val imageLocation = (image.location as Location.Pictures).relativePath
 
         val contentValues = contentValuesOf(
@@ -170,7 +170,7 @@ sealed class Location {
             is Pictures -> {
                 val file = File(
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                    context.getString(R.string.app_name),
+                    context.getString(R.string.tadami_app_name),
                 )
                 if (relativePath.isNotEmpty()) {
                     return File(

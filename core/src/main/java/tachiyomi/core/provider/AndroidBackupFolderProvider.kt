@@ -13,7 +13,7 @@ class AndroidBackupFolderProvider(
     override fun directory(): File {
         return File(
             Environment.getExternalStorageDirectory().absolutePath + File.separator +
-                context.getString(R.string.app_name),
+                context.getString(R.string.tadami_app_name),
             "backup",
         )
     }

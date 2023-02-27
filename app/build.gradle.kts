@@ -21,7 +21,7 @@ android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "eu.kanade.tachiyomi"
+        applicationId = "eu.kanade.tachiyomi.tadami"
         versionCode = 99
         versionName = "0.14.5"
 

@@ -121,7 +121,7 @@ object SettingsDownloadScreen : SearchableSettings {
 
     @Composable
     private fun rememberDefaultDownloadDir(): Pair<String, String> {
-        val appName = stringResource(R.string.app_name)
+        val appName = stringResource(R.string.tadami_app_name)
         return remember {
             val file = UniFile.fromFile(
                 File(
