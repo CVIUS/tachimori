@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SettingsBackupRestore
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,6 +46,7 @@ fun MoreScreen(
     onClickDownloadQueue: () -> Unit,
     onClickCategories: () -> Unit,
     onClickStats: () -> Unit,
+    onClickMigrate: () -> Unit,
     onClickBackupAndRestore: () -> Unit,
     onClickSettings: () -> Unit,
     onClickAbout: () -> Unit,
@@ -137,6 +139,13 @@ fun MoreScreen(
                     title = stringResource(R.string.label_stats),
                     icon = Icons.Outlined.QueryStats,
                     onPreferenceClick = onClickStats,
+                )
+            }
+            item {
+                TextPreferenceWidget(
+                    title = stringResource(R.string.label_migration),
+                    icon = Icons.Outlined.SwapHoriz,
+                    onPreferenceClick = onClickMigrate,
                 )
             }
             item {

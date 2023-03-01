@@ -23,6 +23,7 @@ import eu.kanade.presentation.more.MoreScreen
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrationSourceScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
 import eu.kanade.tachiyomi.ui.setting.SettingsScreen
@@ -71,6 +72,7 @@ object MoreTab : Tab {
             onClickDownloadQueue = { navigator.push(DownloadQueueScreen) },
             onClickCategories = { navigator.push(CategoryScreen()) },
             onClickStats = { navigator.push(StatsScreen()) },
+            onClickMigrate = { navigator.push(MigrationSourceScreen()) },
             onClickBackupAndRestore = { navigator.push(SettingsScreen.toBackupScreen()) },
             onClickSettings = { navigator.push(SettingsScreen.toMainScreen()) },
             onClickAbout = { navigator.push(SettingsScreen.toAboutScreen()) },
