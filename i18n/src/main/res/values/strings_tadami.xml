@@ -2,5 +2,6 @@
 <resources>
 
     <string name="tadami_app_name" translatable="false">Tadami</string>
+    <string name="action_display_unread_badge">Unread chapters</string>
 
 </resources>

@@ -128,7 +128,7 @@ class LibraryScreenModel(
             libraryPreferences.categoryTabs().changes(),
             libraryPreferences.categoryNumberOfItems().changes(),
             libraryPreferences.showContinueReadingButton().changes(),
-        ) { a, b, c -> arrayOf(a, b, c) }
+        ) { a, b, c -> Triple(a, b, c) }
             .onEach { (showCategoryTabs, showMangaCount, showMangaContinueButton) ->
                 mutableState.update { state ->
                     state.copy(
@@ -292,6 +292,7 @@ class LibraryScreenModel(
     private fun getLibraryItemPreferencesFlow(): Flow<ItemPreferences> {
         return combine(
             libraryPreferences.downloadBadge().changes(),
+            libraryPreferences.unreadBadge().changes(),
             libraryPreferences.localBadge().changes(),
             libraryPreferences.languageBadge().changes(),
 
@@ -304,14 +305,15 @@ class LibraryScreenModel(
             transform = {
                 ItemPreferences(
                     downloadBadge = it[0] as Boolean,
-                    localBadge = it[1] as Boolean,
-                    languageBadge = it[2] as Boolean,
-                    globalFilterDownloaded = it[3] as Boolean,
-                    filterDownloaded = it[4] as TriStateFilter,
-                    filterUnread = it[5] as TriStateFilter,
-                    filterStarted = it[6] as TriStateFilter,
-                    filterBookmarked = it[7] as TriStateFilter,
-                    filterCompleted = it[8] as TriStateFilter,
+                    unreadBadge = it[1] as Boolean,
+                    localBadge = it[2] as Boolean,
+                    languageBadge = it[3] as Boolean,
+                    globalFilterDownloaded = it[4] as Boolean,
+                    filterDownloaded = it[5] as TriStateFilter,
+                    filterUnread = it[6] as TriStateFilter,
+                    filterStarted = it[7] as TriStateFilter,
+                    filterBookmarked = it[8] as TriStateFilter,
+                    filterCompleted = it[9] as TriStateFilter,
                 )
             },
         )
@@ -324,20 +326,21 @@ class LibraryScreenModel(
         val libraryMangasFlow = combine(
             getLibraryManga.subscribe(),
             getLibraryItemPreferencesFlow(),
+            libraryPreferences.showContinueReadingButton().changes(),
             downloadCache.changes,
-        ) { libraryMangaList, prefs, _ ->
+        ) { libraryMangaList, prefs, showContinueReadingButton, _ ->
             libraryMangaList
                 .map { libraryManga ->
                     // Display mode based on user preference: take it from global library setting or category
                     LibraryItem(
                         libraryManga,
-                        downloadCount = if (prefs.downloadBadge) {
+                        downloadCount = if (prefs.downloadBadge || prefs.globalFilterDownloaded) {
                             downloadManager.getDownloadCount(libraryManga.manga).toLong()
                         } else {
                             0
                         },
-                        unreadCount = libraryManga.unreadCount,
-                        isLocal = if (prefs.localBadge) libraryManga.manga.isLocal() else false,
+                        unreadCount = if (prefs.unreadBadge || showContinueReadingButton) libraryManga.unreadCount else 0,
+                        isLocal = if (prefs.localBadge || prefs.globalFilterDownloaded) libraryManga.manga.isLocal() else false,
                         sourceLanguage = if (prefs.languageBadge) {
                             sourceManager.getOrStub(libraryManga.manga.source).lang
                         } else {
@@ -660,6 +663,7 @@ class LibraryScreenModel(
     @Immutable
     private data class ItemPreferences(
         val downloadBadge: Boolean,
+        val unreadBadge: Boolean,
         val localBadge: Boolean,
         val languageBadge: Boolean,
 

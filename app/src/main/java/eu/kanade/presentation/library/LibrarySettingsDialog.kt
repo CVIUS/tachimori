@@ -186,17 +186,30 @@ private fun ColumnScope.DisplayPage(
 
     HeadingItem(R.string.badges_header)
     val downloadBadge by screenModel.libraryPreferences.downloadBadge().collectAsState()
+    val downloadedOnly by screenModel.preferences.downloadedOnly().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.action_display_download_badge),
-        checked = downloadBadge,
+        checked = downloadBadge || downloadedOnly,
+        enabled = !downloadedOnly,
         onClick = {
             screenModel.togglePreference(LibraryPreferences::downloadBadge)
+        },
+    )
+    val unreadBadge by screenModel.libraryPreferences.unreadBadge().collectAsState()
+    val showContinueReadingButton by screenModel.libraryPreferences.showContinueReadingButton().collectAsState()
+    CheckboxItem(
+        label = stringResource(R.string.action_display_unread_badge),
+        checked = unreadBadge || showContinueReadingButton,
+        enabled = !showContinueReadingButton,
+        onClick = {
+            screenModel.togglePreference(LibraryPreferences::unreadBadge)
         },
     )
     val localBadge by screenModel.libraryPreferences.localBadge().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.action_display_local_badge),
-        checked = localBadge,
+        checked = localBadge || downloadedOnly,
+        enabled = !downloadedOnly,
         onClick = {
             screenModel.togglePreference(LibraryPreferences::localBadge)
         },
@@ -229,7 +242,6 @@ private fun ColumnScope.DisplayPage(
     )
 
     HeadingItem(R.string.other_header)
-    val showContinueReadingButton by screenModel.libraryPreferences.showContinueReadingButton().collectAsState()
     CheckboxItem(
         label = stringResource(R.string.action_display_show_continue_reading_button),
         checked = showContinueReadingButton,

@@ -89,11 +89,12 @@ fun SortItem(
 fun CheckboxItem(
     label: String,
     checked: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .fillMaxWidth()
             .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
         verticalAlignment = Alignment.CenterVertically,
@@ -101,6 +102,7 @@ fun CheckboxItem(
     ) {
         Checkbox(
             checked = checked,
+            enabled = enabled,
             onCheckedChange = null,
         )
         Text(
