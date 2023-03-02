@@ -1,21 +1,33 @@
 package eu.kanade.presentation.manga.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import eu.kanade.domain.ui.UiPreferences
+import eu.kanade.tachiyomi.util.lang.toRelativeString
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.material.padding
+import tachiyomi.presentation.core.util.secondaryItemAlpha
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
+import java.util.*
 
 @Composable
 fun BaseMangaListItem(
@@ -51,14 +63,41 @@ private val defaultCover: @Composable RowScope.(Manga, () -> Unit) -> Unit = { m
 }
 
 private val defaultContent: @Composable RowScope.(Manga) -> Unit = {
-    Box(modifier = Modifier.weight(1f)) {
+    val context = LocalContext.current
+
+    val uiPreferences = Injekt.get<UiPreferences>()
+
+    val dateAdded = Date(it.dateAdded).toRelativeString(
+        context,
+        uiPreferences.relativeTime().get(),
+        UiPreferences.dateFormat(uiPreferences.dateFormat().get()),
+    )
+
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .padding(start = MaterialTheme.padding.medium),
+    ) {
         Text(
             text = it.title,
-            modifier = Modifier
-                .padding(start = MaterialTheme.padding.medium),
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
             style = MaterialTheme.typography.bodyMedium,
         )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Filled.CalendarMonth,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(MaterialTheme.padding.medium)
+                    .secondaryItemAlpha(),
+            )
+            Spacer(modifier = Modifier.padding(2.dp))
+            Text(
+                text = dateAdded,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.secondaryItemAlpha(),
+            )
+        }
     }
 }
