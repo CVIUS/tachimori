@@ -108,12 +108,12 @@ data class SourceSearchScreen(
                     newManga = dialog.newManga,
                     screenModel = rememberScreenModel { MigrateDialogScreenModel() },
                     onDismissRequest = { screenModel.setDialog(null) },
-                    onClickTitle = { navigator.push(MangaScreen(dialog.newManga.id)) },
+                    onClickTitle = { navigator.push(MangaScreen(dialog.newManga.id, true)) },
                     onPopScreen = {
                         scope.launch {
                             navigator.popUntilRoot()
                             HomeScreen.openTab(HomeScreen.Tab.Browse())
-                            navigator.push(MangaScreen(dialog.newManga.id))
+                            navigator.push(MangaScreen(dialog.newManga.id, true))
                         }
                     },
                 )

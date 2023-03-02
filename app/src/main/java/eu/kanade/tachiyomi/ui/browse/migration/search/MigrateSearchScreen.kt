@@ -51,9 +51,9 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
                         if (navigator.lastItem is MangaScreen) {
                             val lastItem = navigator.lastItem
                             navigator.popUntil { navigator.items.contains(lastItem) }
-                            navigator.push(MangaScreen(dialog.manga.id))
+                            navigator.push(MangaScreen(dialog.manga.id, true))
                         } else {
-                            navigator.replace(MangaScreen(dialog.manga.id))
+                            navigator.replace(MangaScreen(dialog.manga.id, true))
                         }
                     },
                 )
