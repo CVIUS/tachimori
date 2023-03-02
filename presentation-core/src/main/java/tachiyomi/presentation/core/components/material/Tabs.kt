@@ -38,7 +38,7 @@ fun TabText(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(text = text)
-        if (badgeCount != null) {
+        if (badgeCount != null && badgeCount != 0) {
             Pill(
                 text = "$badgeCount",
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = pillAlpha),
