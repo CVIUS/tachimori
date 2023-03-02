@@ -6,13 +6,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -26,11 +24,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import eu.kanade.presentation.components.AppBar
+import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.DownloadDropdownMenu
 import eu.kanade.presentation.components.OverflowMenu
 import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.tachiyomi.R
-import tachiyomi.presentation.core.theme.active
 
 @Composable
 fun MangaToolbar(
@@ -105,10 +104,14 @@ fun MangaToolbar(
                         }
                     }
 
-                    val filterTint = if (hasFilters) MaterialTheme.colorScheme.active else LocalContentColor.current
-                    IconButton(onClick = onClickFilter) {
-                        Icon(Icons.Outlined.FilterList, contentDescription = stringResource(R.string.action_filter), tint = filterTint)
-                    }
+                    AppBarActions(
+                        actions = listOf(
+                            AppBar.FilterAction(
+                                onClick = onClickFilter,
+                                hasFilters = hasFilters,
+                            ),
+                        ),
+                    )
 
                     OverflowMenu { closeMenu ->
                         DropdownMenuItem(

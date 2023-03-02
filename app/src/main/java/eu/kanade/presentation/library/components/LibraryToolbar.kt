@@ -3,13 +3,10 @@ package eu.kanade.presentation.library.components
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -21,11 +18,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.OverflowMenu
+import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.tachiyomi.R
 import tachiyomi.presentation.core.components.Pill
-import tachiyomi.presentation.core.theme.active
 
 @Composable
 fun LibraryToolbar(
@@ -96,34 +92,26 @@ fun LibraryRegularToolbar(
         searchQuery = searchQuery,
         onChangeSearchQuery = onSearchQueryChange,
         actions = {
-            val filterTint = if (hasFilters) MaterialTheme.colorScheme.active else LocalContentColor.current
-            IconButton(onClick = onClickFilter) {
-                Icon(Icons.Outlined.FilterList, contentDescription = stringResource(R.string.action_filter), tint = filterTint)
-            }
-
-            OverflowMenu { closeMenu ->
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(R.string.pref_category_library_update)) },
-                    onClick = {
-                        onClickGlobalUpdate()
-                        closeMenu()
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(R.string.action_update_category)) },
-                    onClick = {
-                        onClickRefresh()
-                        closeMenu()
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(R.string.action_open_random_manga)) },
-                    onClick = {
-                        onClickOpenRandomManga()
-                        closeMenu()
-                    },
-                )
-            }
+            AppBarActions(
+                actions = listOf(
+                    AppBar.FilterAction(
+                        onClick = onClickFilter,
+                        hasFilters = hasFilters,
+                    ),
+                    AppBar.OverflowAction(
+                        title = stringResource(R.string.pref_category_library_update),
+                        onClick = onClickGlobalUpdate,
+                    ),
+                    AppBar.OverflowAction(
+                        title = stringResource(R.string.action_update_category),
+                        onClick = onClickRefresh,
+                    ),
+                    AppBar.OverflowAction(
+                        title = stringResource(R.string.action_open_random_manga),
+                        onClick = onClickOpenRandomManga,
+                    ),
+                ),
+            )
         },
         scrollBehavior = scrollBehavior,
     )

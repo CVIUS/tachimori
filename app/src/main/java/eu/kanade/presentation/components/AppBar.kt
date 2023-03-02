@@ -4,6 +4,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -11,8 +12,11 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -189,6 +193,18 @@ fun AppBarActions(
         }
     }
 
+    actions.filterIsInstance<AppBar.FilterAction>().map {
+        IconButton(onClick = it.onClick) {
+            // paddings are necessary since the parent clips the shape to circle
+            BadgedBox(badge = { if (it.hasFilters) Badge(Modifier.padding(top = 16.dp, end = 8.dp)) }) {
+                Icon(
+                    imageVector = Icons.Outlined.FilterList,
+                    contentDescription = stringResource(R.string.action_filter),
+                )
+            }
+        }
+    }
+
     val overflowActions = actions.filterIsInstance<AppBar.OverflowAction>()
     if (overflowActions.isNotEmpty()) {
         IconButton(onClick = { showMenu = !showMenu }) {
@@ -336,6 +352,11 @@ sealed interface AppBar {
         val icon: ImageVector,
         val onClick: () -> Unit,
         val enabled: Boolean = true,
+    ) : AppBarAction
+
+    data class FilterAction(
+        val onClick: () -> Unit,
+        val hasFilters: Boolean = false,
     ) : AppBarAction
 
     data class OverflowAction(
