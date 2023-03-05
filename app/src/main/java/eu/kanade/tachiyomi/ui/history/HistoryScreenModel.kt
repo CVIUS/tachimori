@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.history
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
@@ -34,9 +35,10 @@ class HistoryScreenModel(
     private val getHistory: GetHistory = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
     private val removeHistory: RemoveHistory = Injekt.get(),
+    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) : StateScreenModel<HistoryState>(HistoryState()) {
 
-    private val _events: Channel<Event> = Channel(Channel.UNLIMITED)
+    private val _events: Channel<Event> = Channel(Channel.CONFLATED)
     val events: Flow<Event> = _events.receiveAsFlow()
 
     init {

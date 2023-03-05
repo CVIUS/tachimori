@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,14 +24,13 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import tachiyomi.domain.chapter.model.Chapter
 
 object HistoryTab : Tab {
-
-    private val snackbarHostState = SnackbarHostState()
 
     private val resumeLastChapterReadEvent = Channel<Unit>()
 
@@ -61,7 +59,7 @@ object HistoryTab : Tab {
 
         HistoryScreen(
             state = state,
-            snackbarHostState = snackbarHostState,
+            snackbarHostState = screenModel.snackbarHostState,
             onSearchQueryChange = screenModel::updateSearchQuery,
             onClickCover = { navigator.push(MangaScreen(it)) },
             onClickResume = screenModel::getNextChapterForManga,
@@ -101,9 +99,9 @@ object HistoryTab : Tab {
             screenModel.events.collectLatest { e ->
                 when (e) {
                     HistoryScreenModel.Event.InternalError ->
-                        snackbarHostState.showSnackbar(context.getString(R.string.internal_error))
+                        screenModel.snackbarHostState.showSnackbar(context.getString(R.string.internal_error))
                     HistoryScreenModel.Event.HistoryCleared ->
-                        snackbarHostState.showSnackbar(context.getString(R.string.clear_history_completed))
+                        screenModel.snackbarHostState.showSnackbar(context.getString(R.string.clear_history_completed))
                     is HistoryScreenModel.Event.OpenChapter -> openChapter(context, e.chapter)
                 }
             }
@@ -116,12 +114,12 @@ object HistoryTab : Tab {
         }
     }
 
-    suspend fun openChapter(context: Context, chapter: Chapter?) {
+    private fun openChapter(context: Context, chapter: Chapter?) {
         if (chapter != null) {
             val intent = ReaderActivity.newIntent(context, chapter.mangaId, chapter.id)
             context.startActivity(intent)
         } else {
-            snackbarHostState.showSnackbar(context.getString(R.string.no_next_chapter))
+            context.toast(R.string.no_next_chapter)
         }
     }
 }
