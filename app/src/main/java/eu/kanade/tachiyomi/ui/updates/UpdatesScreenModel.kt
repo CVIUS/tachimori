@@ -62,8 +62,8 @@ class UpdatesScreenModel(
     uiPreferences: UiPreferences = Injekt.get(),
 ) : StateScreenModel<UpdatesState>(UpdatesState()) {
 
-    private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
-    val events: Flow<Event> = _events.receiveAsFlow()
+    private val _snackbar: Channel<Snackbar> = Channel(Int.MAX_VALUE)
+    val snackbar: Flow<Snackbar> = _snackbar.receiveAsFlow()
 
     val lastUpdated by libraryPreferences.libraryUpdateLastTimestamp().asState(coroutineScope)
     val relativeTime by uiPreferences.relativeTime().asState(coroutineScope)
@@ -86,7 +86,7 @@ class UpdatesScreenModel(
             ) { updates, _ -> updates }
                 .catch {
                     logcat(LogPriority.ERROR, it)
-                    _events.send(Event.InternalError)
+                    _snackbar.send(Snackbar.InternalError)
                 }
                 .collectLatest { updates ->
                     mutableState.update {
@@ -128,12 +128,16 @@ class UpdatesScreenModel(
         }
     }
 
-    fun updateLibrary(): Boolean {
+    fun onLibraryUpdateTriggered(): Boolean {
         val started = LibraryUpdateJob.startNow(Injekt.get<Application>())
         coroutineScope.launch {
-            _events.send(Event.LibraryUpdateTriggered(started))
+            _snackbar.send(Snackbar.LibraryUpdateTriggered(started))
         }
         return started
+    }
+
+    fun onLibraryUpdateCancelled() {
+        LibraryUpdateJob.stop(Injekt.get<Application>())
     }
 
     /**
@@ -370,9 +374,9 @@ class UpdatesScreenModel(
         data class DeleteConfirmation(val toDelete: List<UpdatesItem>) : Dialog()
     }
 
-    sealed class Event {
-        object InternalError : Event()
-        data class LibraryUpdateTriggered(val started: Boolean) : Event()
+    sealed class Snackbar {
+        object InternalError : Snackbar()
+        data class LibraryUpdateTriggered(val started: Boolean) : Snackbar()
     }
 }
 

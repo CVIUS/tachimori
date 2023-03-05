@@ -3,6 +3,8 @@ package eu.kanade.tachiyomi.ui.updates
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -25,7 +27,7 @@ import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
-import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel.Event
+import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel.Snackbar
 import kotlinx.coroutines.flow.collectLatest
 
 object UpdatesTab : Tab {
@@ -61,7 +63,7 @@ object UpdatesTab : Tab {
             onClickCover = { item -> navigator.push(MangaScreen(item.update.mangaId)) },
             onSelectAll = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
-            onUpdateLibrary = screenModel::updateLibrary,
+            onUpdateLibrary = screenModel::onLibraryUpdateTriggered,
             onDownloadChapter = screenModel::downloadChapters,
             onMultiBookmarkClicked = screenModel::bookmarkUpdates,
             onMultiMarkAsReadClicked = screenModel::markUpdatesRead,
@@ -85,16 +87,19 @@ object UpdatesTab : Tab {
         }
 
         LaunchedEffect(Unit) {
-            screenModel.events.collectLatest { event ->
-                when (event) {
-                    Event.InternalError -> screenModel.snackbarHostState.showSnackbar(context.getString(R.string.internal_error))
-                    is Event.LibraryUpdateTriggered -> {
-                        val msg = if (event.started) {
-                            R.string.updating_library
-                        } else {
-                            R.string.update_already_running
+            screenModel.snackbar.collectLatest { snackbar ->
+                when (snackbar) {
+                    Snackbar.InternalError -> screenModel.snackbarHostState.showSnackbar(context.getString(R.string.internal_error))
+                    is Snackbar.LibraryUpdateTriggered -> {
+                        val msgRes = if (snackbar.started) R.string.updating_library else R.string.update_already_running
+                        val result = screenModel.snackbarHostState.showSnackbar(
+                            message = context.getString(msgRes),
+                            actionLabel = context.getString(R.string.action_cancel).takeIf { snackbar.started },
+                            duration = SnackbarDuration.Short,
+                        )
+                        if (result == SnackbarResult.ActionPerformed && snackbar.started) {
+                            screenModel.onLibraryUpdateCancelled()
                         }
-                        screenModel.snackbarHostState.showSnackbar(context.getString(msg))
                     }
                 }
             }
