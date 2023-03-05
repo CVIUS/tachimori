@@ -1,5 +1,7 @@
 package eu.kanade.tachiyomi.ui.library
 
+import android.app.Application
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -26,12 +28,14 @@ import eu.kanade.presentation.manga.DownloadAction
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.track.TrackManager
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.chapter.getNextUnread
 import eu.kanade.tachiyomi.util.removeCovers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -42,7 +46,9 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import tachiyomi.core.preference.CheckboxState
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
@@ -88,9 +94,13 @@ class LibraryScreenModel(
     private val downloadManager: DownloadManager = Injekt.get(),
     private val downloadCache: DownloadCache = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
+    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
     var activeCategoryIndex: Int by libraryPreferences.lastUsedCategory().asState(coroutineScope)
+
+    private val _snackbar: Channel<Snackbar> = Channel(Channel.CONFLATED)
+    val snackbar: Flow<Snackbar> = _snackbar.receiveAsFlow()
 
     init {
         coroutineScope.launchIO {
@@ -537,6 +547,30 @@ class LibraryScreenModel(
         mutableState.update { it.copy(dialog = Dialog.SettingsSheet) }
     }
 
+    fun errorOpenRandomManga() {
+        coroutineScope.launch {
+            _snackbar.send(Snackbar.OpenRandomLibraryItemError)
+        }
+    }
+
+    fun errorNoNextChapter() {
+        coroutineScope.launch {
+            _snackbar.send(Snackbar.NoNextChapterFound)
+        }
+    }
+
+    fun onLibraryUpdateTriggered(category: Category?): Boolean {
+        val started = LibraryUpdateJob.startNow(Injekt.get<Application>(), category)
+        coroutineScope.launch {
+            _snackbar.send(Snackbar.LibraryUpdateTriggered(started, category))
+        }
+        return started
+    }
+
+    fun onLibraryUpdateCancelled() {
+        LibraryUpdateJob.stop(Injekt.get<Application>())
+    }
+
     fun clearSelection() {
         mutableState.update { it.copy(selection = emptyList()) }
     }
@@ -660,6 +694,12 @@ class LibraryScreenModel(
         data class DeleteManga(val manga: List<Manga>) : Dialog()
     }
 
+    sealed class Snackbar {
+        object OpenRandomLibraryItemError : Snackbar()
+        object NoNextChapterFound : Snackbar()
+        data class LibraryUpdateTriggered(val started: Boolean, val category: Category?) : Snackbar()
+    }
+
     @Immutable
     private data class ItemPreferences(
         val downloadBadge: Boolean,
@@ -719,7 +759,15 @@ class LibraryScreenModel(
         ): LibraryToolbarTitle {
             val category = categories.getOrNull(page) ?: return LibraryToolbarTitle(defaultTitle)
             val categoryName = category.let {
-                if (it.isSystemCategory) defaultCategoryTitle else it.name
+                if (it.isSystemCategory) {
+                    when {
+                        !showCategoryTabs -> defaultTitle
+                        categories.size == 1 -> defaultTitle
+                        else -> defaultCategoryTitle
+                    }
+                } else {
+                    it.name
+                }
             }
             val title = if (showCategoryTabs) defaultTitle else categoryName
             val count = when {
