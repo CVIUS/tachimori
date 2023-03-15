@@ -3,5 +3,6 @@
 
     <string name="tadami_app_name" translatable="false">Tadami</string>
     <string name="action_display_unread_badge">Unread chapters</string>
+    <string name="migration_select_manga">Select an entry to be migrated</string>
 
 </resources>

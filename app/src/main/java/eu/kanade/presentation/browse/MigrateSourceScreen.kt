@@ -34,11 +34,9 @@ import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.Scroller.STICKY_HEADER_KEY_PREFIX
 import tachiyomi.presentation.core.components.material.padding
-import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
-import tachiyomi.presentation.core.util.plus
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
 @Composable
@@ -85,7 +83,7 @@ private fun MigrateSourceList(
     onToggleSortingDirection: () -> Unit,
 ) {
     ScrollbarLazyColumn(
-        contentPadding = contentPadding + topSmallPaddingValues,
+        contentPadding = contentPadding,
     ) {
         stickyHeader(key = STICKY_HEADER_KEY_PREFIX) {
             Row(
