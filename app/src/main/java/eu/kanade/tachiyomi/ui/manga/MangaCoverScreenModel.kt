@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.manga
 
+import android.app.Application
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -10,13 +11,15 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import coil.size.Size
 import eu.kanade.domain.manga.interactor.UpdateManga
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.CoverCache
 import eu.kanade.tachiyomi.data.saver.Image
 import eu.kanade.tachiyomi.data.saver.ImageSaver
 import eu.kanade.tachiyomi.data.saver.Location
 import eu.kanade.tachiyomi.util.editCover
 import eu.kanade.tachiyomi.util.system.toShareIntent
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.LogPriority
@@ -35,9 +38,11 @@ class MangaCoverScreenModel(
     private val imageSaver: ImageSaver = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
-
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) : StateScreenModel<Manga?>(null) {
+
+    private val _snackbar: Channel<Snackbar> = Channel(Channel.CONFLATED)
+    val snackbar: Flow<Snackbar> = _snackbar.receiveAsFlow()
 
     init {
         coroutineScope.launchIO {
@@ -50,16 +55,10 @@ class MangaCoverScreenModel(
         coroutineScope.launch {
             try {
                 saveCoverInternal(context, temp = false)
-                snackbarHostState.showSnackbar(
-                    context.getString(R.string.cover_saved),
-                    withDismissAction = true,
-                )
+                _snackbar.send(Snackbar.CoverSaved)
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
-                snackbarHostState.showSnackbar(
-                    context.getString(R.string.error_saving_cover),
-                    withDismissAction = true,
-                )
+                _snackbar.send(Snackbar.CoverSaveError)
             }
         }
     }
@@ -73,10 +72,7 @@ class MangaCoverScreenModel(
                 }
             } catch (e: Throwable) {
                 logcat(LogPriority.ERROR, e)
-                snackbarHostState.showSnackbar(
-                    context.getString(R.string.error_sharing_cover),
-                    withDismissAction = true,
-                )
+                _snackbar.send(Snackbar.CoverShareError)
             }
         }
     }
@@ -112,53 +108,54 @@ class MangaCoverScreenModel(
     /**
      * Update cover with local file.
      *
-     * @param context Context.
      * @param data uri of the cover resource.
      */
-    fun editCover(context: Context, data: Uri) {
+    fun editCover(data: Uri) {
         val manga = state.value ?: return
         coroutineScope.launchIO {
             @Suppress("BlockingMethodInNonBlockingContext")
-            context.contentResolver.openInputStream(data)?.use {
+            Injekt.get<Application>().contentResolver.openInputStream(data)?.use {
                 try {
                     manga.editCover(Injekt.get(), it, updateManga, coverCache)
-                    notifyCoverUpdated(context)
+                    notifyCoverUpdated()
                 } catch (e: Exception) {
-                    notifyFailedCoverUpdate(context, e)
+                    notifyFailedCoverUpdate(e)
                 }
             }
         }
     }
 
-    fun deleteCustomCover(context: Context) {
+    fun deleteCustomCover() {
         val mangaId = state.value?.id ?: return
         coroutineScope.launchIO {
             try {
                 coverCache.deleteCustomCover(mangaId)
                 updateManga.awaitUpdateCoverLastModified(mangaId)
-                notifyCoverUpdated(context)
+                notifyCoverUpdated()
             } catch (e: Exception) {
-                notifyFailedCoverUpdate(context, e)
+                notifyFailedCoverUpdate(e)
             }
         }
     }
 
-    private fun notifyCoverUpdated(context: Context) {
+    private fun notifyCoverUpdated() {
         coroutineScope.launch {
-            snackbarHostState.showSnackbar(
-                context.getString(R.string.cover_updated),
-                withDismissAction = true,
-            )
+            _snackbar.send(Snackbar.CoverUpdated)
         }
     }
 
-    private fun notifyFailedCoverUpdate(context: Context, e: Throwable) {
+    private fun notifyFailedCoverUpdate(e: Throwable) {
         coroutineScope.launch {
-            snackbarHostState.showSnackbar(
-                context.getString(R.string.notification_cover_update_failed),
-                withDismissAction = true,
-            )
+            _snackbar.send(Snackbar.CoverUpdateFailed)
             logcat(LogPriority.ERROR, e)
         }
+    }
+
+    sealed class Snackbar {
+        object CoverSaved : Snackbar()
+        object CoverSaveError : Snackbar()
+        object CoverUpdated : Snackbar()
+        object CoverUpdateFailed : Snackbar()
+        object CoverShareError : Snackbar()
     }
 }

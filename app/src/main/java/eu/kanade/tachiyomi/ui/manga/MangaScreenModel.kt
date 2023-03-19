@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.manga
 
 import android.content.Context
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,12 +39,15 @@ import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -128,6 +130,9 @@ class MangaInfoScreenModel(
 
     private val selectedPositions: Array<Int> = arrayOf(-1, -1) // first and last selected index in list
     private val selectedChapterIds: HashSet<Long> = HashSet()
+
+    private val _snackbar: Channel<Snackbar> = Channel(Channel.CONFLATED)
+    val snackbar: Flow<Snackbar> = _snackbar.receiveAsFlow()
 
     /**
      * Helper function to update the UI state only if it's currently in success state
@@ -224,49 +229,31 @@ class MangaInfoScreenModel(
             if (e is HttpException && e.code == 103) return
 
             logcat(LogPriority.ERROR, e)
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar(message = e.snackbarMessage)
-            }
+            setSnackbar(Snackbar.FetchChaptersFromSourceError(e.toString()))
         }
-    }
-
-    fun toggleFavorite() {
-        toggleFavorite(
-            onRemoved = {
-                coroutineScope.launch {
-                    if (!hasDownloads()) return@launch
-                    val result = snackbarHostState.showSnackbar(
-                        message = context.getString(R.string.delete_downloads_for_manga),
-                        actionLabel = context.getString(R.string.action_delete),
-                        withDismissAction = true,
-                    )
-                    if (result == SnackbarResult.ActionPerformed) {
-                        deleteDownloads()
-                    }
-                }
-            },
-        )
     }
 
     /**
      * Update favorite status of manga, (removes / adds) manga (to / from) library.
      */
-    fun toggleFavorite(
-        onRemoved: () -> Unit,
-        checkDuplicate: Boolean = true,
-    ) {
+    fun toggleFavorite(checkDuplicate: Boolean = true) {
         val state = successState ?: return
         coroutineScope.launchIO {
             val manga = state.manga
 
             if (isFavorited) {
                 // Remove from library
-                if (updateManga.awaitUpdateFavorite(manga.id, false)) {
+                if (updateFavorite(manga, false)) {
                     // Remove covers and update last modified in db
                     if (manga.removeCovers() != manga) {
                         updateManga.awaitUpdateCoverLastModified(manga.id)
                     }
-                    withUIContext { onRemoved() }
+                    withUIContext {
+                        when (hasDownloads()) {
+                            true -> if (!checkDuplicate) setSnackbar(Snackbar.DeleteDownloadedChapters)
+                            false -> setSnackbar(Snackbar.OnRemoveManga(manga))
+                        }
+                    }
                 }
             } else {
                 // Add to library
@@ -292,16 +279,24 @@ class MangaInfoScreenModel(
                 when {
                     // Default category set
                     defaultCategory != null -> {
-                        val result = updateManga.awaitUpdateFavorite(manga.id, true)
+                        val result = updateFavorite(manga, true)
                         if (!result) return@launchIO
                         moveMangaToCategory(defaultCategory)
+
+                        setSnackbar(Snackbar.DefaultCategorySet)
                     }
 
                     // Automatic 'Default' or no categories
                     defaultCategoryId == 0L || categories.isEmpty() -> {
-                        val result = updateManga.awaitUpdateFavorite(manga.id, true)
+                        val result = updateFavorite(manga, true)
                         if (!result) return@launchIO
                         moveMangaToCategory(null)
+
+                        if (categories.isNotEmpty()) {
+                            setSnackbar(Snackbar.DefaultCategorySet)
+                        } else {
+                            setSnackbar(Snackbar.ToggleFavorite)
+                        }
                     }
 
                     // Choose a category
@@ -354,7 +349,7 @@ class MangaInfoScreenModel(
     /**
      * Returns true if the manga has any downloads.
      */
-    private fun hasDownloads(): Boolean {
+    fun hasDownloads(): Boolean {
         val manga = successState?.manga ?: return false
         return downloadManager.getDownloadCount(manga) > 0
     }
@@ -362,7 +357,7 @@ class MangaInfoScreenModel(
     /**
      * Deletes all the downloads for the manga.
      */
-    private fun deleteDownloads() {
+    fun deleteDownloads() {
         val state = successState ?: return
         downloadManager.deleteManga(state.manga, state.source)
     }
@@ -387,12 +382,25 @@ class MangaInfoScreenModel(
             .map { it.id }
     }
 
+    suspend fun updateFavorite(manga: Manga, favorite: Boolean): Boolean {
+        return updateManga.awaitUpdateFavorite(manga.id, favorite)
+    }
+
     fun moveMangaToCategoriesAndAddToLibrary(manga: Manga, categories: List<Long>) {
         moveMangaToCategory(categories)
         if (manga.favorite) return
 
         coroutineScope.launchIO {
-            updateManga.awaitUpdateFavorite(manga.id, true)
+            updateFavorite(manga, true)
+        }
+    }
+
+    fun oni(manga: Manga, categoryIds: List<Long>) {
+        coroutineScope.launch {
+            val firstId = categoryIds.firstOrNull { it != 0L } ?: 0L
+            val firstCategory = getCategories.awaitOneOrNull(firstId)
+
+            setSnackbar(Snackbar.ChangeCategory(manga, firstCategory, categoryIds))
         }
     }
 
@@ -518,9 +526,7 @@ class MangaInfoScreenModel(
                 e.snackbarMessage
             }
 
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar(message = message)
-            }
+            setSnackbar(Snackbar.FetchChaptersFromSourceError(message))
         }
     }
 
@@ -555,8 +561,6 @@ class MangaInfoScreenModel(
         chapters: List<Chapter>,
         startNow: Boolean,
     ) {
-        val successState = successState ?: return
-
         if (startNow) {
             val chapterId = chapters.singleOrNull()?.id ?: return
             downloadManager.startDownloadNow(chapterId)
@@ -564,20 +568,8 @@ class MangaInfoScreenModel(
             downloadChapters(chapters)
         }
 
-        if (!isFavorited && !successState.hasPromptedToAddBefore) {
-            coroutineScope.launch {
-                val result = snackbarHostState.showSnackbar(
-                    message = context.getString(R.string.snack_add_to_library),
-                    actionLabel = context.getString(R.string.action_add),
-                    withDismissAction = true,
-                )
-                if (result == SnackbarResult.ActionPerformed && !isFavorited) {
-                    toggleFavorite()
-                }
-                updateSuccessState { successState ->
-                    successState.copy(hasPromptedToAddBefore = true)
-                }
-            }
+        if (!isFavorited) {
+            setSnackbar(Snackbar.AddFavorite)
         }
     }
 
@@ -787,7 +779,7 @@ class MangaInfoScreenModel(
             if (applyToExisting) {
                 setMangaDefaultChapterFlags.awaitAll()
             }
-            snackbarHostState.showSnackbar(message = context.getString(R.string.chapter_settings_updated))
+            setSnackbar(Snackbar.UpdateDefaultChapterSettings)
         }
     }
 
@@ -904,6 +896,12 @@ class MangaInfoScreenModel(
         }
     }
 
+    private fun setSnackbar(snackbar: Snackbar) {
+        coroutineScope.launch {
+            _snackbar.send(snackbar)
+        }
+    }
+
     // Track sheet - end
 
     sealed class Dialog {
@@ -913,6 +911,22 @@ class MangaInfoScreenModel(
         object SettingsSheet : Dialog()
         object TrackSheet : Dialog()
         object FullCover : Dialog()
+    }
+
+    sealed class Snackbar {
+        object DeleteDownloadedChapters : Snackbar()
+        object UpdateDefaultChapterSettings : Snackbar()
+        object AddFavorite : Snackbar()
+        object ToggleFavorite : Snackbar()
+        object DefaultCategorySet : Snackbar()
+        data class OnRemoveManga(val manga: Manga) : Snackbar()
+        data class InternalError(val error: String) : Snackbar()
+        data class FetchChaptersFromSourceError(val error: String) : Snackbar()
+        data class ChangeCategory(
+            val manga: Manga,
+            val firstCategory: Category?,
+            val selection: List<Long>,
+        ) : Snackbar()
     }
 
     fun dismissDialog() {
