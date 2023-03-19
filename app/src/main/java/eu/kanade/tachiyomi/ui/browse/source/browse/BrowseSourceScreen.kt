@@ -16,18 +16,19 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -38,7 +39,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.browse.MissingSourceScreen
 import eu.kanade.presentation.browse.components.BrowseSourceToolbar
-import eu.kanade.presentation.browse.components.RemoveMangaDialog
 import eu.kanade.presentation.category.ChangeCategoryDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.AssistContentScreen
@@ -55,6 +55,7 @@ import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import tachiyomi.core.Constants
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.presentation.core.components.material.Divider
@@ -95,7 +96,7 @@ data class BrowseSourceScreen(
         val scope = rememberCoroutineScope()
         val haptic = LocalHapticFeedback.current
         val uriHandler = LocalUriHandler.current
-        val snackbarHostState = remember { SnackbarHostState() }
+        val context = LocalContext.current
 
         val onHelpClick = { uriHandler.openUri(LocalSource.HELP_URL) }
         val onWebViewClick = f@{
@@ -195,7 +196,7 @@ data class BrowseSourceScreen(
                     Divider()
                 }
             },
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            snackbarHost = { SnackbarHost(hostState = screenModel.snackbarHostState) },
         ) { paddingValues ->
             val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
 
@@ -204,7 +205,7 @@ data class BrowseSourceScreen(
                 mangaList = pagingFlow.collectAsLazyPagingItems(),
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 displayMode = screenModel.displayMode,
-                snackbarHostState = snackbarHostState,
+                snackbarHostState = screenModel.snackbarHostState,
                 contentPadding = paddingValues,
                 onWebViewClick = onWebViewClick,
                 onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
@@ -214,7 +215,10 @@ data class BrowseSourceScreen(
                     scope.launchIO {
                         val duplicateManga = screenModel.getDuplicateLibraryManga(manga)
                         when {
-                            manga.favorite -> screenModel.setDialog(BrowseSourceScreenModel.Dialog.RemoveManga(manga))
+                            manga.favorite -> {
+                                screenModel.changeMangaFavorite(manga)
+                                screenModel.setSnackbar(BrowseSourceScreenModel.Snackbar.ToggleFavorite(manga))
+                            }
                             duplicateManga != null -> screenModel.setDialog(
                                 BrowseSourceScreenModel.Dialog.AddDuplicateManga(
                                     manga,
@@ -253,22 +257,16 @@ data class BrowseSourceScreen(
                     onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id, true)) },
                 )
             }
-            is BrowseSourceScreenModel.Dialog.RemoveManga -> {
-                RemoveMangaDialog(
-                    onDismissRequest = onDismissRequest,
-                    onConfirm = {
-                        screenModel.changeMangaFavorite(dialog.manga)
-                    },
-                    mangaToRemove = dialog.manga,
-                )
-            }
             is BrowseSourceScreenModel.Dialog.ChangeMangaCategory -> {
                 ChangeCategoryDialog(
                     initialSelection = dialog.initialSelection,
                     onDismissRequest = onDismissRequest,
                     onEditCategories = { navigator.push(CategoryScreen()) },
                     onConfirm = { include, _ ->
-                        screenModel.changeMangaFavorite(dialog.manga)
+                        if (!dialog.manga.favorite) {
+                            screenModel.changeMangaFavorite(dialog.manga)
+                        }
+                        screenModel.changeMangaCategory(dialog.manga, include)
                         screenModel.moveMangaToCategories(dialog.manga, include)
                     },
                 )
@@ -278,13 +276,60 @@ data class BrowseSourceScreen(
         }
 
         LaunchedEffect(Unit) {
-            queryEvent.receiveAsFlow()
-                .collectLatest {
-                    when (it) {
-                        is SearchType.Genre -> screenModel.searchGenre(it.txt)
-                        is SearchType.Text -> screenModel.search(it.txt)
+            launch {
+                queryEvent.receiveAsFlow()
+                    .collectLatest {
+                        when (it) {
+                            is SearchType.Genre -> screenModel.searchGenre(it.txt)
+                            is SearchType.Text -> screenModel.search(it.txt)
+                        }
+                    }
+            }
+            launch {
+                screenModel.snackbar.collectLatest { snackbar ->
+                    val snackbarHostState = screenModel.snackbarHostState
+                    when (snackbar) {
+                        is BrowseSourceScreenModel.Snackbar.OnFavoriteDefaultSet -> {
+                            val result = snackbarHostState.showSnackbar(
+                                message = context.getString(R.string.default_category_favorite),
+                                actionLabel = context.getString(R.string.action_change),
+                                duration = SnackbarDuration.Short,
+                            )
+
+                            if (result == SnackbarResult.ActionPerformed) {
+                                screenModel.promptChangeCategories(snackbar.manga.copy(favorite = true))
+                            }
+                        }
+                        is BrowseSourceScreenModel.Snackbar.ToggleFavorite -> {
+                            val textRes = if (snackbar.manga.favorite) R.string.manga_removed_library else R.string.manga_added_library
+                            val result = snackbarHostState.showSnackbar(
+                                message = context.getString(textRes),
+                                actionLabel = context.getString(R.string.action_undo).takeIf { snackbar.manga.favorite },
+                                withDismissAction = true,
+                            )
+                            if (result == SnackbarResult.ActionPerformed && snackbar.manga.favorite) {
+                                screenModel.changeMangaFavorite(snackbar.manga.copy(favorite = false))
+                            }
+                        }
+                        is BrowseSourceScreenModel.Snackbar.PickCategory -> {
+                            when (snackbar.selection.size) {
+                                0 -> {
+                                    val textRes = if (snackbar.manga.favorite) R.string.manga_moved_library else R.string.manga_added_library
+                                    snackbarHostState.showSnackbar(context.getString(textRes), withDismissAction = true)
+                                }
+                                1 -> {
+                                    val textRes = if (snackbar.manga.favorite) R.string.manga_moved_in_ else R.string.manga_added_in_
+                                    snackbarHostState.showSnackbar(context.getString(textRes, snackbar.firstCategory?.name), withDismissAction = true)
+                                }
+                                else -> {
+                                    val textRes = if (snackbar.manga.favorite) R.string.manga_moved_in_categories else R.string.manga_added_in_categories
+                                    snackbarHostState.showSnackbar(context.getString(textRes, snackbar.selection.size), withDismissAction = true)
+                                }
+                            }
+                        }
                     }
                 }
+            }
         }
     }
 

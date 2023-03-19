@@ -4,5 +4,12 @@
     <string name="tadami_app_name" translatable="false">Tadami</string>
     <string name="action_display_unread_badge">Unread chapters</string>
     <string name="migration_select_manga">Select an entry to be migrated</string>
+    <string name="manga_moved_library">Moved to library</string>
+    <string name="manga_added_in_">Added in %1$s</string>
+    <string name="manga_moved_in_">Moved in %1$s</string>
+    <string name="default_category_favorite">Added to default category</string>
+    <string name="manga_added_in_categories">Added in %1$d categories</string>
+    <string name="manga_moved_in_categories">Moved in %1$d categories</string>
+    <string name="action_change">Change</string>
 
 </resources>

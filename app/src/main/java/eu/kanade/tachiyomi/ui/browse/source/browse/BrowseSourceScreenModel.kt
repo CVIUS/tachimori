@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.browse.source.browse
 
 import android.content.res.Configuration
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -32,6 +33,8 @@ import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.util.removeCovers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
@@ -39,6 +42,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -82,9 +86,13 @@ class BrowseSourceScreenModel(
     private val updateManga: UpdateManga = Injekt.get(),
     private val insertTrack: InsertTrack = Injekt.get(),
     private val syncChaptersWithTrackServiceTwoWay: SyncChaptersWithTrackServiceTwoWay = Injekt.get(),
+    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) : StateScreenModel<BrowseSourceScreenModel.State>(State(Listing.valueOf(listingQuery))) {
 
     private val loggedServices by lazy { Injekt.get<TrackManager>().services.filter { it.isLogged } }
+
+    private val _snackbar: Channel<Snackbar> = Channel(Channel.CONFLATED)
+    val snackbar: Flow<Snackbar> = _snackbar.receiveAsFlow()
 
     var displayMode by sourcePreferences.sourceDisplayMode().asState(coroutineScope)
 
@@ -274,11 +282,20 @@ class BrowseSourceScreenModel(
         }
     }
 
+    fun changeMangaCategory(manga: Manga, categoryIds: List<Long>) {
+        coroutineScope.launch {
+            val firstId = categoryIds.firstOrNull { it != 0L } ?: 0L
+            val firstCategory = getCategories.awaitOneOrNull(firstId)
+
+            setSnackbar(Snackbar.PickCategory(manga, categoryIds, firstCategory))
+        }
+    }
+
     fun addFavorite(manga: Manga) {
         coroutineScope.launch {
             val categories = getCategories()
-            val defaultCategoryId = libraryPreferences.defaultCategory().get()
-            val defaultCategory = categories.find { it.id == defaultCategoryId.toLong() }
+            val defaultCategoryId = libraryPreferences.defaultCategory().get().toLong()
+            val defaultCategory = categories.find { it.id == defaultCategoryId }
 
             when {
                 // Default category set
@@ -286,21 +303,33 @@ class BrowseSourceScreenModel(
                     moveMangaToCategories(manga, defaultCategory)
 
                     changeMangaFavorite(manga)
+                    setSnackbar(Snackbar.OnFavoriteDefaultSet(manga))
                 }
 
                 // Automatic 'Default' or no categories
-                defaultCategoryId == 0 || categories.isEmpty() -> {
+                defaultCategoryId == 0L || categories.isEmpty() -> {
                     moveMangaToCategories(manga)
 
                     changeMangaFavorite(manga)
+
+                    if (categories.isNotEmpty()) {
+                        setSnackbar(Snackbar.OnFavoriteDefaultSet(manga))
+                    } else {
+                        setSnackbar(Snackbar.ToggleFavorite(manga))
+                    }
                 }
 
                 // Choose a category
-                else -> {
-                    val preselectedIds = getCategories.await(manga.id).map { it.id }
-                    setDialog(Dialog.ChangeMangaCategory(manga, categories.mapAsCheckboxState { it.id in preselectedIds }))
-                }
+                else -> promptChangeCategories(manga)
             }
+        }
+    }
+
+    fun promptChangeCategories(manga: Manga) {
+        coroutineScope.launch {
+            val preselectedIds = getCategories.await(manga.id).map { it.id }
+            val initialSelection = getCategories().mapAsCheckboxState { it.id in preselectedIds }
+            setDialog(Dialog.ChangeMangaCategory(manga, initialSelection))
         }
     }
 
@@ -357,6 +386,12 @@ class BrowseSourceScreenModel(
         setDialog(Dialog.Filter)
     }
 
+    fun setSnackbar(snackbar: Snackbar) {
+        coroutineScope.launch {
+            _snackbar.send(snackbar)
+        }
+    }
+
     fun setDialog(dialog: Dialog?) {
         mutableState.update { it.copy(dialog = dialog) }
     }
@@ -381,9 +416,18 @@ class BrowseSourceScreenModel(
         }
     }
 
+    sealed class Snackbar {
+        data class ToggleFavorite(val manga: Manga) : Snackbar()
+        data class PickCategory(
+            val manga: Manga,
+            val selection: List<Long>,
+            val firstCategory: Category?,
+        ) : Snackbar()
+        data class OnFavoriteDefaultSet(val manga: Manga) : Snackbar()
+    }
+
     sealed class Dialog {
         object Filter : Dialog()
-        data class RemoveManga(val manga: Manga) : Dialog()
         data class AddDuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog()
         data class ChangeMangaCategory(
             val manga: Manga,

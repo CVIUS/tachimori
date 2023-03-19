@@ -23,4 +23,8 @@ class GetCategories(
     suspend fun await(mangaId: Long): List<Category> {
         return categoryRepository.getCategoriesByMangaId(mangaId)
     }
+
+    suspend fun awaitOneOrNull(id: Long): Category? {
+        return categoryRepository.get(id)
+    }
 }

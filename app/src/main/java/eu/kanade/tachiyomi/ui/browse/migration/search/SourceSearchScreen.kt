@@ -5,12 +5,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalUriHandler
@@ -50,8 +48,6 @@ data class SourceSearchScreen(
         val screenModel = rememberScreenModel { BrowseSourceScreenModel(sourceId, query) }
         val state by screenModel.state.collectAsState()
 
-        val snackbarHostState = remember { SnackbarHostState() }
-
         Scaffold(
             topBar = { scrollBehavior ->
                 SearchToolbar(
@@ -71,7 +67,7 @@ data class SourceSearchScreen(
                     )
                 }
             },
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            snackbarHost = { SnackbarHost(hostState = screenModel.snackbarHostState) },
         ) { paddingValues ->
             val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
             val openMigrateDialog: (Manga) -> Unit = {
@@ -82,7 +78,7 @@ data class SourceSearchScreen(
                 mangaList = pagingFlow.collectAsLazyPagingItems(),
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 displayMode = screenModel.displayMode,
-                snackbarHostState = snackbarHostState,
+                snackbarHostState = screenModel.snackbarHostState,
                 contentPadding = paddingValues,
                 onWebViewClick = {
                     val source = screenModel.source as? HttpSource ?: return@BrowseSourceContent
