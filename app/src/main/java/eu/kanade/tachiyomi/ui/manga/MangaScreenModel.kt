@@ -236,23 +236,21 @@ class MangaInfoScreenModel(
     /**
      * Update favorite status of manga, (removes / adds) manga (to / from) library.
      */
-    fun toggleFavorite(checkDuplicate: Boolean = true) {
+    fun toggleFavorite(checkDuplicate: Boolean = true, isUndoing: Boolean = false) {
         val state = successState ?: return
         coroutineScope.launchIO {
             val manga = state.manga
 
             if (isFavorited) {
                 // Remove from library
-                if (updateFavorite(manga, false)) {
+                if (updateManga.awaitUpdateFavorite(manga.id, false)) {
                     // Remove covers and update last modified in db
                     if (manga.removeCovers() != manga) {
                         updateManga.awaitUpdateCoverLastModified(manga.id)
                     }
-                    withUIContext {
-                        when (hasDownloads()) {
-                            true -> if (!checkDuplicate) setSnackbar(Snackbar.DeleteDownloadedChapters)
-                            false -> setSnackbar(Snackbar.OnRemoveManga(manga))
-                        }
+                    when (hasDownloads()) {
+                        true -> if (checkDuplicate) setSnackbar(Snackbar.DeleteDownloadedChapters)
+                        false -> setSnackbar(Snackbar.OnRemoveManga(manga))
                     }
                 }
             } else {
@@ -277,9 +275,15 @@ class MangaInfoScreenModel(
                 val defaultCategoryId = libraryPreferences.defaultCategory().get().toLong()
                 val defaultCategory = categories.find { it.id == defaultCategoryId }
                 when {
+                    // Undo from snackbar
+                    isUndoing -> {
+                        val result = updateManga.awaitUpdateFavorite(manga.id, true)
+                        if (!result) return@launchIO
+                    }
+
                     // Default category set
                     defaultCategory != null -> {
-                        val result = updateFavorite(manga, true)
+                        val result = updateManga.awaitUpdateFavorite(manga.id, true)
                         if (!result) return@launchIO
                         moveMangaToCategory(defaultCategory)
 
@@ -288,7 +292,7 @@ class MangaInfoScreenModel(
 
                     // Automatic 'Default' or no categories
                     defaultCategoryId == 0L || categories.isEmpty() -> {
-                        val result = updateFavorite(manga, true)
+                        val result = updateManga.awaitUpdateFavorite(manga.id, true)
                         if (!result) return@launchIO
                         moveMangaToCategory(null)
 
@@ -382,20 +386,16 @@ class MangaInfoScreenModel(
             .map { it.id }
     }
 
-    suspend fun updateFavorite(manga: Manga, favorite: Boolean): Boolean {
-        return updateManga.awaitUpdateFavorite(manga.id, favorite)
-    }
-
     fun moveMangaToCategoriesAndAddToLibrary(manga: Manga, categories: List<Long>) {
         moveMangaToCategory(categories)
         if (manga.favorite) return
 
         coroutineScope.launchIO {
-            updateFavorite(manga, true)
+            updateManga.awaitUpdateFavorite(manga.id, true)
         }
     }
 
-    fun oni(manga: Manga, categoryIds: List<Long>) {
+    fun showChangeCategorySnackbar(manga: Manga, categoryIds: List<Long>) {
         coroutineScope.launch {
             val firstId = categoryIds.firstOrNull { it != 0L } ?: 0L
             val firstCategory = getCategories.awaitOneOrNull(firstId)
@@ -992,7 +992,6 @@ sealed class MangaScreenState {
         val trackItems: List<TrackItem> = emptyList(),
         val isRefreshingData: Boolean = false,
         val dialog: MangaInfoScreenModel.Dialog? = null,
-        val hasPromptedToAddBefore: Boolean = false,
     ) : MangaScreenState() {
 
         val processedChapters: Sequence<ChapterItem>

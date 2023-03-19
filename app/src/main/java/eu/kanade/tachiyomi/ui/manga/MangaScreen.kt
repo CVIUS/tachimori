@@ -171,8 +171,8 @@ class MangaScreen(
                                 actionLabel = context.getString(R.string.action_undo),
                                 withDismissAction = true,
                             )
-                            if (result == SnackbarResult.ActionPerformed && snackbar.manga.favorite) {
-                                screenModel.updateFavorite(snackbar.manga, true)
+                            if (result == SnackbarResult.ActionPerformed) {
+                                screenModel.toggleFavorite(checkDuplicate = false, isUndoing = true)
                             }
                         }
                         MangaInfoScreenModel.Snackbar.DefaultCategorySet -> {
@@ -202,15 +202,6 @@ class MangaScreen(
                                 }
                             }
                         }
-                        MangaInfoScreenModel.Snackbar.DeleteDownloadedChapters -> {
-                            val result = screenModel.snackbarHostState.showSnackbar(
-                                message = context.getString(R.string.delete_downloads_for_manga),
-                                actionLabel = context.getString(R.string.action_delete),
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                screenModel.deleteDownloads()
-                            }
-                        }
                         MangaInfoScreenModel.Snackbar.UpdateDefaultChapterSettings -> {
                             screenModel.snackbarHostState.showSnackbar(context.getString(R.string.chapter_settings_updated))
                         }
@@ -230,7 +221,7 @@ class MangaScreen(
                     onEditCategories = { navigator.push(CategoryScreen()) },
                     onConfirm = { include, _ ->
                         screenModel.moveMangaToCategoriesAndAddToLibrary(dialog.manga, include)
-                        screenModel.oni(dialog.manga, include)
+                        screenModel.showChangeCategorySnackbar(dialog.manga, include)
                     },
                 )
             }
