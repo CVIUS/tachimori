@@ -30,6 +30,7 @@ import tachiyomi.presentation.core.components.material.padding
 
 @Composable
 fun ChangeCategoryDialog(
+    favorite: Boolean,
     initialSelection: List<CheckboxState<Category>>,
     onDismissRequest: () -> Unit,
     onEditCategories: () -> Unit,
@@ -73,6 +74,7 @@ fun ChangeCategoryDialog(
                     Text(text = stringResource(R.string.action_cancel))
                 }
                 TextButton(
+                    enabled = selection != initialSelection || !favorite,
                     onClick = {
                         onDismissRequest()
                         onConfirm(

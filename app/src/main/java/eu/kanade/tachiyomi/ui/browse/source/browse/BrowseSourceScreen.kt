@@ -259,6 +259,7 @@ data class BrowseSourceScreen(
             }
             is BrowseSourceScreenModel.Dialog.ChangeMangaCategory -> {
                 ChangeCategoryDialog(
+                    favorite = dialog.manga.favorite,
                     initialSelection = dialog.initialSelection,
                     onDismissRequest = onDismissRequest,
                     onEditCategories = { navigator.push(CategoryScreen()) },

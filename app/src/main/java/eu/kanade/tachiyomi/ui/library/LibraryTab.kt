@@ -195,6 +195,7 @@ object LibraryTab : Tab {
             )
             is LibraryScreenModel.Dialog.ChangeCategory -> {
                 ChangeCategoryDialog(
+                    favorite = dialog.manga.all(Manga::favorite),
                     initialSelection = dialog.initialSelection,
                     onDismissRequest = onDismissRequest,
                     onEditCategories = {

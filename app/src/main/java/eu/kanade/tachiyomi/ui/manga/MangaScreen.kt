@@ -222,6 +222,7 @@ class MangaScreen(
             null -> {}
             is MangaInfoScreenModel.Dialog.ChangeCategory -> {
                 ChangeCategoryDialog(
+                    favorite = dialog.manga.favorite,
                     initialSelection = dialog.initialSelection,
                     onDismissRequest = onDismissRequest,
                     onEditCategories = { navigator.push(CategoryScreen()) },
