@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import tachiyomi.domain.library.model.LibraryDisplayMode
+import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.presentation.core.components.FastScrollLazyVerticalGrid
 import tachiyomi.presentation.core.util.plus
 
@@ -42,5 +44,26 @@ fun LazyGridScope.globalSearchItem(
                 onClick = onGlobalSearchClicked,
             )
         }
+    }
+}
+
+fun LazyGridScope.sortAndDisplayCardItem(
+    sort: LibrarySort,
+    displayMode: LibraryDisplayMode,
+    onClickOpenSortSheet: () -> Unit,
+    onClickOpenRandomManga: () -> Unit,
+    onChangeDisplayMode: (LibraryDisplayMode) -> Unit,
+) {
+    item(
+        span = { GridItemSpan(maxLineSpan) },
+        contentType = { "library_global_search_item" },
+    ) {
+        LibraryHeaderItem(
+            sort = sort,
+            displayMode = displayMode,
+            onClickOpenSortSheet = onClickOpenSortSheet,
+            onClickOpenRandomManga = onClickOpenRandomManga,
+            onChangeDisplayMode = onChangeDisplayMode,
+        )
     }
 }

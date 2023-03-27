@@ -21,6 +21,7 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.library.LibraryItem
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.presentation.core.components.HorizontalPager
 import tachiyomi.presentation.core.components.PagerState
 import tachiyomi.presentation.core.screens.EmptyScreen
@@ -35,7 +36,11 @@ fun LibraryPager(
     selectedManga: List<LibraryManga>,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
+    onClickOpenSortSheet: () -> Unit,
+    onClickOpenRandomManga: () -> Unit,
+    onChangeDisplayMode: (LibraryDisplayMode) -> Unit,
     getDisplayModeForPage: @Composable (Int) -> LibraryDisplayMode,
+    getSortForPage: @Composable (Int) -> LibrarySort,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
     getLibraryForPage: (Int) -> List<LibraryItem>,
     onClickManga: (LibraryManga) -> Unit,
@@ -65,6 +70,7 @@ fun LibraryPager(
         }
 
         val displayMode = getDisplayModeForPage(page)
+        val sort = getSortForPage(page)
         val columns by if (displayMode != LibraryDisplayMode.List) {
             val configuration = LocalConfiguration.current
             val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -85,6 +91,11 @@ fun LibraryPager(
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
+                    sort = sort,
+                    displayMode = displayMode,
+                    onClickOpenSortSheet = onClickOpenSortSheet,
+                    onClickOpenRandomManga = onClickOpenRandomManga,
+                    onChangeDisplayMode = onChangeDisplayMode,
                 )
             }
             LibraryDisplayMode.CompactGrid, LibraryDisplayMode.CoverOnlyGrid -> {
@@ -99,6 +110,11 @@ fun LibraryPager(
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
+                    sort = sort,
+                    displayMode = displayMode,
+                    onClickOpenSortSheet = onClickOpenSortSheet,
+                    onClickOpenRandomManga = onClickOpenRandomManga,
+                    onChangeDisplayMode = onChangeDisplayMode,
                 )
             }
             LibraryDisplayMode.ComfortableGrid -> {
@@ -112,6 +128,11 @@ fun LibraryPager(
                     onClickContinueReading = onClickContinueReading,
                     searchQuery = searchQuery,
                     onGlobalSearchClicked = onGlobalSearchClicked,
+                    sort = sort,
+                    displayMode = displayMode,
+                    onClickOpenSortSheet = onClickOpenSortSheet,
+                    onClickOpenRandomManga = onClickOpenRandomManga,
+                    onChangeDisplayMode = onChangeDisplayMode,
                 )
             }
         }

@@ -34,7 +34,6 @@ fun LibraryToolbar(
     onClickFilter: () -> Unit,
     onClickRefresh: () -> Unit,
     onClickGlobalUpdate: () -> Unit,
-    onClickOpenRandomManga: () -> Unit,
     searchQuery: String?,
     onSearchQueryChange: (String?) -> Unit,
     scrollBehavior: TopAppBarScrollBehavior?,
@@ -53,7 +52,6 @@ fun LibraryToolbar(
         onClickFilter = onClickFilter,
         onClickRefresh = onClickRefresh,
         onClickGlobalUpdate = onClickGlobalUpdate,
-        onClickOpenRandomManga = onClickOpenRandomManga,
         scrollBehavior = scrollBehavior,
     )
 }
@@ -67,7 +65,6 @@ fun LibraryRegularToolbar(
     onClickFilter: () -> Unit,
     onClickRefresh: () -> Unit,
     onClickGlobalUpdate: () -> Unit,
-    onClickOpenRandomManga: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior?,
 ) {
     val pillAlpha = if (isSystemInDarkTheme()) 0.12f else 0.08f
@@ -105,10 +102,6 @@ fun LibraryRegularToolbar(
                     AppBar.OverflowAction(
                         title = stringResource(R.string.action_update_category),
                         onClick = onClickRefresh,
-                    ),
-                    AppBar.OverflowAction(
-                        title = stringResource(R.string.action_open_random_manga),
-                        onClick = onClickOpenRandomManga,
                     ),
                 ),
             )

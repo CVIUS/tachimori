@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.rememberPagerState
 import kotlin.time.Duration.Companion.seconds
@@ -41,8 +42,12 @@ fun LibraryContent(
     onToggleRangeSelection: (LibraryManga) -> Unit,
     onRefresh: (Category?) -> Boolean,
     onGlobalSearchClicked: () -> Unit,
+    onClickOpenSortSheet: () -> Unit,
+    onClickOpenRandomManga: () -> Unit,
+    onChangeDisplayMode: (LibraryDisplayMode) -> Unit,
     getNumberOfMangaForCategory: (Category) -> Int?,
     getDisplayModeForPage: @Composable (Int) -> LibraryDisplayMode,
+    getSortForPage: @Composable (Int) -> LibrarySort,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,
     getLibraryForPage: (Int) -> List<LibraryItem>,
 ) {
@@ -102,11 +107,15 @@ fun LibraryContent(
                 searchQuery = searchQuery,
                 onGlobalSearchClicked = onGlobalSearchClicked,
                 getDisplayModeForPage = getDisplayModeForPage,
+                getSortForPage = getSortForPage,
                 getColumnsForOrientation = getColumnsForOrientation,
                 getLibraryForPage = getLibraryForPage,
                 onClickManga = onClickManga,
                 onLongClickManga = onToggleRangeSelection,
                 onClickContinueReading = onContinueReadingClicked,
+                onClickOpenSortSheet = onClickOpenSortSheet,
+                onClickOpenRandomManga = onClickOpenRandomManga,
+                onChangeDisplayMode = onChangeDisplayMode,
             )
         }
 

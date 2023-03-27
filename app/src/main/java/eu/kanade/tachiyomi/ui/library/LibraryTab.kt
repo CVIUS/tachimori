@@ -32,6 +32,7 @@ import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.presentation.category.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
+import eu.kanade.presentation.library.SortSheet
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
 import eu.kanade.presentation.manga.components.LibraryBottomActionMenu
@@ -50,6 +51,7 @@ import kotlinx.coroutines.launch
 import tachiyomi.core.util.lang.launchIO
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.display
+import tachiyomi.domain.library.model.sort
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.screens.EmptyScreen
@@ -103,16 +105,6 @@ object LibraryTab : Tab {
                     onClickFilter = { screenModel.showSettingsDialog() },
                     onClickRefresh = { screenModel.onLibraryUpdateTriggered(state.categories[screenModel.activeCategoryIndex]) },
                     onClickGlobalUpdate = { screenModel.onLibraryUpdateTriggered(null) },
-                    onClickOpenRandomManga = {
-                        scope.launch {
-                            val randomItem = screenModel.getRandomLibraryItemForCurrentCategory()
-                            if (randomItem != null) {
-                                navigator.push(MangaScreen(randomItem.libraryManga.manga.id))
-                            } else {
-                                screenModel.errorOpenRandomManga()
-                            }
-                        }
-                    },
                     searchQuery = state.searchQuery,
                     onSearchQueryChange = screenModel::search,
                     scrollBehavior = scrollBehavior.takeIf { !tabVisible }, // For scroll overlay when no tab
@@ -178,8 +170,26 @@ object LibraryTab : Tab {
                         onGlobalSearchClicked = {
                             navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
                         },
+                        onClickOpenSortSheet = screenModel::showSortDialog,
+                        onClickOpenRandomManga = {
+                            scope.launch {
+                                val randomItem = screenModel.getRandomLibraryItemForCurrentCategory()
+                                if (randomItem != null) {
+                                    navigator.push(MangaScreen(randomItem.libraryManga.manga.id))
+                                } else {
+                                    screenModel.errorOpenRandomManga()
+                                }
+                            }
+                        },
+                        onChangeDisplayMode = {
+                            screenModel.setDisplayMode(
+                                category = state.categories[screenModel.activeCategoryIndex],
+                                mode = it,
+                            )
+                        },
                         getNumberOfMangaForCategory = { state.getMangaCountForCategory(it) },
                         getDisplayModeForPage = { state.categories[it].display },
+                        getSortForPage = { state.categories[it].sort },
                         getColumnsForOrientation = { screenModel.getColumnsPreferenceForCurrentOrientation(it) },
                     ) { state.getLibraryItemsByPage(it) }
                 }
@@ -216,6 +226,14 @@ object LibraryTab : Tab {
                         screenModel.removeMangas(dialog.manga, deleteManga, deleteChapter)
                         screenModel.clearSelection()
                     },
+                )
+            }
+            is LibraryScreenModel.Dialog.SortSheet -> {
+                val category = state.categories[screenModel.activeCategoryIndex]
+                SortSheet(
+                    onDismissRequest = onDismissRequest,
+                    category = category,
+                    onClick = screenModel::setSort,
                 )
             }
             null -> {}

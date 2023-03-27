@@ -17,6 +17,8 @@ import eu.kanade.core.util.fastFilterNot
 import eu.kanade.core.util.fastMapNotNull
 import eu.kanade.core.util.fastPartition
 import eu.kanade.domain.base.BasePreferences
+import eu.kanade.domain.category.interactor.SetDisplayModeForCategory
+import eu.kanade.domain.category.interactor.SetSortModeForCategory
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.history.interactor.GetNextChapters
 import eu.kanade.domain.library.service.LibraryPreferences
@@ -58,6 +60,7 @@ import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChapterByMangaId
 import tachiyomi.domain.chapter.model.Chapter
+import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.library.model.sort
@@ -94,6 +97,8 @@ class LibraryScreenModel(
     private val downloadManager: DownloadManager = Injekt.get(),
     private val downloadCache: DownloadCache = Injekt.get(),
     private val trackManager: TrackManager = Injekt.get(),
+    private val setDisplayModeForCategory: SetDisplayModeForCategory = Injekt.get(),
+    private val setSortModeForCategory: SetSortModeForCategory = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
@@ -547,6 +552,10 @@ class LibraryScreenModel(
         mutableState.update { it.copy(dialog = Dialog.SettingsSheet) }
     }
 
+    fun showSortDialog() {
+        mutableState.update { it.copy(dialog = Dialog.SortSheet) }
+    }
+
     fun errorOpenRandomManga() {
         coroutineScope.launch {
             _snackbar.send(Snackbar.OpenRandomLibraryItemError)
@@ -688,7 +697,20 @@ class LibraryScreenModel(
         mutableState.update { it.copy(dialog = null) }
     }
 
+    fun setSort(category: Category, mode: LibrarySort.Type, direction: LibrarySort.Direction) {
+        coroutineScope.launchIO {
+            setSortModeForCategory.await(category, mode, direction)
+        }
+    }
+
+    fun setDisplayMode(category: Category, mode: LibraryDisplayMode) {
+        coroutineScope.launchIO {
+            setDisplayModeForCategory.await(category, mode)
+        }
+    }
+
     sealed class Dialog {
+        object SortSheet : Dialog()
         object SettingsSheet : Dialog()
         data class ChangeCategory(val manga: List<Manga>, val initialSelection: List<CheckboxState<Category>>) : Dialog()
         data class DeleteManga(val manga: List<Manga>) : Dialog()

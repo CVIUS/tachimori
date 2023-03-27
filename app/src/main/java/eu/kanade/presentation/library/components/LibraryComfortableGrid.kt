@@ -7,7 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.util.fastAny
 import eu.kanade.tachiyomi.ui.library.LibraryItem
+import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibraryManga
+import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.domain.manga.model.MangaCover
 
 @Composable
@@ -21,6 +23,11 @@ fun LibraryComfortableGrid(
     onClickContinueReading: ((LibraryManga) -> Unit)?,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
+    sort: LibrarySort,
+    displayMode: LibraryDisplayMode,
+    onClickOpenSortSheet: () -> Unit,
+    onClickOpenRandomManga: () -> Unit,
+    onChangeDisplayMode: (LibraryDisplayMode) -> Unit,
 ) {
     LazyLibraryGrid(
         modifier = Modifier.fillMaxSize(),
@@ -28,6 +35,14 @@ fun LibraryComfortableGrid(
         contentPadding = contentPadding,
     ) {
         globalSearchItem(searchQuery, onGlobalSearchClicked)
+
+        sortAndDisplayCardItem(
+            sort = sort,
+            displayMode = displayMode,
+            onClickOpenSortSheet = onClickOpenSortSheet,
+            onClickOpenRandomManga = onClickOpenRandomManga,
+            onChangeDisplayMode = onChangeDisplayMode,
+        )
 
         items(
             items = items,
