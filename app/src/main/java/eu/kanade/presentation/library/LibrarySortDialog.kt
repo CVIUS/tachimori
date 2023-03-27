@@ -23,7 +23,7 @@ import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.theme.header
 
 @Composable
-fun SortSheet(
+fun LibrarySortDialog(
     category: Category,
     onDismissRequest: () -> Unit,
     onClick: (Category, LibrarySort.Type, LibrarySort.Direction) -> Unit,

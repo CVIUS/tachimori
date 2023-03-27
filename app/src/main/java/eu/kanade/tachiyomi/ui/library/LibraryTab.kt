@@ -32,7 +32,7 @@ import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.presentation.category.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
-import eu.kanade.presentation.library.SortSheet
+import eu.kanade.presentation.library.LibrarySortDialog
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
 import eu.kanade.presentation.manga.components.LibraryBottomActionMenu
@@ -230,7 +230,7 @@ object LibraryTab : Tab {
             }
             is LibraryScreenModel.Dialog.SortSheet -> {
                 val category = state.categories[screenModel.activeCategoryIndex]
-                SortSheet(
+                LibrarySortDialog(
                     onDismissRequest = onDismissRequest,
                     category = category,
                     onClick = screenModel::setSort,
