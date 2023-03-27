@@ -2,7 +2,6 @@ package eu.kanade.data.source
 
 import eu.kanade.domain.source.repository.SourceRepository
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.online.HttpSource
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +14,8 @@ import tachiyomi.data.source.SourceSearchPagingSource
 import tachiyomi.data.source.sourceMapper
 import tachiyomi.domain.source.model.Source
 import tachiyomi.domain.source.model.SourceWithCount
+import tachiyomi.domain.source.model.StubSource
+import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.source.local.LocalSource
 
 class SourceRepositoryImpl(
@@ -48,7 +49,7 @@ class SourceRepositoryImpl(
                 .map { (sourceId, count) ->
                     val source = sourceManager.getOrStub(sourceId)
                     val domainSource = sourceMapper(source).copy(
-                        isStub = source is SourceManager.StubSource,
+                        isStub = source is StubSource,
                     )
                     domainSource to count
                 }
@@ -61,7 +62,7 @@ class SourceRepositoryImpl(
             sourceId.map { (sourceId, count) ->
                 val source = sourceManager.getOrStub(sourceId)
                 val domainSource = sourceMapper(source).copy(
-                    isStub = source is SourceManager.StubSource,
+                    isStub = source is StubSource,
                 )
                 SourceWithCount(domainSource, count)
             }

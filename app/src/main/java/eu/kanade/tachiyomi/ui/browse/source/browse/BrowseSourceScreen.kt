@@ -45,7 +45,6 @@ import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.Screen
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
-import eu.kanade.tachiyomi.source.SourceManager
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
@@ -58,6 +57,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import tachiyomi.core.Constants
 import tachiyomi.core.util.lang.launchIO
+import tachiyomi.domain.source.model.StubSource
 import tachiyomi.presentation.core.components.material.Divider
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.components.material.padding
@@ -85,7 +85,7 @@ data class BrowseSourceScreen(
             }
         }
 
-        if (screenModel.source is SourceManager.StubSource) {
+        if (screenModel.source is StubSource) {
             MissingSourceScreen(
                 source = screenModel.source,
                 navigateUp = navigateUp,
