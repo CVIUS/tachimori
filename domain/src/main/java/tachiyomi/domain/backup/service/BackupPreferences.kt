@@ -1,4 +1,4 @@
-package eu.kanade.domain.backup.service
+package tachiyomi.domain.backup.service
 
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.provider.FolderProvider
