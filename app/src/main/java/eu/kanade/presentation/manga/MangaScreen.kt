@@ -685,7 +685,7 @@ private fun LazyListScope.sharedChapterItems(
         val context = LocalContext.current
 
         MangaChapterListItem(
-            title = if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER) {
+            title = if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER && chapterItem.chapter.isRecognizedNumber) {
                 stringResource(
                     R.string.display_mode_chapter,
                     chapterDecimalFormat.format(chapterItem.chapter.chapterNumber.toDouble()),

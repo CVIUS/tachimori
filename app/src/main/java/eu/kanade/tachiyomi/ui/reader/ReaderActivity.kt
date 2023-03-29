@@ -53,6 +53,7 @@ import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
 import eu.kanade.tachiyomi.ui.main.MainActivity
+import eu.kanade.tachiyomi.ui.manga.chapterDecimalFormat
 import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.AddToLibraryFirst
 import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.Error
 import eu.kanade.tachiyomi.ui.reader.ReaderViewModel.SetAsCoverResult.Success
@@ -741,9 +742,18 @@ class ReaderActivity : BaseActivity() {
      * hides or disables the reader prev/next buttons if there's a prev or next chapter
      */
     private fun setChapters(viewerChapters: ViewerChapters) {
+        val manga = viewModel.manga ?: return
+        val chapter = viewerChapters.currChapter.chapter
         binding.readerContainer.removeView(loadingIndicator)
         viewer?.setChapters(viewerChapters)
-        binding.toolbar.subtitle = viewerChapters.currChapter.chapter.name
+        binding.toolbar.subtitle = if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER && chapter.chapter_number >= 0f) {
+            getString(
+                R.string.display_mode_chapter,
+                chapterDecimalFormat.format(chapter.chapter_number.toDouble()),
+            )
+        } else {
+            chapter.name
+        }
 
         val currentChapterPageCount = viewerChapters.currChapter.pages?.size ?: 1
         binding.readerSeekbar.isInvisible = currentChapterPageCount == 1
