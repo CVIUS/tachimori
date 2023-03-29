@@ -36,7 +36,7 @@ fun LibraryComfortableGrid(
     ) {
         globalSearchItem(searchQuery, onGlobalSearchClicked)
 
-        sortAndDisplayCardItem(
+        headerItem(
             sort = sort,
             displayMode = displayMode,
             onClickOpenSortSheet = onClickOpenSortSheet,

@@ -47,7 +47,7 @@ fun LazyGridScope.globalSearchItem(
     }
 }
 
-fun LazyGridScope.sortAndDisplayCardItem(
+fun LazyGridScope.headerItem(
     sort: LibrarySort,
     displayMode: LibraryDisplayMode,
     onClickOpenSortSheet: () -> Unit,

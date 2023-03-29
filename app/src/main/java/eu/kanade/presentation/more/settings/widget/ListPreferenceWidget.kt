@@ -21,10 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.R
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Divider
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.isScrolledToEnd
 import tachiyomi.presentation.core.util.isScrolledToStart
 
@@ -47,42 +47,59 @@ fun <T> ListPreferenceWidget(
     )
 
     if (isDialogShown) {
-        AlertDialog(
+        ListPreferenceDialog(
+            value = value,
+            title = title,
+            entries = entries,
+            onValueChange = onValueChange,
             onDismissRequest = { isDialogShown = false },
-            title = { Text(text = title) },
-            text = {
-                Box {
-                    val state = rememberLazyListState()
-                    ScrollbarLazyColumn(state = state) {
-                        entries.forEach { current ->
-                            val isSelected = value == current.key
-                            item {
-                                DialogRow(
-                                    label = current.value,
-                                    isSelected = isSelected,
-                                    onSelected = {
-                                        onValueChange(current.key!!)
-                                        isDialogShown = false
-                                    },
-                                )
-                            }
-                        }
-                    }
-                    if (!state.isScrolledToStart()) Divider(modifier = Modifier.align(Alignment.TopCenter))
-                    if (!state.isScrolledToEnd()) Divider(modifier = Modifier.align(Alignment.BottomCenter))
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { isDialogShown = false }) {
-                    Text(text = stringResource(R.string.action_cancel))
-                }
-            },
         )
     }
 }
 
 @Composable
-private fun DialogRow(
+fun <T> ListPreferenceDialog(
+    value: T,
+    title: String,
+    entries: Map<out T, String>,
+    onValueChange: (T) -> Unit,
+    onDismissRequest: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(text = title) },
+        text = {
+            Box {
+                val state = rememberLazyListState()
+                ScrollbarLazyColumn(state = state) {
+                    entries.forEach { current ->
+                        val isSelected = value == current.key
+                        item {
+                            ListPreferenceDialogItem(
+                                label = current.value,
+                                isSelected = isSelected,
+                                onSelected = {
+                                    onValueChange(current.key!!)
+                                    onDismissRequest()
+                                },
+                            )
+                        }
+                    }
+                }
+                if (!state.isScrolledToStart()) Divider(modifier = Modifier.align(Alignment.TopCenter))
+                if (!state.isScrolledToEnd()) Divider(modifier = Modifier.align(Alignment.BottomCenter))
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(R.string.action_cancel))
+            }
+        },
+    )
+}
+
+@Composable
+private fun ListPreferenceDialogItem(
     label: String,
     isSelected: Boolean,
     onSelected: () -> Unit,
@@ -104,7 +121,7 @@ private fun DialogRow(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge.merge(),
-            modifier = Modifier.padding(start = 24.dp),
+            modifier = Modifier.padding(start = MaterialTheme.padding.large),
         )
     }
 }
