@@ -1,18 +1,12 @@
 package eu.kanade.tachiyomi.ui.browse.migration.search
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FilterList
-import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.stringResource
 import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -20,7 +14,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.Screen
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.home.HomeScreen
@@ -29,7 +22,6 @@ import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import kotlinx.coroutines.launch
 import tachiyomi.core.Constants
 import tachiyomi.domain.manga.model.Manga
-import tachiyomi.presentation.core.components.material.ExtendedFloatingActionButton
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.source.local.LocalSource
 
@@ -57,15 +49,6 @@ data class SourceSearchScreen(
                     onSearch = { screenModel.search(it) },
                     scrollBehavior = scrollBehavior,
                 )
-            },
-            floatingActionButton = {
-                AnimatedVisibility(visible = state.filters.isNotEmpty()) {
-                    ExtendedFloatingActionButton(
-                        text = { Text(text = stringResource(R.string.action_filter)) },
-                        icon = { Icon(Icons.Outlined.FilterList, contentDescription = "") },
-                        onClick = screenModel::openFilterSheet,
-                    )
-                }
             },
             snackbarHost = { SnackbarHost(hostState = screenModel.snackbarHostState) },
         ) { paddingValues ->
