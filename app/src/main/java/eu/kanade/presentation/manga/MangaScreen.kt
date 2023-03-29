@@ -49,7 +49,7 @@ import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
 import eu.kanade.domain.manga.model.chaptersFiltered
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
-import eu.kanade.presentation.manga.components.ChapterHeader
+import eu.kanade.presentation.manga.components.ChapterHeaderItem
 import eu.kanade.presentation.manga.components.ExpandableMangaDescription
 import eu.kanade.presentation.manga.components.MangaActionRow
 import eu.kanade.presentation.manga.components.MangaBottomActionMenu
@@ -390,7 +390,7 @@ private fun MangaScreenSmallImpl(
                         key = MangaScreenItem.CHAPTER_HEADER,
                         contentType = MangaScreenItem.CHAPTER_HEADER,
                     ) {
-                        ChapterHeader(
+                        ChapterHeaderItem(
                             enabled = chapters.fastAll { !it.selected },
                             chapterCount = chapters.size,
                             onClick = onFilterClicked,
@@ -601,7 +601,7 @@ fun MangaScreenLargeImpl(
                                 key = MangaScreenItem.CHAPTER_HEADER,
                                 contentType = MangaScreenItem.CHAPTER_HEADER,
                             ) {
-                                ChapterHeader(
+                                ChapterHeaderItem(
                                     enabled = chapters.fastAll { !it.selected },
                                     chapterCount = chapters.size,
                                     onClick = onFilterButtonClicked,

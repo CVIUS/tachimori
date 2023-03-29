@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckBox
 import androidx.compose.material.icons.rounded.CheckBoxOutlineBlank
 import androidx.compose.material.icons.rounded.DisabledByDefault
+import androidx.compose.material.minimumInteractiveComponentSize
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -26,7 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import tachiyomi.domain.manga.model.TriStateFilter
-import tachiyomi.presentation.core.components.SettingsItemsPaddings
+import tachiyomi.presentation.core.components.material.padding
 
 @Composable
 fun TriStateItem(
@@ -48,7 +49,8 @@ fun TriStateItem(
                 },
             )
             .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
+            .padding(horizontal = MaterialTheme.padding.large)
+            .minimumInteractiveComponentSize(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
@@ -65,15 +67,15 @@ fun TriStateItem(
                 MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = stateAlpha)
             } else {
                 when (onClick) {
-                    null -> MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.disabled)
+                    null -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = ContentAlpha.disabled)
                     else -> MaterialTheme.colorScheme.primary
                 }
             },
         )
         Text(
             text = label,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = stateAlpha),
-            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = stateAlpha),
+            style = MaterialTheme.typography.labelLarge,
         )
     }
 }
@@ -95,7 +97,8 @@ fun SelectItem(
             modifier = Modifier
                 .menuAnchor()
                 .fillMaxWidth()
-                .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
+                .padding(horizontal = MaterialTheme.padding.large)
+                .minimumInteractiveComponentSize(),
             label = { Text(text = label) },
             value = options[selectedIndex].toString(),
             onValueChange = {},

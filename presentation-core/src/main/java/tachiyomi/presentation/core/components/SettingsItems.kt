@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.minimumInteractiveComponentSize
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -22,12 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.theme.header
-
-object SettingsItemsPaddings {
-    val Horizontal = 24.dp
-    val Vertical = 10.dp
-}
 
 @Composable
 fun HeadingItem(
@@ -45,7 +42,10 @@ fun HeadingItem(
         style = MaterialTheme.typography.header,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
+            .padding(
+                horizontal = MaterialTheme.padding.large,
+                vertical = 12.dp,
+            ),
     )
 }
 
@@ -65,7 +65,8 @@ fun SortItem(
         modifier = Modifier
             .clickable(onClick = onClick)
             .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
+            .padding(horizontal = MaterialTheme.padding.large)
+            .minimumInteractiveComponentSize(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
@@ -80,7 +81,9 @@ fun SortItem(
         }
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
         )
     }
 }
@@ -96,7 +99,8 @@ fun CheckboxItem(
         modifier = Modifier
             .clickable(enabled = enabled, onClick = onClick)
             .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
+            .padding(horizontal = MaterialTheme.padding.large)
+            .minimumInteractiveComponentSize(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
@@ -107,7 +111,9 @@ fun CheckboxItem(
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
         )
     }
 }
@@ -122,7 +128,8 @@ fun RadioItem(
         modifier = Modifier
             .clickable(onClick = onClick)
             .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = SettingsItemsPaddings.Vertical),
+            .padding(horizontal = MaterialTheme.padding.large)
+            .minimumInteractiveComponentSize(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
@@ -132,7 +139,9 @@ fun RadioItem(
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
         )
     }
 }
@@ -146,7 +155,10 @@ fun TextItem(
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SettingsItemsPaddings.Horizontal, vertical = 4.dp),
+            .padding(
+                horizontal = MaterialTheme.padding.large,
+                vertical = MaterialTheme.padding.tiny,
+            ),
         label = { Text(text = label) },
         value = value,
         onValueChange = onChange,

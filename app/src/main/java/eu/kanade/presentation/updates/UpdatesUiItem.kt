@@ -103,6 +103,8 @@ fun LazyListScope.updatesUiItems(
             }
         },
     ) { item ->
+        val haptic = LocalHapticFeedback.current
+
         when (item) {
             is UpdatesUiModel.Header -> {
                 ListGroupHeader(
@@ -126,6 +128,7 @@ fun LazyListScope.updatesUiItems(
                         },
                     onLongClick = {
                         onUpdateSelected(updatesItem, !updatesItem.selected, true, true)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     },
                     onClick = {
                         when {
@@ -159,7 +162,6 @@ fun UpdatesUiItem(
     downloadStateProvider: () -> Download.State,
     downloadProgressProvider: () -> Int,
 ) {
-    val haptic = LocalHapticFeedback.current
     val textAlpha = if (update.read) ReadItemAlpha else 1f
 
     Row(
@@ -167,10 +169,7 @@ fun UpdatesUiItem(
             .selectedBackground(selected)
             .combinedClickable(
                 onClick = onClick,
-                onLongClick = {
-                    onLongClick()
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                },
+                onLongClick = onLongClick,
             )
             .height(56.dp)
             .padding(horizontal = MaterialTheme.padding.medium),
@@ -205,9 +204,9 @@ fun UpdatesUiItem(
                     text = update.chapterName,
                     maxLines = 1,
                     style = MaterialTheme.typography.bodyMedium.copy(
+                        color = LocalContentColor.current.copy(alpha = textAlpha),
                         fontWeight = if (!update.read) FontWeight.Medium else LocalTextStyle.current.fontWeight,
                     ),
-                    color = LocalContentColor.current.copy(alpha = textAlpha),
                     overflow = TextOverflow.Ellipsis,
                     onTextLayout = { textHeight = it.size.height },
                     modifier = Modifier
@@ -218,7 +217,10 @@ fun UpdatesUiItem(
                     Text(
                         text = readProgress,
                         maxLines = 1,
-                        color = LocalContentColor.current.copy(alpha = ReadItemAlpha),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = LocalContentColor.current.copy(alpha = ReadItemAlpha),
+                            fontWeight = if (!update.read) FontWeight.Medium else LocalTextStyle.current.fontWeight,
+                        ),
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -227,8 +229,9 @@ fun UpdatesUiItem(
             Text(
                 text = update.mangaTitle,
                 maxLines = 1,
-                style = MaterialTheme.typography.bodySmall,
-                color = LocalContentColor.current.copy(alpha = textAlpha),
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = LocalContentColor.current.copy(alpha = textAlpha),
+                ),
                 overflow = TextOverflow.Ellipsis,
             )
         }
