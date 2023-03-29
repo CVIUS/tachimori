@@ -355,6 +355,7 @@ class LibraryScreenModel(
                             0
                         },
                         unreadCount = if (prefs.unreadBadge || showContinueReadingButton) libraryManga.unreadCount else 0,
+                        bookmarkCount = if (prefs.filteredBookmarked) libraryManga.bookmarkCount else 0,
                         isLocal = if (prefs.localBadge || prefs.globalFilterDownloaded) libraryManga.manga.isLocal() else false,
                         sourceLanguage = if (prefs.languageBadge) {
                             sourceManager.getOrStub(libraryManga.manga.source).lang
@@ -735,7 +736,11 @@ class LibraryScreenModel(
         val filterStarted: TriStateFilter,
         val filterBookmarked: TriStateFilter,
         val filterCompleted: TriStateFilter,
-    )
+    ) {
+        val filteredBookmarked by lazy {
+            filterBookmarked == TriStateFilter.ENABLED_IS
+        }
+    }
 
     @Immutable
     data class State(

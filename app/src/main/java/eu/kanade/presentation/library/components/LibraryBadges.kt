@@ -10,20 +10,31 @@ import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.util.ThemePreviews
 
 @Composable
-fun DownloadsBadge(count: Long) {
+fun UnreadBadge(count: Long) {
     if (count > 0) {
         Badge(
             text = "$count",
-            color = MaterialTheme.colorScheme.tertiary,
-            textColor = MaterialTheme.colorScheme.onTertiary,
+            color = MaterialTheme.colorScheme.primary,
+            textColor = MaterialTheme.colorScheme.onPrimary,
         )
     }
 }
 
 @Composable
-fun UnreadBadge(count: Long) {
+fun BookmarkBadge(count: Long) {
     if (count > 0) {
         Badge(text = "$count")
+    }
+}
+
+@Composable
+fun DownloadsBadge(count: Long) {
+    if (count > 0) {
+        Badge(
+            text = "$count",
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            textColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

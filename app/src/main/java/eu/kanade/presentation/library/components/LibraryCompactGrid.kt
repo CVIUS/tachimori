@@ -61,8 +61,9 @@ fun LibraryCompactGrid(
                     lastModified = manga.coverLastModified,
                 ),
                 coverBadgeStart = {
-                    DownloadsBadge(count = libraryItem.downloadCount)
                     UnreadBadge(count = libraryItem.unreadCount)
+                    BookmarkBadge(count = libraryItem.bookmarkCount)
+                    DownloadsBadge(count = libraryItem.downloadCount)
                 },
                 coverBadgeEnd = {
                     LanguageBadge(
