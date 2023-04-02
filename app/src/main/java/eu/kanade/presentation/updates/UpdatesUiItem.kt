@@ -188,8 +188,18 @@ fun UpdatesUiItem(
                 .padding(horizontal = MaterialTheme.padding.medium)
                 .weight(1f),
         ) {
+            Text(
+                text = update.mangaTitle,
+                maxLines = 1,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Medium,
+                ),
+                overflow = TextOverflow.Ellipsis,
+            )
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 var textHeight by remember { mutableStateOf(0) }
+
                 if (update.bookmark) {
                     Icon(
                         imageVector = Icons.Filled.Bookmark,
@@ -200,40 +210,32 @@ fun UpdatesUiItem(
                     )
                     Spacer(modifier = Modifier.width(2.dp))
                 }
+
                 Text(
                     text = update.chapterName,
                     maxLines = 1,
-                    style = MaterialTheme.typography.bodyMedium.copy(
+                    style = MaterialTheme.typography.bodySmall.copy(
                         color = LocalContentColor.current.copy(alpha = textAlpha),
-                        fontWeight = if (!update.read) FontWeight.Medium else LocalTextStyle.current.fontWeight,
+                        fontWeight = if (!update.read) FontWeight(450) else LocalTextStyle.current.fontWeight,
                     ),
                     overflow = TextOverflow.Ellipsis,
                     onTextLayout = { textHeight = it.size.height },
                     modifier = Modifier
                         .weight(weight = 1f, fill = false),
                 )
+
                 if (readProgress != null) {
                     DotSeparatorText()
                     Text(
                         text = readProgress,
                         maxLines = 1,
-                        style = MaterialTheme.typography.bodyMedium.copy(
+                        style = MaterialTheme.typography.bodySmall.copy(
                             color = LocalContentColor.current.copy(alpha = ReadItemAlpha),
-                            fontWeight = if (!update.read) FontWeight.Medium else LocalTextStyle.current.fontWeight,
+                            fontWeight = if (!update.read) FontWeight(450) else LocalTextStyle.current.fontWeight,
                         ),
-                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
-
-            Text(
-                text = update.mangaTitle,
-                maxLines = 1,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = LocalContentColor.current.copy(alpha = textAlpha),
-                ),
-                overflow = TextOverflow.Ellipsis,
-            )
         }
 
         ChapterDownloadIndicator(
