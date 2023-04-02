@@ -11,8 +11,6 @@
     <string name="manga_added_in_categories">Added in %1$d categories</string>
     <string name="manga_moved_in_categories">Moved in %1$d categories</string>
     <string name="action_change">Change</string>
-    <string name="action_view_as_list">View as list</string>
-    <string name="action_view_as_grid">View as grid</string>
     <string name="action_sort_by">Sort by</string>
 
 </resources>
