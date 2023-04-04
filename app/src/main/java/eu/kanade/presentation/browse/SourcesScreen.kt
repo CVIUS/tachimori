@@ -3,11 +3,14 @@ package eu.kanade.presentation.browse
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.outlined.HideSource
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -16,8 +19,11 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -167,28 +173,52 @@ fun SourceOptionsDialog(
         },
         text = {
             Column {
-                val textId = if (Pin.Pinned in source.pin) R.string.action_unpin else R.string.action_pin
-                Text(
-                    text = stringResource(textId),
-                    modifier = Modifier
-                        .clickable(onClick = onClickPin)
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                val textRes = if (Pin.Pinned in source.pin) R.string.action_unpin else R.string.action_pin
+                val icon = if (Pin.Pinned in source.pin) Icons.Outlined.PushPin else Icons.Filled.PushPin
+                SourceOptionsDialogItem(
+                    onClick = onClickPin,
+                    text = stringResource(textRes),
+                    icon = icon,
                 )
+
                 if (source.id != LocalSource.ID) {
-                    Text(
+                    SourceOptionsDialogItem(
+                        onClick = onClickDisable,
                         text = stringResource(R.string.action_disable),
-                        modifier = Modifier
-                            .clickable(onClick = onClickDisable)
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
+                        icon = Icons.Outlined.HideSource,
                     )
                 }
             }
         },
         onDismissRequest = onDismiss,
-        confirmButton = {},
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.action_cancel))
+            }
+        },
     )
+}
+
+@Composable
+private fun SourceOptionsDialogItem(
+    onClick: () -> Unit,
+    text: String,
+    icon: ImageVector,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .minimumInteractiveComponentSize(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.heightIn(min = 48.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium.merge(),
+            modifier = Modifier.padding(start = MaterialTheme.padding.medium),
+        )
+    }
 }
 
 sealed class SourceUiModel {

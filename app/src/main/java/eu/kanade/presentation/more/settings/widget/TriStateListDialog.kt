@@ -27,7 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.R
-import tachiyomi.presentation.core.components.LazyColumn
+import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Divider
 import tachiyomi.presentation.core.util.isScrolledToEnd
 import tachiyomi.presentation.core.util.isScrolledToStart
@@ -72,7 +72,7 @@ fun <T> TriStateListDialog(
 
                 Box {
                     val listState = rememberLazyListState()
-                    LazyColumn(state = listState) {
+                    ScrollbarLazyColumn(state = listState) {
                         itemsIndexed(items = items) { index, item ->
                             val state = selected[index]
                             Row(

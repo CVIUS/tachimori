@@ -53,6 +53,7 @@ import kotlinx.coroutines.launch
 import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Divider
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.isScrolledToEnd
 import tachiyomi.presentation.core.util.isScrolledToStart
 import uy.kohesive.injekt.Injekt
@@ -156,6 +157,7 @@ object SettingsBackupScreen : SearchableSettings {
                         item {
                             CreateBackupDialogItem(
                                 isSelected = true,
+                                enabled = false,
                                 title = stringResource(R.string.manga),
                             )
                         }
@@ -201,6 +203,7 @@ object SettingsBackupScreen : SearchableSettings {
     @Composable
     private fun CreateBackupDialogItem(
         modifier: Modifier = Modifier,
+        enabled: Boolean = true,
         isSelected: Boolean,
         title: String,
     ) {
@@ -209,14 +212,17 @@ object SettingsBackupScreen : SearchableSettings {
             modifier = modifier.fillMaxWidth(),
         ) {
             Checkbox(
-                modifier = Modifier.heightIn(min = 48.dp),
+                modifier = Modifier
+                    .padding(start = MaterialTheme.padding.medium)
+                    .heightIn(min = 48.dp),
                 checked = isSelected,
                 onCheckedChange = null,
+                enabled = enabled,
             )
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium.merge(),
-                modifier = Modifier.padding(start = 24.dp),
+                modifier = Modifier.padding(start = MaterialTheme.padding.large),
             )
         }
     }

@@ -1,9 +1,10 @@
 package eu.kanade.presentation.more.settings.widget
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
@@ -24,6 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.R
+import tachiyomi.presentation.core.components.ScrollbarLazyColumn
+import tachiyomi.presentation.core.components.material.Divider
+import tachiyomi.presentation.core.util.isScrolledToEnd
+import tachiyomi.presentation.core.util.isScrolledToStart
 
 @Composable
 fun MultiSelectListPreferenceWidget(
@@ -50,38 +55,43 @@ fun MultiSelectListPreferenceWidget(
             onDismissRequest = { isDialogShown = false },
             title = { Text(text = preference.title) },
             text = {
-                LazyColumn {
-                    preference.entries.forEach { current ->
-                        item {
-                            val isSelected = selected.contains(current.key)
-                            val onSelectionChanged = {
-                                when (!isSelected) {
-                                    true -> selected.add(current.key)
-                                    false -> selected.remove(current.key)
+                Box {
+                    val state = rememberLazyListState()
+                    ScrollbarLazyColumn(state = state) {
+                        preference.entries.forEach { current ->
+                            item {
+                                val isSelected = selected.contains(current.key)
+                                val onSelectionChanged = {
+                                    when (!isSelected) {
+                                        true -> selected.add(current.key)
+                                        false -> selected.remove(current.key)
+                                    }
                                 }
-                            }
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .selectable(
-                                        selected = isSelected,
-                                        onClick = { onSelectionChanged() },
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .selectable(
+                                            selected = isSelected,
+                                            onClick = { onSelectionChanged() },
+                                        )
+                                        .minimumInteractiveComponentSize()
+                                        .fillMaxWidth(),
+                                ) {
+                                    Checkbox(
+                                        checked = isSelected,
+                                        onCheckedChange = null,
                                     )
-                                    .minimumInteractiveComponentSize()
-                                    .fillMaxWidth(),
-                            ) {
-                                Checkbox(
-                                    checked = isSelected,
-                                    onCheckedChange = null,
-                                )
-                                Text(
-                                    text = current.value,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(start = 24.dp),
-                                )
+                                    Text(
+                                        text = current.value,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(start = 24.dp),
+                                    )
+                                }
                             }
                         }
                     }
+                    if (!state.isScrolledToStart()) Divider(modifier = Modifier.align(Alignment.TopCenter))
+                    if (!state.isScrolledToEnd()) Divider(modifier = Modifier.align(Alignment.BottomCenter))
                 }
             },
             properties = DialogProperties(

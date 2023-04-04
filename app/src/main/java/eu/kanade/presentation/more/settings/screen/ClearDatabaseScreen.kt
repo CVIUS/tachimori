@@ -50,6 +50,7 @@ import tachiyomi.domain.source.model.SourceWithCount
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
 import tachiyomi.presentation.core.components.material.Divider
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.selectedBackground
@@ -152,7 +153,10 @@ class ClearDatabaseScreen : Screen() {
 
                             Button(
                                 modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .padding(
+                                        horizontal = MaterialTheme.padding.medium,
+                                        vertical = MaterialTheme.padding.small,
+                                    )
                                     .fillMaxWidth(),
                                 onClick = model::showConfirmation,
                                 enabled = s.selection.isNotEmpty(),
@@ -180,14 +184,14 @@ class ClearDatabaseScreen : Screen() {
             modifier = Modifier
                 .selectedBackground(isSelected)
                 .clickable(onClick = onClickSelect)
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = MaterialTheme.padding.medium)
                 .height(56.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             SourceIcon(source = source)
             Column(
                 modifier = Modifier
-                    .padding(start = 8.dp)
+                    .padding(horizontal = MaterialTheme.padding.medium)
                     .weight(1f),
             ) {
                 Text(
@@ -198,7 +202,7 @@ class ClearDatabaseScreen : Screen() {
             }
             Checkbox(
                 checked = isSelected,
-                onCheckedChange = { onClickSelect() },
+                onCheckedChange = null,
             )
         }
     }
