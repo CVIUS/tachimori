@@ -787,10 +787,11 @@ class LibraryScreenModel(
             val category = categories.getOrNull(page) ?: return LibraryToolbarTitle(defaultTitle)
             val categoryName = category.let {
                 if (it.isSystemCategory) {
-                    when {
-                        !showCategoryTabs -> defaultTitle
-                        categories.size == 1 -> defaultTitle
-                        else -> defaultCategoryTitle
+                    val userCat = categories.filterNot(Category::isSystemCategory)
+                    if (userCat.isEmpty()) {
+                        defaultTitle
+                    } else {
+                        defaultCategoryTitle
                     }
                 } else {
                     it.name
