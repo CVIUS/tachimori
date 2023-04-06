@@ -87,9 +87,9 @@ class HistoryScreenModel(
         _events.send(Event.OpenChapter(chapter))
     }
 
-    fun removeFromHistory(history: HistoryWithRelations) {
+    fun removeFromHistory(historyId: Long) {
         coroutineScope.launchIO {
-            removeHistory.await(history)
+            removeHistory.awaitOne(historyId)
         }
     }
 

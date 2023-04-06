@@ -353,7 +353,7 @@ class MangaInfoScreenModel(
     /**
      * Returns true if the manga has any downloads.
      */
-    fun hasDownloads(): Boolean {
+    private fun hasDownloads(): Boolean {
         val manga = successState?.manga ?: return false
         return downloadManager.getDownloadCount(manga) > 0
     }
@@ -908,6 +908,7 @@ class MangaInfoScreenModel(
         data class ChangeCategory(val manga: Manga, val initialSelection: List<CheckboxState<Category>>) : Dialog()
         data class DeleteChapters(val chapters: List<Chapter>) : Dialog()
         data class DuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog()
+        data class MigrateManga(val oldManga: Manga, val newManga: Manga) : Dialog()
         object SettingsSheet : Dialog()
         object TrackSheet : Dialog()
         object FullCover : Dialog()
@@ -973,6 +974,17 @@ class MangaInfoScreenModel(
                 MangaScreenState.Loading -> state
                 is MangaScreenState.Success -> {
                     state.copy(dialog = Dialog.FullCover)
+                }
+            }
+        }
+    }
+
+    fun showMigrateDialog(oldManga: Manga, newManga: Manga) {
+        mutableState.update { state ->
+            when (state) {
+                MangaScreenState.Loading -> state
+                is MangaScreenState.Success -> {
+                    state.copy(dialog = Dialog.MigrateManga(oldManga, newManga))
                 }
             }
         }

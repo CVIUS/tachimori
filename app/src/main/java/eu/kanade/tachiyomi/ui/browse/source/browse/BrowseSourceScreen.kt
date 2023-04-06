@@ -47,6 +47,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.extension.details.SourcePreferencesScreen
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel.Listing
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
@@ -253,8 +255,23 @@ data class BrowseSourceScreen(
             is BrowseSourceScreenModel.Dialog.AddDuplicateManga -> {
                 DuplicateMangaDialog(
                     onDismissRequest = onDismissRequest,
+                    onMigrate = {
+                        screenModel.setDialog(
+                            BrowseSourceScreenModel.Dialog.Migrate(dialog.duplicate, dialog.manga),
+                        )
+                    },
                     onConfirm = { screenModel.addFavorite(dialog.manga) },
                     onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id, true)) },
+                )
+            }
+            is BrowseSourceScreenModel.Dialog.Migrate -> {
+                MigrateDialog(
+                    oldManga = dialog.oldManga,
+                    newManga = dialog.newManga,
+                    screenModel = rememberScreenModel { MigrateDialogScreenModel() },
+                    onDismissRequest = onDismissRequest,
+                    onClickTitle = { navigator.push(MangaScreen(dialog.newManga.id, true)) },
+                    onPopScreen = { navigator.push(MangaScreen(dialog.newManga.id, true)) },
                 )
             }
             is BrowseSourceScreenModel.Dialog.ChangeMangaCategory -> {
@@ -272,7 +289,6 @@ data class BrowseSourceScreen(
                     },
                 )
             }
-            is BrowseSourceScreenModel.Dialog.Migrate -> {}
             else -> {}
         }
 

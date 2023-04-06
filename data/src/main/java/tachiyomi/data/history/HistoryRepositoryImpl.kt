@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import logcat.LogPriority
 import tachiyomi.core.util.system.logcat
 import tachiyomi.data.DatabaseHandler
+import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.model.HistoryUpdate
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.domain.history.repository.HistoryRepository
@@ -22,6 +23,10 @@ class HistoryRepositoryImpl(
         return handler.awaitOneOrNull {
             historyViewQueries.getLatestHistory(historyWithRelationsMapper)
         }
+    }
+
+    override suspend fun getHistoryByMangaId(mangaId: Long): List<History> {
+        return handler.awaitList { historyQueries.getHistoryByMangaId(mangaId, historyMapper) }
     }
 
     override suspend fun getTotalReadDuration(): Long {

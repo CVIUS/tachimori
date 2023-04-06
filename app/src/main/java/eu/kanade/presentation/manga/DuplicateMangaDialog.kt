@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.R
 @Composable
 fun DuplicateMangaDialog(
     onDismissRequest: () -> Unit,
+    onMigrate: () -> Unit,
     onConfirm: () -> Unit,
     onOpenManga: () -> Unit,
 ) {
@@ -20,15 +21,22 @@ fun DuplicateMangaDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             Row {
-                TextButton(onClick = {
-                    onDismissRequest()
-                    onOpenManga()
-                },) {
+                TextButton(
+                    onClick = {
+                        onDismissRequest()
+                        onOpenManga()
+                    },
+                ) {
                     Text(text = stringResource(R.string.action_show_manga))
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                TextButton(
+                    onClick = {
+                        onDismissRequest()
+                        onMigrate()
+                    },
+                ) {
+                    Text(text = stringResource(R.string.migrate))
                 }
                 TextButton(
                     onClick = {
@@ -36,7 +44,7 @@ fun DuplicateMangaDialog(
                         onConfirm()
                     },
                 ) {
-                    Text(text = stringResource(R.string.action_add))
+                    Text(text = stringResource(R.string.action_just_add))
                 }
             }
         },

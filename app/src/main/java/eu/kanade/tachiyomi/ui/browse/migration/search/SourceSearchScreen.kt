@@ -53,8 +53,8 @@ data class SourceSearchScreen(
             snackbarHost = { SnackbarHost(hostState = screenModel.snackbarHostState) },
         ) { paddingValues ->
             val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
-            val openMigrateDialog: (Manga) -> Unit = {
-                screenModel.setDialog(BrowseSourceScreenModel.Dialog.Migrate(it))
+            val openMigrateDialog: (Manga, Manga) -> Unit = { i1, i2 ->
+                screenModel.setDialog(BrowseSourceScreenModel.Dialog.Migrate(i1, i2))
             }
             BrowseSourceContent(
                 source = screenModel.source,
@@ -75,7 +75,7 @@ data class SourceSearchScreen(
                 },
                 onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
                 onLocalSourceHelpClick = { uriHandler.openUri(LocalSource.HELP_URL) },
-                onMangaClick = openMigrateDialog,
+                onMangaClick = { openMigrateDialog(oldManga, it) },
                 onMangaLongClick = { navigator.push(MangaScreen(it.id, true)) },
             )
         }
@@ -83,7 +83,7 @@ data class SourceSearchScreen(
         when (val dialog = state.dialog) {
             is BrowseSourceScreenModel.Dialog.Migrate -> {
                 MigrateDialog(
-                    oldManga = oldManga,
+                    oldManga = dialog.oldManga,
                     newManga = dialog.newManga,
                     screenModel = rememberScreenModel { MigrateDialogScreenModel() },
                     onDismissRequest = { screenModel.setDialog(null) },
@@ -91,7 +91,7 @@ data class SourceSearchScreen(
                     onPopScreen = {
                         scope.launch {
                             navigator.popUntilRoot()
-                            HomeScreen.openTab(HomeScreen.Tab.Browse())
+                            HomeScreen.openTab(HomeScreen.Tab.Library())
                             navigator.push(MangaScreen(dialog.newManga.id, true))
                         }
                     },

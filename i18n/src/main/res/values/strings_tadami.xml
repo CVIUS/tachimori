@@ -12,5 +12,11 @@
     <string name="manga_moved_in_categories">Moved in %1$d categories</string>
     <string name="action_change">Change</string>
     <string name="action_sort_by">Sort by</string>
+    <string name="migration_migrate_success">Migrated successfully</string>
+    <string name="migration_copy_success">Copied successfully</string>
+    <string name="migration_migrate_failed">Cannot migrate this entry because it may be the same entry</string>
+    <string name="migration_copy_failed">Cannot copy this entry because it may be the same entry</string>
+    <string name="action_just_add">Just add</string>
+    <string name="extras">Extras</string>
 
 </resources>

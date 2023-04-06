@@ -1,6 +1,5 @@
 package tachiyomi.domain.history.interactor
 
-import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.domain.history.repository.HistoryRepository
 
 class RemoveHistory(
@@ -11,8 +10,8 @@ class RemoveHistory(
         return repository.deleteAllHistory()
     }
 
-    suspend fun await(history: HistoryWithRelations) {
-        repository.resetHistory(history.id)
+    suspend fun awaitOne(historyId: Long) {
+        repository.resetHistory(historyId)
     }
 
     suspend fun await(mangaId: Long) {

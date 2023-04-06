@@ -12,15 +12,16 @@ import uy.kohesive.injekt.injectLazy
 
 object MigrationFlags {
 
-    private const val CHAPTERS = 0b0001
-    private const val CATEGORIES = 0b0010
-    private const val TRACK = 0b0100
-    private const val CUSTOM_COVER = 0b1000
+    private const val CHAPTERS = 0b00001
+    private const val CATEGORIES = 0b00010
+    private const val TRACK = 0b00100
+    private const val CUSTOM_COVER = 0b01000
+    private const val EXTRAS = 0b10000
 
     private val coverCache: CoverCache by injectLazy()
     private val getTracks: GetTracks = Injekt.get()
 
-    val flags get() = arrayOf(CHAPTERS, CATEGORIES, TRACK, CUSTOM_COVER)
+    val flags get() = arrayOf(CHAPTERS, CATEGORIES, TRACK, CUSTOM_COVER, EXTRAS)
 
     fun hasChapters(value: Int): Boolean {
         return value and CHAPTERS != 0
@@ -38,6 +39,10 @@ object MigrationFlags {
         return value and CUSTOM_COVER != 0
     }
 
+    fun hasExtras(value: Int): Boolean {
+        return value and EXTRAS != 0
+    }
+
     fun getEnabledFlagsPositions(value: Int): List<Int> {
         return flags.mapIndexedNotNull { index, flag -> if (value and flag != 0) index else null }
     }
@@ -47,7 +52,7 @@ object MigrationFlags {
     }
 
     fun titles(manga: Manga?): Array<Int> {
-        val titles = arrayOf(R.string.chapters, R.string.categories).toMutableList()
+        val titles = arrayOf(R.string.chapters, R.string.categories, R.string.extras).toMutableList()
         if (manga != null) {
             if (runBlocking { getTracks.await(manga.id) }.isNotEmpty()) {
                 titles.add(R.string.track)

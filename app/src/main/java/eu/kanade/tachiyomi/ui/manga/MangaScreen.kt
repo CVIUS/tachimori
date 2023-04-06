@@ -39,6 +39,8 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.isLocalOrStub
 import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialog
+import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateDialogScreenModel
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
@@ -203,7 +205,7 @@ class MangaScreen(
                             }
                         }
                         MangaInfoScreenModel.Snackbar.UpdateDefaultChapterSettings -> {
-                            screenModel.snackbarHostState.showSnackbar(context.getString(R.string.chapter_settings_updated))
+                            snackbarHostState.showSnackbar(context.getString(R.string.chapter_settings_updated))
                         }
                     }
                 }
@@ -234,21 +236,39 @@ class MangaScreen(
                     },
                 )
             }
-            is MangaInfoScreenModel.Dialog.DuplicateManga -> DuplicateMangaDialog(
-                onDismissRequest = onDismissRequest,
-                onConfirm = { screenModel.toggleFavorite(checkDuplicate = false) },
-                onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id, true)) },
-            )
-            MangaInfoScreenModel.Dialog.SettingsSheet -> ChapterSettingsDialog(
-                onDismissRequest = onDismissRequest,
-                manga = successState.manga,
-                onDownloadFilterChanged = screenModel::setDownloadedFilter,
-                onUnreadFilterChanged = screenModel::setUnreadFilter,
-                onBookmarkedFilterChanged = screenModel::setBookmarkedFilter,
-                onSortModeChanged = screenModel::setSorting,
-                onDisplayModeChanged = screenModel::setDisplayMode,
-                onSetAsDefault = screenModel::setCurrentSettingsAsDefault,
-            )
+            is MangaInfoScreenModel.Dialog.DuplicateManga -> {
+                DuplicateMangaDialog(
+                    onDismissRequest = onDismissRequest,
+                    onMigrate = {
+                        screenModel.showMigrateDialog(dialog.duplicate, dialog.manga)
+                    },
+                    onConfirm = { screenModel.toggleFavorite(checkDuplicate = false) },
+                    onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id, true)) },
+                )
+            }
+            is MangaInfoScreenModel.Dialog.MigrateManga -> {
+                MigrateDialog(
+                    oldManga = dialog.oldManga,
+                    newManga = dialog.newManga,
+                    isMangaScreen = true,
+                    screenModel = rememberScreenModel { MigrateDialogScreenModel() },
+                    onDismissRequest = onDismissRequest,
+                    onClickTitle = {},
+                    onPopScreen = { screenModel.snackbarHostState.currentSnackbarData?.dismiss() },
+                )
+            }
+            MangaInfoScreenModel.Dialog.SettingsSheet -> {
+                ChapterSettingsDialog(
+                    onDismissRequest = onDismissRequest,
+                    manga = successState.manga,
+                    onDownloadFilterChanged = screenModel::setDownloadedFilter,
+                    onUnreadFilterChanged = screenModel::setUnreadFilter,
+                    onBookmarkedFilterChanged = screenModel::setBookmarkedFilter,
+                    onSortModeChanged = screenModel::setSorting,
+                    onDisplayModeChanged = screenModel::setDisplayMode,
+                    onSetAsDefault = screenModel::setCurrentSettingsAsDefault,
+                )
+            }
             MangaInfoScreenModel.Dialog.TrackSheet -> {
                 NavigatorAdaptiveSheet(
                     screen = TrackInfoDialogHomeScreen(

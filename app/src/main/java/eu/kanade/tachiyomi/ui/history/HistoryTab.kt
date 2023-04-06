@@ -75,7 +75,7 @@ object HistoryTab : Tab {
                         if (all) {
                             screenModel.removeAllFromHistory(dialog.history.mangaId)
                         } else {
-                            screenModel.removeFromHistory(dialog.history)
+                            screenModel.removeFromHistory(dialog.history.id)
                         }
                     },
                 )
