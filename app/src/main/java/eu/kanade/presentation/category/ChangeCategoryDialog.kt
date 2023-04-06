@@ -17,7 +17,7 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +64,7 @@ fun ChangeCategoryDialog(
         )
         return
     }
-    var selection by remember { mutableStateOf(initialSelection) }
+    var selection by rememberSaveable { mutableStateOf(initialSelection) }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {

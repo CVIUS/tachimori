@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -62,7 +63,7 @@ fun LibraryContent(
         val pagerState = rememberPagerState(coercedCurrentPage)
 
         val scope = rememberCoroutineScope()
-        var isRefreshing by remember(pagerState.currentPage) { mutableStateOf(false) }
+        var isRefreshing by rememberSaveable(pagerState.currentPage) { mutableStateOf(false) }
 
         if (showPageTabs && categories.size > 1) {
             if (categories.size <= pagerState.currentPage) {
@@ -90,9 +91,9 @@ fun LibraryContent(
                 val started = onRefresh(categories[currentPage()])
                 if (!started) return@PullRefresh
                 scope.launch {
-                    // Fake refresh status but hide it after a second as it's a long running task
+                    // Fake refresh status but hide it after 2 seconds as it's a long running task
                     isRefreshing = true
-                    delay(1.seconds)
+                    delay(2.seconds)
                     isRefreshing = false
                 }
             },

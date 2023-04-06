@@ -15,8 +15,8 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -90,7 +90,7 @@ fun UpdateScreen(
             )
             else -> {
                 val scope = rememberCoroutineScope()
-                var isRefreshing by remember { mutableStateOf(false) }
+                var isRefreshing by rememberSaveable { mutableStateOf(false) }
 
                 PullRefresh(
                     refreshing = isRefreshing,
@@ -98,9 +98,9 @@ fun UpdateScreen(
                         val started = onUpdateLibrary()
                         if (!started) return@PullRefresh
                         scope.launch {
-                            // Fake refresh status but hide it after a second as it's a long running task
+                            // Fake refresh status but hide it after 2 seconds as it's a long running task
                             isRefreshing = true
-                            delay(1.seconds)
+                            delay(2.seconds)
                             isRefreshing = false
                         }
                     },

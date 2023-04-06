@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -36,7 +37,7 @@ fun MultiSelectListPreferenceWidget(
     values: Set<String>,
     onValuesChange: (Set<String>) -> Unit,
 ) {
-    var isDialogShown by remember { mutableStateOf(false) }
+    var isDialogShown by rememberSaveable { mutableStateOf(false) }
 
     TextPreferenceWidget(
         title = preference.title,

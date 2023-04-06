@@ -9,11 +9,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.delay
 import tachiyomi.domain.category.model.Category
@@ -25,18 +27,18 @@ fun CategoryCreateDialog(
     onCreate: (String) -> Unit,
     categories: List<Category>,
 ) {
-    var name by remember { mutableStateOf("") }
-
     val focusRequester = remember { FocusRequester() }
-    val nameAlreadyExists = remember(name) { categories.anyWithName(name) }
+
+    var name by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue()) }
+    val nameAlreadyExists = remember(name) { categories.anyWithName(name.text) }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
-                enabled = name.isNotEmpty() && !nameAlreadyExists,
+                enabled = name.text.isNotEmpty() && !nameAlreadyExists,
                 onClick = {
-                    onCreate(name)
+                    onCreate(name.text)
                     onDismissRequest()
                 },
             ) {
@@ -58,10 +60,10 @@ fun CategoryCreateDialog(
                 onValueChange = { name = it },
                 label = { Text(text = stringResource(R.string.name)) },
                 supportingText = {
-                    val msgRes = if (name.isNotEmpty() && nameAlreadyExists) R.string.error_category_exists else R.string.information_required_plain
+                    val msgRes = if (name.text.isNotEmpty() && nameAlreadyExists) R.string.error_category_exists else R.string.information_required_plain
                     Text(text = stringResource(msgRes))
                 },
-                isError = name.isNotEmpty() && nameAlreadyExists,
+                isError = name.text.isNotEmpty() && nameAlreadyExists,
                 singleLine = true,
             )
         },
@@ -81,11 +83,11 @@ fun CategoryRenameDialog(
     categories: List<Category>,
     category: Category,
 ) {
-    var name by remember { mutableStateOf(category.name) }
-    var valueHasChanged by remember { mutableStateOf(false) }
-
     val focusRequester = remember { FocusRequester() }
-    val nameAlreadyExists = remember(name) { categories.anyWithName(name) }
+
+    var valueHasChanged by rememberSaveable { mutableStateOf(false) }
+    var name by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(category.name)) }
+    val nameAlreadyExists = remember(name) { categories.anyWithName(name.text) }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -93,7 +95,7 @@ fun CategoryRenameDialog(
             TextButton(
                 enabled = valueHasChanged && !nameAlreadyExists,
                 onClick = {
-                    onRename(name)
+                    onRename(name.text)
                     onDismissRequest()
                 },
             ) {

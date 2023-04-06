@@ -30,8 +30,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
@@ -252,7 +252,7 @@ class MainActivity : BaseActivity() {
                 CheckForUpdates()
             }
 
-            var showChangelog by remember { mutableStateOf(didMigration && !BuildConfig.DEBUG) }
+            var showChangelog by rememberSaveable { mutableStateOf(didMigration && !BuildConfig.DEBUG) }
             if (showChangelog) {
                 AlertDialog(
                     onDismissRequest = { showChangelog = false },
@@ -292,7 +292,7 @@ class MainActivity : BaseActivity() {
     private fun ConfirmExit() {
         val scope = rememberCoroutineScope()
         val confirmExit by preferences.confirmExit().collectAsState()
-        var waitingConfirmation by remember { mutableStateOf(false) }
+        var waitingConfirmation by rememberSaveable { mutableStateOf(false) }
         BackHandler(enabled = !waitingConfirmation && confirmExit) {
             scope.launch {
                 waitingConfirmation = true

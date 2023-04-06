@@ -228,7 +228,7 @@ object SettingsBackupScreen : SearchableSettings {
     @Composable
     private fun getRestoreBackupPref(): Preference.PreferenceItem.TextPreference {
         val context = LocalContext.current
-        var error by remember { mutableStateOf<Any?>(null) }
+        var error by rememberSaveable { mutableStateOf<Any?>(null) }
         if (error != null) {
             val onDismissRequest = { error = null }
             when (val err = error) {

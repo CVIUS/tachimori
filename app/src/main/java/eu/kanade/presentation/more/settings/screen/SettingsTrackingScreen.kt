@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,7 +86,7 @@ object SettingsTrackingScreen : SearchableSettings {
         val trackManager = remember { Injekt.get<TrackManager>() }
         val sourceManager = remember { Injekt.get<SourceManager>() }
 
-        var dialog by remember { mutableStateOf<Any?>(null) }
+        var dialog by rememberSaveable { mutableStateOf<Any?>(null) }
         dialog?.run {
             when (this) {
                 is LoginDialog -> {
@@ -192,10 +193,10 @@ object SettingsTrackingScreen : SearchableSettings {
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
 
-        var username by remember { mutableStateOf(TextFieldValue(service.getUsername())) }
-        var password by remember { mutableStateOf(TextFieldValue(service.getPassword())) }
-        var processing by remember { mutableStateOf(false) }
-        var inputError by remember { mutableStateOf(false) }
+        var username by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(service.getUsername())) }
+        var password by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(service.getPassword())) }
+        var processing by rememberSaveable { mutableStateOf(false) }
+        var inputError by rememberSaveable { mutableStateOf(false) }
 
         AlertDialog(
             onDismissRequest = onDismissRequest,
@@ -225,7 +226,7 @@ object SettingsTrackingScreen : SearchableSettings {
                         isError = inputError && !processing,
                     )
 
-                    var hidePassword by remember { mutableStateOf(true) }
+                    var hidePassword by rememberSaveable { mutableStateOf(true) }
                     OutlinedTextField(
                         modifier = Modifier.fillMaxWidth(),
                         value = password,

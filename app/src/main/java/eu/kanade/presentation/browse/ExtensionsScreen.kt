@@ -28,7 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -119,7 +119,7 @@ private fun ExtensionContent(
     onOpenExtension: (Extension.Installed) -> Unit,
     onClickUpdateAll: () -> Unit,
 ) {
-    var trustState by remember { mutableStateOf<Extension.Untrusted?>(null) }
+    var trustState by rememberSaveable { mutableStateOf<Extension.Untrusted?>(null) }
 
     FastScrollLazyColumn(
         contentPadding = contentPadding + topSmallPaddingValues,

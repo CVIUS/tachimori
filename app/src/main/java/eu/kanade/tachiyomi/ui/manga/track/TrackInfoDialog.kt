@@ -21,6 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -630,7 +631,7 @@ data class TrackServiceSearchScreen(
 
         val state by sm.state.collectAsState()
 
-        var textFieldValue by remember { mutableStateOf(TextFieldValue(initialQuery)) }
+        var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(initialQuery)) }
         TrackServiceSearch(
             query = textFieldValue,
             onQueryChange = { textFieldValue = it },

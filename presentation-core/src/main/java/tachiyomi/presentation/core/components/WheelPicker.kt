@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -127,7 +128,7 @@ fun WheelDatePicker(
     },
     onSelectionChanged: (date: LocalDate) -> Unit = {},
 ) {
-    var internalSelection by remember { mutableStateOf(startDate) }
+    var internalSelection by rememberSaveable { mutableStateOf(startDate) }
     val internalOnSelectionChange: (LocalDate) -> Unit = {
         internalSelection = it
         onSelectionChanged(internalSelection)
