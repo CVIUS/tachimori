@@ -212,9 +212,7 @@ object SettingsBackupScreen : SearchableSettings {
             modifier = modifier.fillMaxWidth(),
         ) {
             Checkbox(
-                modifier = Modifier
-                    .padding(start = MaterialTheme.padding.medium)
-                    .heightIn(min = 48.dp),
+                modifier = Modifier.heightIn(min = 48.dp),
                 checked = isSelected,
                 onCheckedChange = null,
                 enabled = enabled,
