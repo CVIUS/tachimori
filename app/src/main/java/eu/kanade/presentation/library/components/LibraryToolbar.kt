@@ -26,6 +26,7 @@ import tachiyomi.presentation.core.components.Pill
 @Composable
 fun LibraryToolbar(
     hasActiveFilters: Boolean,
+    tabVisible: Boolean,
     selectedCount: Int,
     title: LibraryToolbarTitle,
     onClickUnselectAll: () -> Unit,
@@ -47,6 +48,7 @@ fun LibraryToolbar(
     else -> LibraryRegularToolbar(
         title = title,
         hasFilters = hasActiveFilters,
+        tabVisible = tabVisible,
         searchQuery = searchQuery,
         onSearchQueryChange = onSearchQueryChange,
         onClickFilter = onClickFilter,
@@ -60,6 +62,7 @@ fun LibraryToolbar(
 fun LibraryRegularToolbar(
     title: LibraryToolbarTitle,
     hasFilters: Boolean,
+    tabVisible: Boolean,
     searchQuery: String?,
     onSearchQueryChange: (String?) -> Unit,
     onClickFilter: () -> Unit,
@@ -77,7 +80,7 @@ fun LibraryRegularToolbar(
                     modifier = Modifier.weight(1f, false),
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (title.numberOfManga != null && title.numberOfManga != 0) {
+                if (title.numberOfManga != null && title.numberOfManga != 0 && !tabVisible) {
                     Pill(
                         text = "${title.numberOfManga}",
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = pillAlpha),
