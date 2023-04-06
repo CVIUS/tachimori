@@ -201,7 +201,6 @@ object LibraryTab : Tab {
             is LibraryScreenModel.Dialog.SettingsSheet -> LibrarySettingsDialog(
                 onDismissRequest = onDismissRequest,
                 screenModel = settingsScreenModel,
-                category = state.categories[screenModel.activeCategoryIndex],
             )
             is LibraryScreenModel.Dialog.ChangeCategory -> {
                 ChangeCategoryDialog(

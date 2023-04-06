@@ -16,28 +16,19 @@ import eu.kanade.presentation.components.TriStateItem
 import eu.kanade.presentation.util.collectAsState
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
-import tachiyomi.domain.category.model.Category
-import tachiyomi.domain.library.model.LibraryDisplayMode
-import tachiyomi.domain.library.model.LibrarySort
-import tachiyomi.domain.library.model.display
-import tachiyomi.domain.library.model.sort
 import tachiyomi.domain.manga.model.TriStateFilter
 import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.HeadingItem
-import tachiyomi.presentation.core.components.RadioItem
-import tachiyomi.presentation.core.components.SortItem
 
 @Composable
 fun LibrarySettingsDialog(
     onDismissRequest: () -> Unit,
     screenModel: LibrarySettingsScreenModel,
-    category: Category,
 ) {
     TabbedDialog(
         onDismissRequest = onDismissRequest,
         tabTitles = listOf(
             stringResource(R.string.action_filter),
-            stringResource(R.string.action_sort),
             stringResource(R.string.action_display),
         ),
     ) { contentPadding, page ->
@@ -51,12 +42,7 @@ fun LibrarySettingsDialog(
                 0 -> FilterPage(
                     screenModel = screenModel,
                 )
-                1 -> SortPage(
-                    category = category,
-                    screenModel = screenModel,
-                )
-                2 -> DisplayPage(
-                    category = category,
+                1 -> DisplayPage(
                     screenModel = screenModel,
                 )
             }
@@ -133,57 +119,9 @@ private fun ColumnScope.FilterPage(
 }
 
 @Composable
-private fun ColumnScope.SortPage(
-    category: Category,
-    screenModel: LibrarySettingsScreenModel,
-) {
-    val sortingMode = category.sort.type
-    val sortDescending = !category.sort.isAscending
-
-    listOf(
-        R.string.action_sort_alpha to LibrarySort.Type.Alphabetical,
-        R.string.action_sort_total to LibrarySort.Type.TotalChapters,
-        R.string.action_sort_last_read to LibrarySort.Type.LastRead,
-        R.string.action_sort_last_manga_update to LibrarySort.Type.LastUpdate,
-        R.string.action_sort_unread_count to LibrarySort.Type.UnreadCount,
-        R.string.action_sort_latest_chapter to LibrarySort.Type.LatestChapter,
-        R.string.action_sort_chapter_fetch_date to LibrarySort.Type.ChapterFetchDate,
-        R.string.action_sort_date_added to LibrarySort.Type.DateAdded,
-    ).map { (titleRes, mode) ->
-        SortItem(
-            label = stringResource(titleRes),
-            sortDescending = sortDescending.takeIf { sortingMode == mode },
-            onClick = {
-                val isTogglingDirection = sortingMode == mode
-                val direction = when {
-                    isTogglingDirection -> if (sortDescending) LibrarySort.Direction.Ascending else LibrarySort.Direction.Descending
-                    else -> if (sortDescending) LibrarySort.Direction.Descending else LibrarySort.Direction.Ascending
-                }
-                screenModel.setSort(category, mode, direction)
-            },
-        )
-    }
-}
-
-@Composable
 private fun ColumnScope.DisplayPage(
-    category: Category,
     screenModel: LibrarySettingsScreenModel,
 ) {
-    HeadingItem(R.string.action_display_mode)
-    listOf(
-        R.string.action_display_grid to LibraryDisplayMode.CompactGrid,
-        R.string.action_display_comfortable_grid to LibraryDisplayMode.ComfortableGrid,
-        R.string.action_display_cover_only_grid to LibraryDisplayMode.CoverOnlyGrid,
-        R.string.action_display_list to LibraryDisplayMode.List,
-    ).map { (titleRes, mode) ->
-        RadioItem(
-            label = stringResource(titleRes),
-            selected = category.display == mode,
-            onClick = { screenModel.setDisplayMode(category, mode) },
-        )
-    }
-
     HeadingItem(R.string.badges_header)
     val downloadBadge by screenModel.libraryPreferences.downloadBadge().collectAsState()
     val downloadedOnly by screenModel.preferences.downloadedOnly().collectAsState()
