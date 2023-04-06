@@ -19,6 +19,8 @@ class GlobalSearchScreenModel(
 
     val incognitoMode = preferences.incognitoMode()
     val lastUsedSourceId = sourcePreferences.lastUsedSource()
+    val pinnedSources = sourcePreferences.pinnedSources()
+    val searchPinnedSourcesOnly = sourcePreferences.searchPinnedSourcesOnly()
 
     init {
         extensionFilter = initialExtensionFilter

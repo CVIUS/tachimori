@@ -31,6 +31,7 @@ class GlobalSearchScreen(
         GlobalSearchScreen(
             state = state,
             navigateUp = navigator::pop,
+            pinnedSourcesOnlyEmpty = screenModel.pinnedSources.get().isEmpty() && screenModel.searchPinnedSourcesOnly.get(),
             onChangeSearchQuery = screenModel::updateSearchQuery,
             onSearch = screenModel::search,
             getManga = { source, manga ->

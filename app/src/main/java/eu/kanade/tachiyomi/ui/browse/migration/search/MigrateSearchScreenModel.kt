@@ -39,6 +39,8 @@ class MigrateSearchScreenModel(
 
     val incognitoMode = preferences.incognitoMode()
     val lastUsedSourceId = sourcePreferences.lastUsedSource()
+    val pinnedSources = sourcePreferences.pinnedSources()
+    val searchPinnedSourcesOnly = sourcePreferences.searchPinnedSourcesOnly()
 
     override fun getEnabledSources(): List<CatalogueSource> {
         val enabledLanguages = sourcePreferences.enabledLanguages().get()

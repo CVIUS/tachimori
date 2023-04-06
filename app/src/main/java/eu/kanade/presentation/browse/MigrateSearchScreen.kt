@@ -1,14 +1,18 @@
 package eu.kanade.presentation.browse
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchEmptyResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchToolbar
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.CatalogueSource
 import eu.kanade.tachiyomi.ui.browse.migration.search.MigrateSearchState
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.SearchItemResult
@@ -16,10 +20,12 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.LazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.screens.EmptyScreen
 
 @Composable
 fun MigrateSearchScreen(
     navigateUp: () -> Unit,
+    pinnedSourcesOnlyEmpty: Boolean,
     state: MigrateSearchState,
     getManga: @Composable (CatalogueSource, Manga) -> State<Manga>,
     onChangeSearchQuery: (String?) -> Unit,
@@ -29,7 +35,7 @@ fun MigrateSearchScreen(
     onLongClickItem: (Manga) -> Unit,
 ) {
     Scaffold(
-        topBar = { scrollBehavior ->
+        topBar = {
             GlobalSearchToolbar(
                 searchQuery = state.searchQuery,
                 progress = state.progress,
@@ -37,10 +43,17 @@ fun MigrateSearchScreen(
                 navigateUp = navigateUp,
                 onChangeSearchQuery = onChangeSearchQuery,
                 onSearch = onSearch,
-                scrollBehavior = scrollBehavior,
             )
         },
     ) { paddingValues ->
+        if (pinnedSourcesOnlyEmpty) {
+            EmptyScreen(
+                message = stringResource(R.string.no_pinned_sources),
+                modifier = Modifier.padding(paddingValues),
+            )
+            return@Scaffold
+        }
+
         MigrateSearchContent(
             sourceId = state.manga?.source ?: -1,
             items = state.items,

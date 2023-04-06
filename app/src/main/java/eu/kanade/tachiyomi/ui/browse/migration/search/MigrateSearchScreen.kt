@@ -21,6 +21,7 @@ class MigrateSearchScreen(private val mangaId: Long) : Screen() {
 
         MigrateSearchScreen(
             navigateUp = navigator::pop,
+            pinnedSourcesOnlyEmpty = screenModel.pinnedSources.get().isEmpty() && screenModel.searchPinnedSourcesOnly.get(),
             state = state,
             getManga = { source, manga ->
                 screenModel.getManga(source = source, initialManga = manga)
