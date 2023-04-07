@@ -7,9 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -40,7 +37,7 @@ fun BrowseSourceContent(
     mangaList: LazyPagingItems<StateFlow<Manga>>,
     columns: GridCells,
     displayMode: LibraryDisplayMode,
-    snackbarHostState: SnackbarHostState,
+    errorSnackbar: (String) -> Unit,
     contentPadding: PaddingValues,
     onWebViewClick: () -> Unit,
     onHelpClick: () -> Unit,
@@ -64,15 +61,7 @@ fun BrowseSourceContent(
 
     LaunchedEffect(errorState) {
         if (mangaList.itemCount > 0 && errorState != null && errorState is LoadState.Error) {
-            val result = snackbarHostState.showSnackbar(
-                message = getErrorMessage(errorState),
-                actionLabel = context.getString(R.string.action_webview_refresh),
-                duration = SnackbarDuration.Indefinite,
-            )
-            when (result) {
-                SnackbarResult.Dismissed -> snackbarHostState.currentSnackbarData?.dismiss()
-                SnackbarResult.ActionPerformed -> mangaList.refresh()
-            }
+            errorSnackbar(getErrorMessage(errorState))
         }
     }
 

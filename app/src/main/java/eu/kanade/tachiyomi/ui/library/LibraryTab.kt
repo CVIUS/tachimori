@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -85,6 +86,7 @@ object LibraryTab : Tab {
         val screenModel = rememberScreenModel { LibraryScreenModel() }
         val settingsScreenModel = rememberScreenModel { LibrarySettingsScreenModel() }
         val state by screenModel.state.collectAsState()
+        val snackbarHostState = remember { screenModel.snackbarHostState }
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -121,7 +123,7 @@ object LibraryTab : Tab {
                     onDeleteClicked = screenModel::showDeleteMangaDialog,
                 )
             },
-            snackbarHost = { SnackbarHost(hostState = screenModel.snackbarHostState) },
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { contentPadding ->
             when {
                 state.isLoading -> LoadingScreen(modifier = Modifier.padding(contentPadding))
@@ -252,17 +254,17 @@ object LibraryTab : Tab {
                 when (snackbar) {
                     is LibraryScreenModel.Snackbar.OpenRandomLibraryItemError -> {
                         val textRes = if (state.selectionMode) R.string.not_allowed else R.string.error_random_manga
-                        screenModel.snackbarHostState.showSnackbar(message = context.getString(textRes), withDismissAction = true)
+                        snackbarHostState.showSnackbar(message = context.getString(textRes), withDismissAction = true)
                     }
                     LibraryScreenModel.Snackbar.NoNextChapterFound -> {
-                        screenModel.snackbarHostState.showSnackbar(message = context.getString(R.string.no_next_chapter), withDismissAction = true)
+                        snackbarHostState.showSnackbar(message = context.getString(R.string.no_next_chapter), withDismissAction = true)
                     }
                     is LibraryScreenModel.Snackbar.LibraryUpdateTriggered -> {
                         val msgRes = when (snackbar.started) {
                             true -> if (snackbar.category != null) R.string.updating_category else R.string.updating_library
                             false -> R.string.update_already_running
                         }
-                        val result = screenModel.snackbarHostState.showSnackbar(
+                        val result = snackbarHostState.showSnackbar(
                             message = context.getString(msgRes),
                             actionLabel = context.getString(R.string.action_cancel).takeIf { snackbar.started },
                             duration = SnackbarDuration.Short,

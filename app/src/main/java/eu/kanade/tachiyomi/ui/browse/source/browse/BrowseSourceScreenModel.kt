@@ -413,6 +413,8 @@ class BrowseSourceScreenModel(
     }
 
     sealed class Snackbar {
+
+        data class Error(val error: String) : Snackbar()
         data class ToggleFavorite(val manga: Manga) : Snackbar()
         data class PickCategory(
             val manga: Manga,

@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -99,6 +100,7 @@ data class BrowseSourceScreen(
         val haptic = LocalHapticFeedback.current
         val uriHandler = LocalUriHandler.current
         val context = LocalContext.current
+        val snackbarHostState = remember { screenModel.snackbarHostState }
 
         val onHelpClick = { uriHandler.openUri(LocalSource.HELP_URL) }
         val onWebViewClick = f@{
@@ -111,6 +113,9 @@ data class BrowseSourceScreen(
                 ),
             )
         }
+
+        val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
+        val mangaList = pagingFlow.collectAsLazyPagingItems()
 
         LaunchedEffect(screenModel.source) {
             assistUrl = (screenModel.source as? HttpSource)?.baseUrl
@@ -198,16 +203,14 @@ data class BrowseSourceScreen(
                     Divider()
                 }
             },
-            snackbarHost = { SnackbarHost(hostState = screenModel.snackbarHostState) },
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->
-            val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
-
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = pagingFlow.collectAsLazyPagingItems(),
+                mangaList = mangaList,
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 displayMode = screenModel.displayMode,
-                snackbarHostState = screenModel.snackbarHostState,
+                errorSnackbar = { screenModel.setSnackbar(BrowseSourceScreenModel.Snackbar.Error(it)) },
                 contentPadding = paddingValues,
                 onWebViewClick = onWebViewClick,
                 onHelpClick = { uriHandler.openUri(Constants.URL_HELP) },
@@ -304,8 +307,16 @@ data class BrowseSourceScreen(
             }
             launch {
                 screenModel.snackbar.collectLatest { snackbar ->
-                    val snackbarHostState = screenModel.snackbarHostState
                     when (snackbar) {
+                        is BrowseSourceScreenModel.Snackbar.Error -> {
+                            val result = snackbarHostState.showSnackbar(
+                                message = snackbar.error,
+                                actionLabel = context.getString(R.string.action_webview_refresh),
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                mangaList.refresh()
+                            }
+                        }
                         is BrowseSourceScreenModel.Snackbar.OnFavoriteDefaultSet -> {
                             val result = snackbarHostState.showSnackbar(
                                 message = context.getString(R.string.default_category_favorite),

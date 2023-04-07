@@ -1,11 +1,15 @@
 package eu.kanade.tachiyomi.ui.browse.migration.search
 
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -14,11 +18,13 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.BrowseSourceContent
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.util.Screen
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreenModel
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import tachiyomi.core.Constants
 import tachiyomi.domain.manga.model.Manga
@@ -33,12 +39,17 @@ data class SourceSearchScreen(
 
     @Composable
     override fun Content() {
+        val context = LocalContext.current
         val uriHandler = LocalUriHandler.current
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
 
         val screenModel = rememberScreenModel { BrowseSourceScreenModel(sourceId, query) }
         val state by screenModel.state.collectAsState()
+        val snackbarHostState = remember { screenModel.snackbarHostState }
+
+        val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
+        val mangaList = pagingFlow.collectAsLazyPagingItems()
 
         Scaffold(
             topBar = { scrollBehavior ->
@@ -50,15 +61,14 @@ data class SourceSearchScreen(
                     scrollBehavior = scrollBehavior,
                 )
             },
-            snackbarHost = { SnackbarHost(hostState = screenModel.snackbarHostState) },
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         ) { paddingValues ->
-            val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
             BrowseSourceContent(
                 source = screenModel.source,
-                mangaList = pagingFlow.collectAsLazyPagingItems(),
+                mangaList = mangaList,
                 columns = screenModel.getColumnsPreference(LocalConfiguration.current.orientation),
                 displayMode = screenModel.displayMode,
-                snackbarHostState = screenModel.snackbarHostState,
+                errorSnackbar = { screenModel.setSnackbar(BrowseSourceScreenModel.Snackbar.Error(it)) },
                 contentPadding = paddingValues,
                 onWebViewClick = {
                     val source = screenModel.source as? HttpSource ?: return@BrowseSourceContent
@@ -95,6 +105,25 @@ data class SourceSearchScreen(
                 )
             }
             else -> {}
+        }
+
+        LaunchedEffect(Unit) {
+            launch {
+                screenModel.snackbar.collectLatest { snackbar ->
+                    when (snackbar) {
+                        is BrowseSourceScreenModel.Snackbar.Error -> {
+                            val result = snackbarHostState.showSnackbar(
+                                message = snackbar.error,
+                                actionLabel = context.getString(R.string.action_webview_refresh),
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                mangaList.refresh()
+                            }
+                        }
+                        else -> {}
+                    }
+                }
+            }
         }
     }
 }

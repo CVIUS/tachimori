@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -56,10 +57,11 @@ object HistoryTab : Tab {
         val context = LocalContext.current
         val screenModel = rememberScreenModel { HistoryScreenModel() }
         val state by screenModel.state.collectAsState()
+        val snackbarHostState = remember { screenModel.snackbarHostState }
 
         HistoryScreen(
             state = state,
-            snackbarHostState = screenModel.snackbarHostState,
+            snackbarHostState = snackbarHostState,
             onSearchQueryChange = screenModel::updateSearchQuery,
             onClickCover = { mangaId -> navigator.push(MangaScreen(mangaId)) },
             onClickResume = screenModel::getNextChapterForManga,
@@ -100,9 +102,9 @@ object HistoryTab : Tab {
             screenModel.events.collectLatest { e ->
                 when (e) {
                     HistoryScreenModel.Event.InternalError ->
-                        screenModel.snackbarHostState.showSnackbar(context.getString(R.string.internal_error))
+                        snackbarHostState.showSnackbar(context.getString(R.string.internal_error))
                     HistoryScreenModel.Event.HistoryCleared ->
-                        screenModel.snackbarHostState.showSnackbar(context.getString(R.string.clear_history_completed))
+                        snackbarHostState.showSnackbar(context.getString(R.string.clear_history_completed))
                     is HistoryScreenModel.Event.OpenChapter -> openChapter(context, e.chapter)
                 }
             }

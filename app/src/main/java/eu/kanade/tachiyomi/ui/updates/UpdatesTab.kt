@@ -10,6 +10,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -54,10 +55,11 @@ object UpdatesTab : Tab {
         val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { UpdatesScreenModel() }
         val state by screenModel.state.collectAsState()
+        val snackbarHostState = remember { screenModel.snackbarHostState }
 
         UpdateScreen(
             state = state,
-            snackbarHostState = screenModel.snackbarHostState,
+            snackbarHostState = snackbarHostState,
             lastUpdated = screenModel.lastUpdated,
             relativeTime = screenModel.relativeTime,
             onClickCover = { item -> navigator.push(MangaScreen(item.update.mangaId)) },
@@ -89,10 +91,10 @@ object UpdatesTab : Tab {
         LaunchedEffect(Unit) {
             screenModel.snackbar.collectLatest { snackbar ->
                 when (snackbar) {
-                    Snackbar.InternalError -> screenModel.snackbarHostState.showSnackbar(context.getString(R.string.internal_error))
+                    Snackbar.InternalError -> snackbarHostState.showSnackbar(context.getString(R.string.internal_error))
                     is Snackbar.LibraryUpdateTriggered -> {
                         val msgRes = if (snackbar.started) R.string.updating_library else R.string.update_already_running
-                        val result = screenModel.snackbarHostState.showSnackbar(
+                        val result = snackbarHostState.showSnackbar(
                             message = context.getString(msgRes),
                             actionLabel = context.getString(R.string.action_cancel).takeIf { snackbar.started },
                             duration = SnackbarDuration.Short,

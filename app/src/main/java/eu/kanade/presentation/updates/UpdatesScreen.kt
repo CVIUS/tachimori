@@ -98,9 +98,9 @@ fun UpdateScreen(
                         val started = onUpdateLibrary()
                         if (!started) return@PullRefresh
                         scope.launch {
-                            // Fake refresh status but hide it after 2 seconds as it's a long running task
+                            // Fake refresh status but hide it after a second as it's a long running task
                             isRefreshing = true
-                            delay(2.seconds)
+                            delay(1.seconds)
                             isRefreshing = false
                         }
                     },

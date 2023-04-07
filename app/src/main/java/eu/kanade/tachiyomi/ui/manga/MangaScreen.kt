@@ -77,6 +77,7 @@ class MangaScreen(
         val haptic = LocalHapticFeedback.current
         val scope = rememberCoroutineScope()
         val screenModel = rememberScreenModel { MangaInfoScreenModel(context, mangaId, fromSource) }
+        val snackbarHostState = remember { screenModel.snackbarHostState }
 
         val state by screenModel.state.collectAsState()
 
@@ -138,7 +139,6 @@ class MangaScreen(
         LaunchedEffect(Unit) {
             launch {
                 screenModel.snackbar.collectLatest { snackbar ->
-                    val snackbarHostState = screenModel.snackbarHostState
                     when (snackbar) {
                         MangaInfoScreenModel.Snackbar.DeleteDownloadedChapters -> {
                             val result = snackbarHostState.showSnackbar(
@@ -281,6 +281,7 @@ class MangaScreen(
             }
             MangaInfoScreenModel.Dialog.FullCover -> {
                 val sm = rememberScreenModel { MangaCoverScreenModel(successState.manga.id) }
+                val sb = remember { sm.snackbarHostState }
                 val manga by sm.state.collectAsState()
                 if (manga != null) {
                     val getContent = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
@@ -289,7 +290,7 @@ class MangaScreen(
                     }
                     MangaCoverDialog(
                         coverDataProvider = { manga!! },
-                        snackbarHostState = sm.snackbarHostState,
+                        snackbarHostState = sb,
                         isCustomCover = remember(manga) { manga!!.hasCustomCover() },
                         onShareClick = { sm.shareCover(context) },
                         onSaveClick = { sm.saveCover(context) },
@@ -306,19 +307,19 @@ class MangaScreen(
                             sm.snackbar.collectLatest { snackbar ->
                                 when (snackbar) {
                                     MangaCoverScreenModel.Snackbar.CoverSaved -> {
-                                        sm.snackbarHostState.showSnackbar(message = context.getString(R.string.cover_saved), withDismissAction = true)
+                                        sb.showSnackbar(message = context.getString(R.string.cover_saved), withDismissAction = true)
                                     }
                                     MangaCoverScreenModel.Snackbar.CoverSaveError -> {
-                                        sm.snackbarHostState.showSnackbar(message = context.getString(R.string.error_saving_cover), duration = SnackbarDuration.Indefinite)
+                                        sb.showSnackbar(message = context.getString(R.string.error_saving_cover), duration = SnackbarDuration.Indefinite)
                                     }
                                     MangaCoverScreenModel.Snackbar.CoverUpdated -> {
-                                        sm.snackbarHostState.showSnackbar(message = context.getString(R.string.cover_updated), withDismissAction = true)
+                                        sb.showSnackbar(message = context.getString(R.string.cover_updated), withDismissAction = true)
                                     }
                                     MangaCoverScreenModel.Snackbar.CoverUpdateFailed -> {
-                                        sm.snackbarHostState.showSnackbar(message = context.getString(R.string.notification_cover_update_failed), duration = SnackbarDuration.Indefinite)
+                                        sb.showSnackbar(message = context.getString(R.string.notification_cover_update_failed), duration = SnackbarDuration.Indefinite)
                                     }
                                     MangaCoverScreenModel.Snackbar.CoverShareError -> {
-                                        sm.snackbarHostState.showSnackbar(message = context.getString(R.string.error_sharing_cover), duration = SnackbarDuration.Indefinite)
+                                        sb.showSnackbar(message = context.getString(R.string.error_sharing_cover), duration = SnackbarDuration.Indefinite)
                                     }
                                 }
                             }
