@@ -61,9 +61,10 @@ object HistoryTab : Tab {
             state = state,
             snackbarHostState = screenModel.snackbarHostState,
             onSearchQueryChange = screenModel::updateSearchQuery,
-            onClickCover = { navigator.push(MangaScreen(it)) },
+            onClickCover = { mangaId -> navigator.push(MangaScreen(mangaId)) },
             onClickResume = screenModel::getNextChapterForManga,
-            onDialogChange = screenModel::setDialog,
+            onClickDelete = screenModel::showDeleteDialog,
+            onClickDeleteAll = screenModel::removeAllHistory,
         )
 
         val onDismissRequest = { screenModel.setDialog(null) }
@@ -73,9 +74,9 @@ object HistoryTab : Tab {
                     onDismissRequest = onDismissRequest,
                     onDelete = { all ->
                         if (all) {
-                            screenModel.removeAllFromHistory(dialog.history.mangaId)
+                            screenModel.removeAllFromHistory(dialog.mangaId)
                         } else {
-                            screenModel.removeFromHistory(dialog.history.id)
+                            screenModel.removeFromHistory(dialog.historyId)
                         }
                     },
                 )

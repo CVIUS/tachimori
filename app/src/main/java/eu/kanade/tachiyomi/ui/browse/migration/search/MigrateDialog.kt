@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -162,7 +163,7 @@ internal fun MigrateDialog(
                 }
             },
             confirmButton = {
-                Row {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (!isMangaScreen) {
                         TextButton(
                             onClick = {

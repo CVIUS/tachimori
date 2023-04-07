@@ -86,22 +86,23 @@ object SettingsTrackingScreen : SearchableSettings {
         val trackManager = remember { Injekt.get<TrackManager>() }
         val sourceManager = remember { Injekt.get<SourceManager>() }
 
-        var dialog by rememberSaveable { mutableStateOf<Any?>(null) }
-        dialog?.run {
-            when (this) {
-                is LoginDialog -> {
+        var dialog by remember { mutableStateOf<TrackingDialog?>(null) }
+        if (dialog != null) {
+            when (val dialogKey = dialog) {
+                is TrackingDialog.LoginDialog -> {
                     TrackingLoginDialog(
-                        service = service,
-                        uNameStringRes = uNameStringRes,
+                        service = dialogKey.service,
+                        uNameStringRes = dialogKey.uNameStringRes,
                         onDismissRequest = { dialog = null },
                     )
                 }
-                is LogoutDialog -> {
+                is TrackingDialog.LogoutDialog -> {
                     TrackingLogoutDialog(
-                        service = service,
+                        service = dialogKey.service,
                         onDismissRequest = { dialog = null },
                     )
                 }
+                else -> dialog = null // Unknown
             }
         }
 
@@ -134,37 +135,37 @@ object SettingsTrackingScreen : SearchableSettings {
                         title = stringResource(trackManager.myAnimeList.nameRes()),
                         service = trackManager.myAnimeList,
                         login = { context.openInBrowser(MyAnimeListApi.authUrl(), forceDefaultBrowser = true) },
-                        logout = { dialog = LogoutDialog(trackManager.myAnimeList) },
+                        logout = { dialog = TrackingDialog.LogoutDialog(trackManager.myAnimeList) },
                     ),
                     Preference.PreferenceItem.TrackingPreference(
                         title = stringResource(trackManager.aniList.nameRes()),
                         service = trackManager.aniList,
                         login = { context.openInBrowser(AnilistApi.authUrl(), forceDefaultBrowser = true) },
-                        logout = { dialog = LogoutDialog(trackManager.aniList) },
+                        logout = { dialog = TrackingDialog.LogoutDialog(trackManager.aniList) },
                     ),
                     Preference.PreferenceItem.TrackingPreference(
                         title = stringResource(trackManager.kitsu.nameRes()),
                         service = trackManager.kitsu,
-                        login = { dialog = LoginDialog(trackManager.kitsu, R.string.email) },
-                        logout = { dialog = LogoutDialog(trackManager.kitsu) },
+                        login = { dialog = TrackingDialog.LoginDialog(trackManager.kitsu, R.string.email) },
+                        logout = { dialog = TrackingDialog.LogoutDialog(trackManager.kitsu) },
                     ),
                     Preference.PreferenceItem.TrackingPreference(
                         title = stringResource(trackManager.mangaUpdates.nameRes()),
                         service = trackManager.mangaUpdates,
-                        login = { dialog = LoginDialog(trackManager.mangaUpdates, R.string.username) },
-                        logout = { dialog = LogoutDialog(trackManager.mangaUpdates) },
+                        login = { dialog = TrackingDialog.LoginDialog(trackManager.mangaUpdates, R.string.username) },
+                        logout = { dialog = TrackingDialog.LogoutDialog(trackManager.mangaUpdates) },
                     ),
                     Preference.PreferenceItem.TrackingPreference(
                         title = stringResource(trackManager.shikimori.nameRes()),
                         service = trackManager.shikimori,
                         login = { context.openInBrowser(ShikimoriApi.authUrl(), forceDefaultBrowser = true) },
-                        logout = { dialog = LogoutDialog(trackManager.shikimori) },
+                        logout = { dialog = TrackingDialog.LogoutDialog(trackManager.shikimori) },
                     ),
                     Preference.PreferenceItem.TrackingPreference(
                         title = stringResource(trackManager.bangumi.nameRes()),
                         service = trackManager.bangumi,
                         login = { context.openInBrowser(BangumiApi.authUrl(), forceDefaultBrowser = true) },
-                        logout = { dialog = LogoutDialog(trackManager.bangumi) },
+                        logout = { dialog = TrackingDialog.LogoutDialog(trackManager.bangumi) },
                     ),
                     Preference.PreferenceItem.InfoPreference(stringResource(R.string.tracking_info)),
                 ),
@@ -344,11 +345,13 @@ object SettingsTrackingScreen : SearchableSettings {
     }
 }
 
-private data class LoginDialog(
-    val service: TrackService,
-    @StringRes val uNameStringRes: Int,
-)
+sealed class TrackingDialog {
+    data class LoginDialog(
+        val service: TrackService,
+        @StringRes val uNameStringRes: Int,
+    ) : TrackingDialog()
 
-private data class LogoutDialog(
-    val service: TrackService,
-)
+    data class LogoutDialog(
+        val service: TrackService,
+    ) : TrackingDialog()
+}

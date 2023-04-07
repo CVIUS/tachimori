@@ -382,10 +382,6 @@ class BrowseSourceScreenModel(
         }
     }
 
-    fun openFilterSheet() {
-        setDialog(Dialog.Filter)
-    }
-
     fun setSnackbar(snackbar: Snackbar) {
         coroutineScope.launch {
             _snackbar.send(snackbar)

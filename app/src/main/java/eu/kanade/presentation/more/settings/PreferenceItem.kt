@@ -138,6 +138,9 @@ internal fun PreferenceItem(
                         if (accepted) item.pref.set(it)
                         accepted
                     },
+                    hasAdditionalButton = item.hasAdditionalButton,
+                    onClickAdditional = item.onClickAdditional,
+                    onClickAdditionalString = item.onClickAdditionalString,
                 )
             }
             is Preference.PreferenceItem.AppThemePreference -> {

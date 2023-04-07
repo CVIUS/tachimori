@@ -75,11 +75,11 @@ object UpdatesTab : Tab {
             },
         )
 
-        val onDismissDialog = { screenModel.setDialog(null) }
+        val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
             is UpdatesScreenModel.Dialog.DeleteConfirmation -> {
                 UpdatesDeleteConfirmationDialog(
-                    onDismissRequest = onDismissDialog,
+                    onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.deleteChapters(dialog.toDelete) },
                 )
             }

@@ -200,6 +200,14 @@ class ExtensionsScreenModel(
         }
     }
 
+    fun showExtensionTrustDialog(extension: Extension) {
+        setDialog(ExtensionUiModel.Dialog.Untrusted(extension))
+    }
+
+    fun setDialog(dialog: ExtensionUiModel.Dialog?) {
+        mutableState.update { it.copy(dialog = dialog) }
+    }
+
     fun trustSignature(signatureHash: String) {
         extensionManager.trustSignature(signatureHash)
     }
@@ -211,6 +219,7 @@ data class ExtensionsState(
     val items: ItemGroups = mutableMapOf(),
     val updates: Int = 0,
     val searchQuery: String? = null,
+    val dialog: ExtensionUiModel.Dialog? = null,
 ) {
     val isEmpty = items.isEmpty()
 }
@@ -221,6 +230,10 @@ object ExtensionUiModel {
     sealed interface Header {
         data class Resource(@StringRes val textRes: Int) : Header
         data class Text(val text: String) : Header
+    }
+
+    sealed class Dialog {
+        data class Untrusted(val extension: Extension) : Dialog()
     }
 
     data class Item(

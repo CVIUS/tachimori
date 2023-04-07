@@ -14,7 +14,6 @@ import eu.kanade.presentation.components.AppBarTitle
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.presentation.history.components.HistoryContent
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.ui.history.HistoryScreenModel
 import eu.kanade.tachiyomi.ui.history.HistoryState
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -29,7 +28,8 @@ fun HistoryScreen(
     onSearchQueryChange: (String?) -> Unit,
     onClickCover: (mangaId: Long) -> Unit,
     onClickResume: (mangaId: Long, chapterId: Long) -> Unit,
-    onDialogChange: (HistoryScreenModel.Dialog?) -> Unit,
+    onClickDelete: (historyId: Long, mangaId: Long) -> Unit,
+    onClickDeleteAll: () -> Unit,
 ) {
     Scaffold(
         topBar = { scrollBehavior ->
@@ -38,7 +38,7 @@ fun HistoryScreen(
                 searchQuery = state.searchQuery,
                 onChangeSearchQuery = onSearchQueryChange,
                 actions = {
-                    IconButton(onClick = { onDialogChange(HistoryScreenModel.Dialog.DeleteAll) }) {
+                    IconButton(onClick = onClickDeleteAll) {
                         Icon(
                             Icons.Outlined.DeleteSweep,
                             contentDescription = stringResource(R.string.pref_clear_history),
@@ -69,7 +69,7 @@ fun HistoryScreen(
                     contentPadding = contentPadding,
                     onClickCover = { history -> onClickCover(history.mangaId) },
                     onClickResume = { history -> onClickResume(history.mangaId, history.chapterId) },
-                    onClickDelete = { item -> onDialogChange(HistoryScreenModel.Dialog.Delete(item)) },
+                    onClickDelete = { history -> onClickDelete(history.id, history.mangaId) },
                 )
             }
         }

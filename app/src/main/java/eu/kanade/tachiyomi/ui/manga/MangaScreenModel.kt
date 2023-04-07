@@ -260,12 +260,7 @@ class MangaInfoScreenModel(
                     val duplicate = getDuplicateLibraryManga.await(manga.title)
 
                     if (duplicate != null) {
-                        mutableState.update { state ->
-                            when (state) {
-                                MangaScreenState.Loading -> state
-                                is MangaScreenState.Success -> state.copy(dialog = Dialog.DuplicateManga(manga, duplicate))
-                            }
-                        }
+                        setDialog(Dialog.DuplicateManga(manga, duplicate))
                         return@launchIO
                     }
                 }
@@ -336,17 +331,12 @@ class MangaInfoScreenModel(
         coroutineScope.launch {
             val categories = getCategories()
             val selection = getMangaCategoryIds(manga)
-            mutableState.update { state ->
-                when (state) {
-                    MangaScreenState.Loading -> state
-                    is MangaScreenState.Success -> state.copy(
-                        dialog = Dialog.ChangeCategory(
-                            manga = manga,
-                            initialSelection = categories.mapAsCheckboxState { it.id in selection },
-                        ),
-                    )
-                }
-            }
+            setDialog(
+                Dialog.ChangeCategory(
+                    manga = manga,
+                    initialSelection = categories.mapAsCheckboxState { it.id in selection },
+                ),
+            )
         }
     }
 
@@ -930,64 +920,33 @@ class MangaInfoScreenModel(
         ) : Snackbar()
     }
 
-    fun dismissDialog() {
+    fun setDialog(dialog: Dialog?) {
         mutableState.update { state ->
             when (state) {
                 MangaScreenState.Loading -> state
-                is MangaScreenState.Success -> state.copy(dialog = null)
+                is MangaScreenState.Success -> state.copy(dialog = dialog)
             }
         }
     }
 
     fun showDeleteChapterDialog(chapters: List<Chapter>) {
-        mutableState.update { state ->
-            when (state) {
-                MangaScreenState.Loading -> state
-                is MangaScreenState.Success -> state.copy(dialog = Dialog.DeleteChapters(chapters))
-            }
-        }
+        setDialog(Dialog.DeleteChapters(chapters))
     }
 
     fun showSettingsDialog() {
-        mutableState.update { state ->
-            when (state) {
-                MangaScreenState.Loading -> state
-                is MangaScreenState.Success -> state.copy(dialog = Dialog.SettingsSheet)
-            }
-        }
+        setDialog(Dialog.SettingsSheet)
     }
 
     fun showTrackDialog() {
-        mutableState.update { state ->
-            when (state) {
-                MangaScreenState.Loading -> state
-                is MangaScreenState.Success -> {
-                    state.copy(dialog = Dialog.TrackSheet)
-                }
-            }
-        }
+        setDialog(Dialog.TrackSheet)
     }
 
     fun showCoverDialog() {
-        mutableState.update { state ->
-            when (state) {
-                MangaScreenState.Loading -> state
-                is MangaScreenState.Success -> {
-                    state.copy(dialog = Dialog.FullCover)
-                }
-            }
-        }
+        setDialog(Dialog.FullCover)
     }
 
     fun showMigrateDialog(oldManga: Manga, newManga: Manga) {
-        mutableState.update { state ->
-            when (state) {
-                MangaScreenState.Loading -> state
-                is MangaScreenState.Success -> {
-                    state.copy(dialog = Dialog.MigrateManga(oldManga, newManga))
-                }
-            }
-        }
+        setDialog(Dialog.MigrateManga(oldManga, newManga))
     }
 }
 

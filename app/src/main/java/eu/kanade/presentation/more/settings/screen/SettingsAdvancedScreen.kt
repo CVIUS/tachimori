@@ -280,14 +280,13 @@ object SettingsAdvancedScreen : SearchableSettings {
                         }
                         true
                     },
-                ),
-                Preference.PreferenceItem.TextPreference(
-                    title = stringResource(R.string.pref_reset_user_agent_string),
-                    enabled = remember(userAgent) { userAgent != userAgentPref.defaultValue() },
-                    onClick = {
+                    hasAdditionalButton = remember(userAgent) { userAgent != userAgentPref.defaultValue() },
+                    onClickAdditional = {
                         userAgentPref.delete()
                         context.toast(R.string.requires_app_restart)
+                        true
                     },
+                    onClickAdditionalString = stringResource(R.string.action_reset),
                 ),
             ),
         )

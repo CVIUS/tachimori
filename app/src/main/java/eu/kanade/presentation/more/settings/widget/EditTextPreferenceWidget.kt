@@ -1,5 +1,8 @@
 package eu.kanade.presentation.more.settings.widget
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
@@ -20,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.launch
@@ -31,6 +35,9 @@ fun EditTextPreferenceWidget(
     icon: ImageVector?,
     value: String,
     onConfirm: suspend (String) -> Boolean,
+    hasAdditionalButton: Boolean,
+    onClickAdditional: suspend () -> Boolean,
+    onClickAdditionalString: String,
 ) {
     var isDialogShown by rememberSaveable { mutableStateOf(false) }
 
@@ -72,22 +79,36 @@ fun EditTextPreferenceWidget(
                 usePlatformDefaultWidth = true,
             ),
             confirmButton = {
-                TextButton(
-                    enabled = textFieldValue.text != value && textFieldValue.text.isNotBlank(),
-                    onClick = {
-                        scope.launch {
-                            if (onConfirm(textFieldValue.text)) {
-                                onDismissRequest()
-                            }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (hasAdditionalButton) {
+                        TextButton(
+                            onClick = {
+                                scope.launch {
+                                    if (onClickAdditional()) {
+                                        onDismissRequest()
+                                    }
+                                }
+                            },
+                        ) {
+                            Text(text = onClickAdditionalString)
                         }
-                    },
-                ) {
-                    Text(text = stringResource(android.R.string.ok))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(R.string.action_cancel))
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    TextButton(onClick = onDismissRequest) {
+                        Text(text = stringResource(R.string.action_cancel))
+                    }
+                    TextButton(
+                        enabled = textFieldValue.text != value && textFieldValue.text.isNotBlank(),
+                        onClick = {
+                            scope.launch {
+                                if (onConfirm(textFieldValue.text)) {
+                                    onDismissRequest()
+                                }
+                            }
+                        },
+                    ) {
+                        Text(text = stringResource(android.R.string.ok))
+                    }
                 }
             },
         )

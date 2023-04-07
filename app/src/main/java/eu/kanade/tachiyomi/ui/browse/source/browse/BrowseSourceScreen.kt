@@ -179,7 +179,7 @@ data class BrowseSourceScreen(
                         if (state.filters.isNotEmpty()) {
                             FilterChip(
                                 selected = state.listing is Listing.Search,
-                                onClick = screenModel::openFilterSheet,
+                                onClick = { screenModel.setDialog(BrowseSourceScreenModel.Dialog.Filter) },
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Outlined.FilterList,

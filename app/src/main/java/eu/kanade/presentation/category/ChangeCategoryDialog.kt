@@ -1,6 +1,7 @@
 package eu.kanade.presentation.category
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -68,7 +69,7 @@ fun ChangeCategoryDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            Row {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(
                     onClick = {
                         onDismissRequest()

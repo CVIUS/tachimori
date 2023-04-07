@@ -9,6 +9,7 @@ import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.ExtensionScreen
+import eu.kanade.presentation.browse.ExtensionTrustDialog
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.TabContent
 import eu.kanade.tachiyomi.R
@@ -48,11 +49,22 @@ fun extensionsTab(
                 onClickUpdateAll = extensionsScreenModel::updateAllExtensions,
                 onInstallExtension = extensionsScreenModel::installExtension,
                 onOpenExtension = { navigator.push(ExtensionDetailsScreen(it.pkgName)) },
-                onTrustExtension = { extensionsScreenModel.trustSignature(it.signatureHash) },
-                onUninstallExtension = { extensionsScreenModel.uninstallExtension(it.pkgName) },
+                onTrustExtension = extensionsScreenModel::showExtensionTrustDialog,
                 onUpdateExtension = extensionsScreenModel::updateExtension,
                 onRefresh = extensionsScreenModel::findAvailableExtensions,
             )
+
+            when (val dialog = state.dialog) {
+                is ExtensionUiModel.Dialog.Untrusted -> {
+                    val extension = dialog.extension as Extension.Untrusted
+                    ExtensionTrustDialog(
+                        onClickConfirm = { extensionsScreenModel.trustSignature(extension.signatureHash) },
+                        onClickDismiss = { extensionsScreenModel.uninstallExtension(extension.pkgName) },
+                        onDismissRequest = { extensionsScreenModel.setDialog(null) },
+                    )
+                }
+                else -> {}
+            }
         },
     )
 }

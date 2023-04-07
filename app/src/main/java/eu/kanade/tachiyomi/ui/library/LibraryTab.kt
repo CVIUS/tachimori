@@ -114,12 +114,12 @@ object LibraryTab : Tab {
             bottomBar = {
                 LibraryBottomActionMenu(
                     visible = state.selectionMode,
-                    onChangeCategoryClicked = screenModel::openChangeCategoryDialog,
+                    onChangeCategoryClicked = screenModel::showChangeCategoryDialog,
                     onMarkAsReadClicked = { screenModel.markReadSelection(true) },
                     onMarkAsUnreadClicked = { screenModel.markReadSelection(false) },
                     onDownloadClicked = screenModel::runDownloadActionSelection
                         .takeIf { state.selection.fastAll { !it.manga.isLocal() } },
-                    onDeleteClicked = screenModel::openDeleteMangaDialog,
+                    onDeleteClicked = screenModel::showDeleteMangaDialog,
                 )
             },
             snackbarHost = { SnackbarHost(hostState = screenModel.snackbarHostState) },
@@ -197,7 +197,7 @@ object LibraryTab : Tab {
             }
         }
 
-        val onDismissRequest = screenModel::closeDialog
+        val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
             is LibraryScreenModel.Dialog.SettingsSheet -> LibrarySettingsDialog(
                 onDismissRequest = onDismissRequest,

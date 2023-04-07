@@ -111,13 +111,17 @@ class HistoryScreenModel(
         mutableState.update { it.copy(searchQuery = query) }
     }
 
+    fun showDeleteDialog(historyId: Long, mangaId: Long) {
+        setDialog(Dialog.Delete(historyId, mangaId))
+    }
+
     fun setDialog(dialog: Dialog?) {
         mutableState.update { it.copy(dialog = dialog) }
     }
 
     sealed class Dialog {
         object DeleteAll : Dialog()
-        data class Delete(val history: HistoryWithRelations) : Dialog()
+        data class Delete(val historyId: Long, val mangaId: Long) : Dialog()
     }
 
     sealed class Event {

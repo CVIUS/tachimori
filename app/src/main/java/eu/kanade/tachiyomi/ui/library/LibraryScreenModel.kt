@@ -550,11 +550,11 @@ class LibraryScreenModel(
     }
 
     fun showSettingsDialog() {
-        mutableState.update { it.copy(dialog = Dialog.SettingsSheet) }
+        setDialog(Dialog.SettingsSheet)
     }
 
     fun showSortDialog() {
-        mutableState.update { it.copy(dialog = Dialog.SortSheet) }
+        setDialog(Dialog.SortSheet)
     }
 
     fun errorOpenRandomManga() {
@@ -666,7 +666,7 @@ class LibraryScreenModel(
         mutableState.update { it.copy(searchQuery = query) }
     }
 
-    fun openChangeCategoryDialog() {
+    fun showChangeCategoryDialog() {
         coroutineScope.launchIO {
             // Create a copy of selected manga
             val mangaList = state.value.selection.map { it.manga }
@@ -685,17 +685,17 @@ class LibraryScreenModel(
                     else -> CheckboxState.State.None(it)
                 }
             }
-            mutableState.update { it.copy(dialog = Dialog.ChangeCategory(mangaList, preselected)) }
+            setDialog(Dialog.ChangeCategory(mangaList, preselected))
         }
     }
 
-    fun openDeleteMangaDialog() {
+    fun showDeleteMangaDialog() {
         val mangaList = state.value.selection.map { it.manga }
-        mutableState.update { it.copy(dialog = Dialog.DeleteManga(mangaList)) }
+        setDialog(Dialog.DeleteManga(mangaList))
     }
 
-    fun closeDialog() {
-        mutableState.update { it.copy(dialog = null) }
+    fun setDialog(dialog: Dialog?) {
+        mutableState.update { it.copy(dialog = dialog) }
     }
 
     fun setSort(category: Category, mode: LibrarySort.Type, direction: LibrarySort.Direction) {

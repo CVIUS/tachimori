@@ -228,19 +228,19 @@ object SettingsBackupScreen : SearchableSettings {
     @Composable
     private fun getRestoreBackupPref(): Preference.PreferenceItem.TextPreference {
         val context = LocalContext.current
-        var error by rememberSaveable { mutableStateOf<Any?>(null) }
-        if (error != null) {
-            val onDismissRequest = { error = null }
-            when (val err = error) {
-                is InvalidRestore -> {
+        var errorDialog by remember { mutableStateOf<BackupDialog?>(null) }
+        if (errorDialog != null) {
+            val onDismissRequest = { errorDialog = null }
+            when (val errorDialogKey = errorDialog) {
+                is BackupDialog.InvalidRestore -> {
                     AlertDialog(
                         onDismissRequest = onDismissRequest,
                         title = { Text(text = stringResource(R.string.invalid_backup_file)) },
-                        text = { Text(text = "${err.uri}\n\n${err.message}") },
+                        text = { Text(text = "${errorDialogKey.uri}\n\n${errorDialogKey.message}") },
                         dismissButton = {
                             TextButton(
                                 onClick = {
-                                    context.copyToClipboard(err.message, err.message)
+                                    context.copyToClipboard(errorDialogKey.message, errorDialogKey.message)
                                     onDismissRequest()
                                 },
                             ) {
@@ -254,20 +254,20 @@ object SettingsBackupScreen : SearchableSettings {
                         },
                     )
                 }
-                is MissingRestoreComponents -> {
+                is BackupDialog.MissingRestoreComponents -> {
                     AlertDialog(
                         onDismissRequest = onDismissRequest,
                         title = { Text(text = stringResource(R.string.pref_restore_backup)) },
                         text = {
                             val msg = buildString {
                                 append(stringResource(R.string.backup_restore_content_full))
-                                if (err.sources.isNotEmpty()) {
+                                if (errorDialogKey.sources.isNotEmpty()) {
                                     append("\n\n").append(stringResource(R.string.backup_restore_missing_sources))
-                                    err.sources.joinTo(this, separator = "\n- ", prefix = "\n- ")
+                                    errorDialogKey.sources.joinTo(this, separator = "\n- ", prefix = "\n- ")
                                 }
-                                if (err.trackers.isNotEmpty()) {
+                                if (errorDialogKey.trackers.isNotEmpty()) {
                                     append("\n\n").append(stringResource(R.string.backup_restore_missing_trackers))
-                                    err.trackers.joinTo(this, separator = "\n- ", prefix = "\n- ")
+                                    errorDialogKey.trackers.joinTo(this, separator = "\n- ", prefix = "\n- ")
                                 }
                             }
                             Text(text = msg)
@@ -275,7 +275,7 @@ object SettingsBackupScreen : SearchableSettings {
                         confirmButton = {
                             TextButton(
                                 onClick = {
-                                    BackupRestoreService.start(context, err.uri)
+                                    BackupRestoreService.start(context, errorDialogKey.uri)
                                     onDismissRequest()
                                 },
                             ) {
@@ -284,7 +284,7 @@ object SettingsBackupScreen : SearchableSettings {
                         },
                     )
                 }
-                else -> error = null // Unknown
+                else -> errorDialog = null // Unknown
             }
         }
 
@@ -300,7 +300,7 @@ object SettingsBackupScreen : SearchableSettings {
                 val results = try {
                     BackupFileValidator().validate(context, it)
                 } catch (e: Exception) {
-                    error = InvalidRestore(it, e.message.toString())
+                    errorDialog = BackupDialog.InvalidRestore(it, e.message.toString())
                     return@rememberLauncherForActivityResult
                 }
 
@@ -309,7 +309,7 @@ object SettingsBackupScreen : SearchableSettings {
                     return@rememberLauncherForActivityResult
                 }
 
-                error = MissingRestoreComponents(it, results.missingSources, results.missingTrackers)
+                errorDialog = BackupDialog.MissingRestoreComponents(it, results.missingSources, results.missingTrackers)
             }
         }
 
@@ -400,13 +400,15 @@ object SettingsBackupScreen : SearchableSettings {
     }
 }
 
-private data class MissingRestoreComponents(
-    val uri: Uri,
-    val sources: List<String>,
-    val trackers: List<String>,
-)
+sealed class BackupDialog {
+    data class MissingRestoreComponents(
+        val uri: Uri,
+        val sources: List<String>,
+        val trackers: List<String>,
+    ) : BackupDialog()
 
-data class InvalidRestore(
-    val uri: Uri,
-    val message: String,
-)
+    data class InvalidRestore(
+        val uri: Uri,
+        val message: String,
+    ) : BackupDialog()
+}

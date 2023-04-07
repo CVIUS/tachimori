@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
@@ -27,9 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -46,12 +44,16 @@ import eu.kanade.tachiyomi.ui.browse.extension.ExtensionUiModel
 import eu.kanade.tachiyomi.ui.browse.extension.ExtensionsState
 import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.presentation.core.components.FastScrollLazyColumn
+import tachiyomi.presentation.core.components.ScrollbarLazyColumn
+import tachiyomi.presentation.core.components.material.Divider
 import tachiyomi.presentation.core.components.material.PullRefresh
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.theme.header
+import tachiyomi.presentation.core.util.isScrolledToEnd
+import tachiyomi.presentation.core.util.isScrolledToStart
 import tachiyomi.presentation.core.util.plus
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
@@ -63,7 +65,6 @@ fun ExtensionScreen(
     onLongClickItem: (Extension) -> Unit,
     onClickItemCancel: (Extension) -> Unit,
     onInstallExtension: (Extension.Available) -> Unit,
-    onUninstallExtension: (Extension) -> Unit,
     onUpdateExtension: (Extension.Installed) -> Unit,
     onTrustExtension: (Extension.Untrusted) -> Unit,
     onOpenExtension: (Extension.Installed) -> Unit,
@@ -95,7 +96,6 @@ fun ExtensionScreen(
                     onLongClickItem = onLongClickItem,
                     onClickItemCancel = onClickItemCancel,
                     onInstallExtension = onInstallExtension,
-                    onUninstallExtension = onUninstallExtension,
                     onUpdateExtension = onUpdateExtension,
                     onTrustExtension = onTrustExtension,
                     onOpenExtension = onOpenExtension,
@@ -113,14 +113,11 @@ private fun ExtensionContent(
     onLongClickItem: (Extension) -> Unit,
     onClickItemCancel: (Extension) -> Unit,
     onInstallExtension: (Extension.Available) -> Unit,
-    onUninstallExtension: (Extension) -> Unit,
     onUpdateExtension: (Extension.Installed) -> Unit,
     onTrustExtension: (Extension.Untrusted) -> Unit,
     onOpenExtension: (Extension.Installed) -> Unit,
     onClickUpdateAll: () -> Unit,
 ) {
-    var trustState by rememberSaveable { mutableStateOf<Extension.Untrusted?>(null) }
-
     FastScrollLazyColumn(
         contentPadding = contentPadding + topSmallPaddingValues,
     ) {
@@ -173,7 +170,7 @@ private fun ExtensionContent(
                         when (it) {
                             is Extension.Available -> onInstallExtension(it)
                             is Extension.Installed -> onOpenExtension(it)
-                            is Extension.Untrusted -> { trustState = it }
+                            is Extension.Untrusted -> onTrustExtension(it)
                         }
                     },
                     onLongClickItem = onLongClickItem,
@@ -188,27 +185,12 @@ private fun ExtensionContent(
                                     onOpenExtension(it)
                                 }
                             }
-                            is Extension.Untrusted -> { trustState = it }
+                            is Extension.Untrusted -> onTrustExtension(it)
                         }
                     },
                 )
             }
         }
-    }
-    if (trustState != null) {
-        ExtensionTrustDialog(
-            onClickConfirm = {
-                onTrustExtension(trustState!!)
-                trustState = null
-            },
-            onClickDismiss = {
-                onUninstallExtension(trustState!!)
-                trustState = null
-            },
-            onDismissRequest = {
-                trustState = null
-            },
-        )
     }
 }
 
@@ -416,7 +398,7 @@ private fun ExtensionHeader(
 }
 
 @Composable
-private fun ExtensionTrustDialog(
+fun ExtensionTrustDialog(
     onClickConfirm: () -> Unit,
     onClickDismiss: () -> Unit,
     onDismissRequest: () -> Unit,
@@ -426,7 +408,15 @@ private fun ExtensionTrustDialog(
             Text(text = stringResource(R.string.untrusted_extension))
         },
         text = {
-            Text(text = stringResource(R.string.untrusted_extension_message))
+            Box {
+                val listState = rememberLazyListState()
+                ScrollbarLazyColumn(state = listState) {
+                    item { Text(text = stringResource(R.string.untrusted_extension_message)) }
+                }
+
+                if (!listState.isScrolledToStart()) Divider(modifier = Modifier.align(Alignment.TopCenter))
+                if (!listState.isScrolledToEnd()) Divider(modifier = Modifier.align(Alignment.BottomCenter))
+            }
         },
         confirmButton = {
             TextButton(onClick = onClickConfirm) {
