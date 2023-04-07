@@ -31,7 +31,7 @@ fun LibraryList(
     displayMode: LibraryDisplayMode,
     onClickOpenSortSheet: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
-    onChangeDisplayMode: (LibraryDisplayMode) -> Unit,
+    onChangeDisplayMode: () -> Unit,
     searchQuery: String?,
     onGlobalSearchClicked: () -> Unit,
 ) {

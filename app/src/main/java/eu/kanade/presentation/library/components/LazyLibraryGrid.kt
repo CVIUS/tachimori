@@ -52,7 +52,7 @@ fun LazyGridScope.headerItem(
     displayMode: LibraryDisplayMode,
     onClickOpenSortSheet: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
-    onChangeDisplayMode: (LibraryDisplayMode) -> Unit,
+    onChangeDisplayMode: () -> Unit,
 ) {
     item(
         span = { GridItemSpan(maxLineSpan) },

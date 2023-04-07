@@ -14,6 +14,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import eu.kanade.core.preference.PreferenceMutableState
 import eu.kanade.tachiyomi.ui.library.LibraryItem
@@ -45,7 +47,7 @@ fun LibraryContent(
     onGlobalSearchClicked: () -> Unit,
     onClickOpenSortSheet: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
-    onChangeDisplayMode: (LibraryDisplayMode) -> Unit,
+    onChangeDisplayMode: () -> Unit,
     getNumberOfMangaForCategory: (Category) -> Int?,
     getDisplayModeForPage: @Composable (Int) -> LibraryDisplayMode,
     getSortForPage: @Composable (Int) -> LibrarySort,
@@ -76,12 +78,14 @@ fun LibraryContent(
             ) { scope.launch { pagerState.animateScrollToPage(it) } }
         }
 
+        val haptic = LocalHapticFeedback.current
         val notSelectionMode = selection.isEmpty()
         val onClickManga = { manga: LibraryManga ->
             if (notSelectionMode) {
                 onMangaClicked(manga.manga.id)
             } else {
                 onToggleSelection(manga)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             }
         }
 

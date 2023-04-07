@@ -16,13 +16,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import eu.kanade.presentation.more.settings.widget.ListPreferenceDialog
 import eu.kanade.tachiyomi.R
 import tachiyomi.domain.library.model.LibraryDisplayMode
 import tachiyomi.domain.library.model.LibrarySort
@@ -33,11 +28,9 @@ fun LibraryHeaderItem(
     displayMode: LibraryDisplayMode,
     onClickOpenSortSheet: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
-    onChangeDisplayMode: (LibraryDisplayMode) -> Unit,
+    onChangeDisplayMode: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var showDialog by rememberSaveable { mutableStateOf(false) }
-
     val arrowIcons = when (!sort.isAscending) {
         true -> Icons.Default.ArrowDownward
         false -> Icons.Default.ArrowUpward
@@ -70,9 +63,7 @@ fun LibraryHeaderItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-
         Spacer(modifier = Modifier.weight(1f))
-
         IconButton(onClick = onClickOpenRandomManga) {
             Icon(
                 imageVector = Icons.Outlined.Shuffle,
@@ -80,28 +71,12 @@ fun LibraryHeaderItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-
-        IconButton(onClick = { showDialog = true }) {
+        IconButton(onClick = onChangeDisplayMode) {
             Icon(
                 imageVector = if (displayMode == LibraryDisplayMode.List) Icons.Filled.ViewModule else Icons.Filled.List,
                 contentDescription = stringResource(R.string.action_display_mode),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-
-            if (showDialog) {
-                ListPreferenceDialog(
-                    value = displayMode,
-                    title = stringResource(R.string.action_display_mode),
-                    entries = mapOf(
-                        LibraryDisplayMode.CompactGrid to stringResource(R.string.action_display_grid),
-                        LibraryDisplayMode.ComfortableGrid to stringResource(R.string.action_display_comfortable_grid),
-                        LibraryDisplayMode.CoverOnlyGrid to stringResource(R.string.action_display_cover_only_grid),
-                        LibraryDisplayMode.List to stringResource(R.string.action_display_list),
-                    ),
-                    onValueChange = onChangeDisplayMode,
-                    onDismissRequest = { showDialog = false },
-                )
-            }
         }
     }
 }

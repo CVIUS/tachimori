@@ -38,7 +38,7 @@ fun LibraryPager(
     onGlobalSearchClicked: () -> Unit,
     onClickOpenSortSheet: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
-    onChangeDisplayMode: (LibraryDisplayMode) -> Unit,
+    onChangeDisplayMode: () -> Unit,
     getDisplayModeForPage: @Composable (Int) -> LibraryDisplayMode,
     getSortForPage: @Composable (Int) -> LibrarySort,
     getColumnsForOrientation: (Boolean) -> PreferenceMutableState<Int>,

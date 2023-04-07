@@ -16,6 +16,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,17 +41,24 @@ object TabbedDialogPaddings {
 
 @Composable
 fun TabbedDialog(
+    startIndex: Int? = null,
     onDismissRequest: () -> Unit,
     tabTitles: List<String>,
     tabOverflowMenuContent: (@Composable ColumnScope.(() -> Unit) -> Unit)? = null,
     content: @Composable (PaddingValues, Int) -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
+    val pagerState = rememberPagerState()
+
+    LaunchedEffect(startIndex) {
+        if (startIndex != null) {
+            pagerState.scrollToPage(startIndex)
+        }
+    }
+
     AdaptiveSheet(
         onDismissRequest = onDismissRequest,
     ) { contentPadding ->
-        val scope = rememberCoroutineScope()
-        val pagerState = rememberPagerState()
-
         Column {
             Row {
                 TabRow(

@@ -58,7 +58,7 @@ fun <T> ListPreferenceWidget(
 }
 
 @Composable
-fun <T> ListPreferenceDialog(
+private fun <T> ListPreferenceDialog(
     value: T,
     title: String,
     entries: Map<out T, String>,

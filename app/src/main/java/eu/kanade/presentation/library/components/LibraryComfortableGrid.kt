@@ -27,7 +27,7 @@ fun LibraryComfortableGrid(
     displayMode: LibraryDisplayMode,
     onClickOpenSortSheet: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
-    onChangeDisplayMode: (LibraryDisplayMode) -> Unit,
+    onChangeDisplayMode: () -> Unit,
 ) {
     LazyLibraryGrid(
         modifier = Modifier.fillMaxSize(),

@@ -32,7 +32,6 @@ import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.presentation.category.ChangeCategoryDialog
 import eu.kanade.presentation.library.DeleteLibraryMangaDialog
 import eu.kanade.presentation.library.LibrarySettingsDialog
-import eu.kanade.presentation.library.LibrarySortDialog
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
 import eu.kanade.presentation.manga.components.LibraryBottomActionMenu
@@ -171,23 +170,18 @@ object LibraryTab : Tab {
                         onGlobalSearchClicked = {
                             navigator.push(GlobalSearchScreen(screenModel.state.value.searchQuery ?: ""))
                         },
-                        onClickOpenSortSheet = screenModel::showSortDialog,
+                        onClickOpenSortSheet = { screenModel.showSettingsDialog(toSort = true) },
                         onClickOpenRandomManga = {
                             scope.launch {
                                 val randomItem = screenModel.getRandomLibraryItemForCurrentCategory()
-                                if (randomItem != null) {
-                                    navigator.push(MangaScreen(randomItem.libraryManga.manga.id))
-                                } else {
+                                if (state.selectionMode || randomItem == null) {
                                     screenModel.errorOpenRandomManga()
+                                    return@launch
                                 }
+                                navigator.push(MangaScreen(randomItem.libraryManga.manga.id))
                             }
                         },
-                        onChangeDisplayMode = {
-                            screenModel.setDisplayMode(
-                                category = state.categories[screenModel.activeCategoryIndex],
-                                mode = it,
-                            )
-                        },
+                        onChangeDisplayMode = { screenModel.showSettingsDialog(toDisplay = true) },
                         getNumberOfMangaForCategory = { state.getMangaCountForCategory(it) },
                         getDisplayModeForPage = { state.categories[it].display },
                         getSortForPage = { state.categories[it].sort },
@@ -199,10 +193,15 @@ object LibraryTab : Tab {
 
         val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
-            is LibraryScreenModel.Dialog.SettingsSheet -> LibrarySettingsDialog(
-                onDismissRequest = onDismissRequest,
-                screenModel = settingsScreenModel,
-            )
+            is LibraryScreenModel.Dialog.SettingsSheet -> {
+                LibrarySettingsDialog(
+                    toSort = dialog.toSort,
+                    toDisplay = dialog.toDisplay,
+                    onDismissRequest = onDismissRequest,
+                    screenModel = settingsScreenModel,
+                    category = state.categories[screenModel.activeCategoryIndex],
+                )
+            }
             is LibraryScreenModel.Dialog.ChangeCategory -> {
                 ChangeCategoryDialog(
                     favorite = dialog.manga.all(Manga::favorite),
@@ -228,14 +227,6 @@ object LibraryTab : Tab {
                     },
                 )
             }
-            is LibraryScreenModel.Dialog.SortSheet -> {
-                val category = state.categories[screenModel.activeCategoryIndex]
-                LibrarySortDialog(
-                    onDismissRequest = onDismissRequest,
-                    category = category,
-                    onClick = screenModel::setSort,
-                )
-            }
             null -> {}
         }
 
@@ -259,8 +250,9 @@ object LibraryTab : Tab {
         LaunchedEffect(Unit) {
             screenModel.snackbar.collectLatest { snackbar ->
                 when (snackbar) {
-                    LibraryScreenModel.Snackbar.OpenRandomLibraryItemError -> {
-                        screenModel.snackbarHostState.showSnackbar(message = context.getString(R.string.information_no_entries_found), withDismissAction = true)
+                    is LibraryScreenModel.Snackbar.OpenRandomLibraryItemError -> {
+                        val textRes = if (state.selectionMode) R.string.not_allowed else R.string.error_random_manga
+                        screenModel.snackbarHostState.showSnackbar(message = context.getString(textRes), withDismissAction = true)
                     }
                     LibraryScreenModel.Snackbar.NoNextChapterFound -> {
                         screenModel.snackbarHostState.showSnackbar(message = context.getString(R.string.no_next_chapter), withDismissAction = true)

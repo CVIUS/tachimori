@@ -11,7 +11,6 @@
     <string name="manga_added_in_categories">Added in %1$d categories</string>
     <string name="manga_moved_in_categories">Moved in %1$d categories</string>
     <string name="action_change">Change</string>
-    <string name="action_sort_by">Sort by</string>
     <string name="migration_migrate_success">Migrated successfully</string>
     <string name="migration_copy_success">Copied successfully</string>
     <string name="migration_migrate_failed">Cannot migrate this entry because it may be the same entry</string>
@@ -19,5 +18,7 @@
     <string name="action_just_add">Just add</string>
     <string name="extras">Extras</string>
     <string name="error_already_exists">Already exists!</string>
+    <string name="not_allowed">Not allowed</string>
+    <string name="error_random_manga">Error opening random entry</string>
 
 </resources>
