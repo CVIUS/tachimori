@@ -184,8 +184,10 @@ internal fun MigrateDialog(
 
                                 val result = screenModel.migrateManga(oldManga, newManga, copy = true)
                                 if (!result) {
-                                    context.toast(R.string.migration_copy_failed)
-                                    onDismissRequest()
+                                    withUIContext {
+                                        context.toast(R.string.migration_copy_failed)
+                                        onDismissRequest()
+                                    }
                                     return@launchIO
                                 }
 
@@ -208,8 +210,10 @@ internal fun MigrateDialog(
 
                                 val result = screenModel.migrateManga(oldManga, newManga, copy = false)
                                 if (!result) {
-                                    context.toast(R.string.migration_migrate_failed)
-                                    onDismissRequest()
+                                    withUIContext {
+                                        context.toast(R.string.migration_migrate_failed)
+                                        onDismissRequest()
+                                    }
                                     return@launchIO
                                 }
 
