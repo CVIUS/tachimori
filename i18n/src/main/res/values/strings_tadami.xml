@@ -30,5 +30,7 @@
     <string name="pref_preload_amount_12_pages">12 pages</string>
     <string name="pref_preload_amount_15_pages">15 pages</string>
     <string name="pref_reader_cache_size">Reader cache size</string>
+    <string name="dialog_clear_database_confirmation">Read chapters and progress of non-library entries will be lost</string>
+    <string name="dialog_with_checkbox_exclude">Keep entries with read/partially read chapters</string>
 
 </resources>

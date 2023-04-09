@@ -1,6 +1,7 @@
 package eu.kanade.presentation.more.settings.screen
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
@@ -20,7 +22,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -71,13 +77,14 @@ class ClearDatabaseScreen : Screen() {
             is ClearDatabaseScreenModel.State.Loading -> LoadingScreen()
             is ClearDatabaseScreenModel.State.Ready -> {
                 if (s.showConfirmation) {
+                    var keepRead by rememberSaveable { mutableStateOf(true) }
                     AlertDialog(
                         onDismissRequest = model::hideConfirmation,
                         confirmButton = {
                             TextButton(
                                 onClick = {
                                     scope.launchUI {
-                                        model.removeMangaBySourceId()
+                                        model.removeMangaBySourceId(keepRead)
                                         model.clearSelection()
                                         model.hideConfirmation()
                                         context.toast(R.string.clear_database_completed)
@@ -92,8 +99,33 @@ class ClearDatabaseScreen : Screen() {
                                 Text(text = stringResource(R.string.action_cancel))
                             }
                         },
+                        title = {
+                            Text(text = stringResource(R.string.are_you_sure))
+                        },
                         text = {
-                            Text(text = stringResource(R.string.clear_database_confirmation))
+                            Column {
+                                Text(text = stringResource(R.string.dialog_clear_database_confirmation))
+                                Row(
+                                    modifier = Modifier
+                                        .padding(top = MaterialTheme.padding.medium)
+                                        .toggleable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null,
+                                            value = keepRead,
+                                            onValueChange = { keepRead = it },
+                                        ),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Checkbox(
+                                        checked = keepRead,
+                                        onCheckedChange = null,
+                                    )
+                                    Text(
+                                        modifier = Modifier.padding(start = MaterialTheme.padding.tiny),
+                                        text = stringResource(R.string.dialog_with_checkbox_exclude),
+                                    )
+                                }
+                            }
                         },
                     )
                 }
@@ -227,9 +259,13 @@ private class ClearDatabaseScreenModel : StateScreenModel<ClearDatabaseScreenMod
         }
     }
 
-    suspend fun removeMangaBySourceId() = withNonCancellableContext {
+    suspend fun removeMangaBySourceId(keepRead: Boolean) = withNonCancellableContext {
         val state = state.value as? State.Ready ?: return@withNonCancellableContext
-        database.mangasQueries.deleteMangasNotInLibraryBySourceIds(state.selection)
+        if (keepRead) {
+            database.mangasQueries.deleteMangasNotInLibraryAndNotReadBySourceIds(state.selection)
+        } else {
+            database.mangasQueries.deleteMangasNotInLibraryBySourceIds(state.selection)
+        }
         database.historyQueries.removeResettedHistory()
     }
 
