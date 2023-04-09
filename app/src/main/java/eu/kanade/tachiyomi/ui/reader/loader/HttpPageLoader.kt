@@ -6,6 +6,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.ui.reader.model.ReaderChapter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,7 @@ class HttpPageLoader(
     private val chapter: ReaderChapter,
     private val source: HttpSource,
     private val chapterCache: ChapterCache = Injekt.get(),
+    private val readerPreferences: ReaderPreferences = Injekt.get(),
 ) : PageLoader() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -40,7 +42,7 @@ class HttpPageLoader(
      */
     private val queue = PriorityBlockingQueue<PriorityPage>()
 
-    private val preloadSize = 4
+    private val preloadSize = readerPreferences.preloadSize().get()
 
     init {
         scope.launchIO {
@@ -94,10 +96,18 @@ class HttpPageLoader(
             }
             source.getPageList(chapter.chapter)
         }
-        return pages.mapIndexed { index, page ->
+        val readerPages = pages.mapIndexed { index, page ->
             // Don't trust sources and use our own indexing
             ReaderPage(index, page.url, page.imageUrl)
         }
+        if (readerPreferences.aggressivePageLoading().get()) {
+            readerPages.forEach {
+                if (it.status == Page.State.QUEUE) {
+                    queue.offer(PriorityPage(it, 0))
+                }
+            }
+        }
+        return readerPages
     }
 
     /**

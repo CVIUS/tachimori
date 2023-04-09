@@ -62,6 +62,12 @@ class ReaderPreferences(
 
     fun skipDupe() = preferenceStore.getBoolean("skip_dupe", false)
 
+    fun preloadSize() = preferenceStore.getInt("preload_size", 4)
+
+    fun aggressivePageLoading() = preferenceStore.getBoolean("aggressive_page_loading", false)
+
+    fun cacheSize() = preferenceStore.getLong("cache_size", 100L)
+
     // endregion
 
     // region Split two page spread

@@ -20,5 +20,15 @@
     <string name="error_already_exists">Already exists!</string>
     <string name="not_allowed">Not allowed</string>
     <string name="error_random_manga">Error opening random entry</string>
+    <string name="pref_aggressively_load_pages">Aggressively load pages</string>
+    <string name="pref_aggressively_load_pages_summary">Load the chapter rather than just the pages you are currently viewing</string>
+    <string name="pref_preload_amount">Page preload amount</string>
+    <string name="pref_preload_amount_4_pages">4 pages</string>
+    <string name="pref_preload_amount_6_pages">6 pages</string>
+    <string name="pref_preload_amount_8_pages">8 pages</string>
+    <string name="pref_preload_amount_10_pages">10 pages</string>
+    <string name="pref_preload_amount_12_pages">12 pages</string>
+    <string name="pref_preload_amount_15_pages">15 pages</string>
+    <string name="pref_reader_cache_size">Reader cache size</string>
 
 </resources>

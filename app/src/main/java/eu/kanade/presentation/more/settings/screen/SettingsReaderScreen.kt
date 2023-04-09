@@ -31,6 +31,10 @@ object SettingsReaderScreen : SearchableSettings {
     @Composable
     override fun getPreferences(): List<Preference> {
         val readerPref = remember { Injekt.get<ReaderPreferences>() }
+
+        val aggressivePageLoadingPref = readerPref.aggressivePageLoading()
+        val aggressivePageLoading = aggressivePageLoadingPref.collectAsState()
+
         return listOf(
             Preference.PreferenceItem.ListPreference(
                 pref = readerPref.defaultReadingMode(),
@@ -66,6 +70,38 @@ object SettingsReaderScreen : SearchableSettings {
             Preference.PreferenceItem.SwitchPreference(
                 pref = readerPref.pageTransitions(),
                 title = stringResource(R.string.pref_page_transitions),
+            ),
+            Preference.PreferenceItem.SwitchPreference(
+                pref = aggressivePageLoadingPref,
+                title = stringResource(R.string.pref_aggressively_load_pages),
+                subtitle = stringResource(R.string.pref_aggressively_load_pages_summary),
+            ),
+            Preference.PreferenceItem.ListPreference(
+                pref = readerPref.preloadSize(),
+                title = stringResource(R.string.pref_preload_amount),
+                enabled = !aggressivePageLoading.value,
+                entries = mapOf(
+                    4 to stringResource(R.string.pref_preload_amount_4_pages),
+                    6 to stringResource(R.string.pref_preload_amount_6_pages),
+                    8 to stringResource(R.string.pref_preload_amount_8_pages),
+                    10 to stringResource(R.string.pref_preload_amount_10_pages),
+                    12 to stringResource(R.string.pref_preload_amount_12_pages),
+                    15 to stringResource(R.string.pref_preload_amount_15_pages),
+                ),
+            ),
+            Preference.PreferenceItem.ListPreference(
+                pref = readerPref.cacheSize(),
+                title = stringResource(R.string.pref_reader_cache_size),
+                entries = mapOf(
+                    100L to "100 MB",
+                    150L to "150 MB",
+                    250L to "250 MB",
+                    500L to "500 MB",
+                    750L to "750 MB",
+                    1000L to "1 GB",
+                    1500L to "1.5 GB",
+                    2000L to "2 GB",
+                ),
             ),
             getDisplayGroup(readerPreferences = readerPref),
             getReadingGroup(readerPreferences = readerPref),
