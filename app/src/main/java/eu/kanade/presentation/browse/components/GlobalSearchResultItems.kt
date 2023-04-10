@@ -37,12 +37,12 @@ fun GlobalSearchResultItem(
     Column {
         Row(
             modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
                 .padding(
                     start = MaterialTheme.padding.medium,
                     end = MaterialTheme.padding.tiny,
-                )
-                .fillMaxWidth()
-                .clickable(onClick = onClick),
+                ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
