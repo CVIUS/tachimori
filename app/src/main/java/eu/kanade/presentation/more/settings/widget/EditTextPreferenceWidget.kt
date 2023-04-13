@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Error
@@ -22,11 +23,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.launch
+import tachiyomi.presentation.core.util.alertDialogWidth
 
 @Composable
 fun EditTextPreferenceWidget(
@@ -34,10 +37,11 @@ fun EditTextPreferenceWidget(
     subtitle: String?,
     icon: ImageVector?,
     value: String,
+    error: String?,
     onConfirm: suspend (String) -> Boolean,
     hasAdditionalButton: Boolean,
     onClickAdditional: suspend () -> Boolean,
-    onClickAdditionalString: String,
+    onClickAdditionalString: String?,
 ) {
     var isDialogShown by rememberSaveable { mutableStateOf(false) }
 
@@ -55,6 +59,7 @@ fun EditTextPreferenceWidget(
             mutableStateOf(TextFieldValue(value))
         }
         AlertDialog(
+            modifier = Modifier.alertDialogWidth(),
             onDismissRequest = onDismissRequest,
             title = { Text(text = title) },
             text = {
@@ -62,25 +67,30 @@ fun EditTextPreferenceWidget(
                     value = textFieldValue,
                     onValueChange = { textFieldValue = it },
                     trailingIcon = {
-                        if (textFieldValue.text.isBlank()) {
+                        if (error != null && textFieldValue.text.isBlank()) {
                             Icon(imageVector = Icons.Filled.Error, contentDescription = null)
-                        } else {
+                        } else if (textFieldValue.text.isNotBlank()) {
                             IconButton(onClick = { textFieldValue = TextFieldValue("") }) {
                                 Icon(imageVector = Icons.Filled.Cancel, contentDescription = null)
                             }
                         }
                     },
-                    isError = textFieldValue.text.isBlank(),
-                    singleLine = true,
+                    supportingText = {
+                        if (error != null && textFieldValue.text.isBlank()) {
+                            Text(text = error)
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    isError = error != null && textFieldValue.text.isBlank(),
                     modifier = Modifier.fillMaxWidth(),
                 )
             },
             properties = DialogProperties(
-                usePlatformDefaultWidth = true,
+                usePlatformDefaultWidth = false,
             ),
             confirmButton = {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (hasAdditionalButton) {
+                    if (hasAdditionalButton && onClickAdditionalString != null) {
                         TextButton(
                             onClick = {
                                 scope.launch {

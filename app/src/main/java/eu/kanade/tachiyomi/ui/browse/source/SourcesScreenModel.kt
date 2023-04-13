@@ -96,11 +96,11 @@ class SourcesScreenModel(
     }
 
     fun showSourceDialog(source: Source) {
-        mutableState.update { it.copy(dialog = Dialog(source)) }
+        setDialog(Dialog(source))
     }
 
-    fun closeDialog() {
-        mutableState.update { it.copy(dialog = null) }
+    fun setDialog(dialog: Dialog?) {
+        mutableState.update { it.copy(dialog = dialog) }
     }
 
     sealed class Event {

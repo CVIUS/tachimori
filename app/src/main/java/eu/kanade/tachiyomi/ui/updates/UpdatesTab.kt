@@ -20,7 +20,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.presentation.updates.UpdateScreen
-import eu.kanade.presentation.updates.UpdatesDeleteConfirmationDialog
+import eu.kanade.presentation.updates.UpdatesDeleteChaptersDialog
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.download.DownloadQueueScreen
@@ -28,6 +28,7 @@ import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.ui.setting.SettingsScreen
 import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel.Snackbar
 import kotlinx.coroutines.flow.collectLatest
 
@@ -80,9 +81,15 @@ object UpdatesTab : Tab {
         val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
             is UpdatesScreenModel.Dialog.DeleteConfirmation -> {
-                UpdatesDeleteConfirmationDialog(
+                UpdatesDeleteChaptersDialog(
                     onDismissRequest = onDismissRequest,
+                    selected = dialog.toDelete,
+                    removeBookmarkedChapters = screenModel.removeBookmarkedChapters,
                     onConfirm = { screenModel.deleteChapters(dialog.toDelete) },
+                    goToSettings = {
+                        screenModel.toggleAllSelection(false)
+                        navigator.push(SettingsScreen.toDownloadScreen())
+                    },
                 )
             }
             null -> {}

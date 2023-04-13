@@ -54,19 +54,20 @@ fun Screen.sourcesTab(): TabContent {
                 onLongClickItem = screenModel::showSourceDialog,
             )
 
+            val onDismissRequest = { screenModel.setDialog(null) }
             state.dialog?.let { dialog ->
                 val source = dialog.source
                 SourceOptionsDialog(
                     source = source,
                     onClickPin = {
+                        onDismissRequest()
                         screenModel.togglePin(source)
-                        screenModel.closeDialog()
                     },
                     onClickDisable = {
+                        onDismissRequest()
                         screenModel.toggleSource(source)
-                        screenModel.closeDialog()
                     },
-                    onDismiss = screenModel::closeDialog,
+                    onDismissRequest = onDismissRequest,
                 )
             }
 

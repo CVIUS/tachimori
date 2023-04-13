@@ -196,10 +196,11 @@ class DownloadManager(
     /**
      * Returns the amount of downloaded chapters for a manga.
      *
-     * @param manga the manga to check.
+     * @param title the title of manga to check.
+     * @param sourceId the source of manga to check.
      */
-    fun getDownloadCount(manga: Manga): Int {
-        return cache.getDownloadCount(manga)
+    fun getDownloadCount(title: String, sourceId: Long): Int {
+        return cache.getDownloadCount(title, sourceId)
     }
 
     fun cancelQueuedDownloads(downloads: List<Download>) {
@@ -349,7 +350,7 @@ class DownloadManager(
 
     private fun getChaptersToDelete(chapters: List<Chapter>, manga: Manga): List<Chapter> {
         // Retrieve the categories that are set to exclude from being deleted on read
-        val categoriesToExclude = downloadPreferences.removeExcludeCategories().get().map(String::toLong)
+        val categoriesToExclude = downloadPreferences.removeExcludeCategories().get().map(String::toLong).toSet()
 
         val categoriesForManga = runBlocking { getCategories.await(manga.id) }
             .map { it.id }

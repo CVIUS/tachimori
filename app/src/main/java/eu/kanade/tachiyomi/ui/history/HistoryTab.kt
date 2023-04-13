@@ -17,9 +17,9 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import eu.kanade.presentation.components.DialogWithCheckbox
 import eu.kanade.presentation.history.HistoryScreen
 import eu.kanade.presentation.history.components.HistoryDeleteAllDialog
-import eu.kanade.presentation.history.components.HistoryDeleteDialog
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.main.MainActivity
@@ -66,21 +66,25 @@ object HistoryTab : Tab {
             onClickCover = { mangaId -> navigator.push(MangaScreen(mangaId)) },
             onClickResume = screenModel::getNextChapterForManga,
             onClickDelete = screenModel::showDeleteDialog,
-            onClickDeleteAll = screenModel::removeAllHistory,
+            onClickDeleteAll = screenModel::showDeleteAllDialog,
         )
 
         val onDismissRequest = { screenModel.setDialog(null) }
         when (val dialog = state.dialog) {
             is HistoryScreenModel.Dialog.Delete -> {
-                HistoryDeleteDialog(
+                DialogWithCheckbox(
                     onDismissRequest = onDismissRequest,
-                    onDelete = { all ->
+                    title = stringResource(R.string.remove_history),
+                    text = stringResource(R.string.dialog_with_checkbox_remove_history_desc),
+                    confirmText = stringResource(R.string.action_remove),
+                    onConfirm = { all ->
                         if (all) {
                             screenModel.removeAllFromHistory(dialog.mangaId)
                         } else {
                             screenModel.removeFromHistory(dialog.historyId)
                         }
                     },
+                    checkboxText = stringResource(R.string.dialog_with_checkbox_reset),
                 )
             }
             is HistoryScreenModel.Dialog.DeleteAll -> {

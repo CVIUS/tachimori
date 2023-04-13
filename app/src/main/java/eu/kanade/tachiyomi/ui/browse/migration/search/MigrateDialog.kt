@@ -1,20 +1,21 @@
 package eu.kanade.tachiyomi.ui.browse.migration.search
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -46,7 +47,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.ui.browse.migration.MigrationFlags
 import eu.kanade.tachiyomi.util.system.toast
-import kotlinx.coroutines.delay
 import tachiyomi.core.preference.Preference
 import tachiyomi.core.preference.PreferenceStore
 import tachiyomi.core.util.lang.launchIO
@@ -71,13 +71,11 @@ import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Divider
 import tachiyomi.presentation.core.components.material.padding
-import tachiyomi.presentation.core.screens.LoadingScreen
 import tachiyomi.presentation.core.util.isScrolledToEnd
 import tachiyomi.presentation.core.util.isScrolledToStart
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.util.Date
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 internal fun MigrateDialog(
@@ -109,19 +107,7 @@ internal fun MigrateDialog(
 
     var started by rememberSaveable { mutableStateOf(false) }
 
-    AnimatedVisibility(
-        visible = started,
-        enter = fadeIn(),
-        exit = fadeOut(),
-    ) {
-        LoadingScreen(modifier = Modifier.background(MaterialTheme.colorScheme.scrim))
-    }
-
-    AnimatedVisibility(
-        visible = !started,
-        enter = fadeIn(),
-        exit = fadeOut(),
-    ) {
+    if (!started) {
         AlertDialog(
             onDismissRequest = onDismissRequest,
             title = {
@@ -180,7 +166,6 @@ internal fun MigrateDialog(
                             scope.launchIO {
                                 started = true
                                 screenModel.migrateFlags.set(newFlags())
-                                delay(2.seconds)
 
                                 val result = screenModel.migrateManga(oldManga, newManga, copy = true)
                                 if (!result) {
@@ -206,7 +191,6 @@ internal fun MigrateDialog(
                             scope.launchIO {
                                 started = true
                                 screenModel.migrateFlags.set(newFlags())
-                                delay(2.seconds)
 
                                 val result = screenModel.migrateManga(oldManga, newManga, copy = false)
                                 if (!result) {
@@ -230,6 +214,23 @@ internal fun MigrateDialog(
                 }
             },
         )
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.68f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = stringResource(R.string.please_wait),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+            }
+        }
     }
 }
 
@@ -333,7 +334,7 @@ internal class MigrateDialogScreenModel(
                         )
 
                         prevHistoryList.find { it.chapterId == prevChapter.id }?.let { prevHistory ->
-                            // Don't migrate/copy the history of not fully read chapters
+                            // Don't migrate/copy the history of partially read chapters
                             // because we do not include lastPageRead in migration
                             // since number of pages varies on sources
                             if (prevChapter.lastPageRead > 0L) return@let

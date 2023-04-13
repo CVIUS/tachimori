@@ -199,7 +199,7 @@ class LibraryScreenModel(
             applyFilter(filterDownloaded) {
                 it.libraryManga.manga.isLocal() ||
                     it.downloadCount > 0 ||
-                    downloadManager.getDownloadCount(it.libraryManga.manga) > 0
+                    getDownloadCount(it.libraryManga.manga.title, it.libraryManga.manga.source) > 0
             }
         }
 
@@ -345,7 +345,7 @@ class LibraryScreenModel(
                     LibraryItem(
                         libraryManga,
                         downloadCount = if (prefs.downloadBadge || prefs.globalFilterDownloaded) {
-                            downloadManager.getDownloadCount(libraryManga.manga).toLong()
+                            getDownloadCount(libraryManga.manga.title, libraryManga.manga.source).toLong()
                         } else {
                             0
                         },
@@ -482,23 +482,19 @@ class LibraryScreenModel(
      * Remove the selected manga.
      *
      * @param mangaList the list of manga to delete.
-     * @param deleteFromLibrary whether to delete manga from library.
      * @param deleteChapters whether to delete downloaded chapters.
      */
-    fun removeMangas(mangaList: List<Manga>, deleteFromLibrary: Boolean, deleteChapters: Boolean) {
+    fun removeMangas(mangaList: List<Manga>, deleteChapters: Boolean) {
         coroutineScope.launchNonCancellable {
             val mangaToDelete = mangaList.distinctBy { it.id }
-
-            if (deleteFromLibrary) {
-                val toDelete = mangaToDelete.map {
-                    it.removeCovers(coverCache)
-                    MangaUpdate(
-                        favorite = false,
-                        id = it.id,
-                    )
-                }
-                updateManga.awaitAll(toDelete)
+            val toDelete = mangaToDelete.map {
+                it.removeCovers(coverCache)
+                MangaUpdate(
+                    favorite = false,
+                    id = it.id,
+                )
             }
+            updateManga.awaitAll(toDelete)
 
             if (deleteChapters) {
                 mangaToDelete.forEach { manga ->
@@ -509,6 +505,22 @@ class LibraryScreenModel(
                 }
             }
         }
+    }
+
+    fun hasDownloads(mangaList: List<Manga>): Boolean {
+        return mangaList.filterNot(Manga::isLocal).any { manga ->
+            getDownloadCount(manga.title, manga.source) > 0
+        }
+    }
+
+    private fun getDownloadCount(title: String, sourceId: Long): Int {
+        return downloadManager.getDownloadCount(title, sourceId)
+    }
+
+    fun allDownloadCount(mangaList: List<Manga>): Int {
+        return mangaList
+            .distinctBy { it.id }
+            .sumOf { getDownloadCount(it.title, it.source) }
     }
 
     /**

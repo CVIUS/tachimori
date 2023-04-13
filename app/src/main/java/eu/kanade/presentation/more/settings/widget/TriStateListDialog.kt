@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -19,6 +18,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.R
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Divider
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.isScrolledToEnd
 import tachiyomi.presentation.core.util.isScrolledToStart
 
@@ -77,6 +78,7 @@ fun <T> TriStateListDialog(
                             val state = selected[index]
                             Row(
                                 modifier = Modifier
+                                    .fillMaxWidth()
                                     .clickable {
                                         selected[index] = when (state) {
                                             State.UNCHECKED -> State.CHECKED
@@ -84,8 +86,7 @@ fun <T> TriStateListDialog(
                                             State.INVERSED -> State.UNCHECKED
                                         }
                                     }
-                                    .defaultMinSize(minHeight = 48.dp)
-                                    .fillMaxWidth(),
+                                    .minimumInteractiveComponentSize(),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Icon(
@@ -108,7 +109,11 @@ fun <T> TriStateListDialog(
                                         },
                                     ),
                                 )
-                                Text(text = itemLabel(item))
+                                Text(
+                                    text = itemLabel(item),
+                                    style = MaterialTheme.typography.bodyMedium.merge(),
+                                    modifier = Modifier.padding(start = MaterialTheme.padding.medium),
+                                )
                             }
                         }
                     }

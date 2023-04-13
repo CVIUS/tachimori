@@ -18,7 +18,7 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,7 +57,7 @@ fun ChangeCategoryDialog(
                 }
             },
             title = {
-                Text(text = stringResource(R.string.action_move_category))
+                Text(text = stringResource(R.string.hmmm))
             },
             text = {
                 Text(text = stringResource(R.string.information_empty_category_dialog))
@@ -65,7 +65,7 @@ fun ChangeCategoryDialog(
         )
         return
     }
-    var selection by rememberSaveable { mutableStateOf(initialSelection) }
+    var selection by remember { mutableStateOf(initialSelection) }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
@@ -128,7 +128,7 @@ fun ChangeCategoryDialog(
                                         TriStateCheckbox(
                                             modifier = Modifier.heightIn(min = 48.dp),
                                             state = checkbox.asToggleableState(),
-                                            onClick = { onChange(checkbox) },
+                                            onClick = null,
                                         )
                                     }
                                     is CheckboxState.State -> {
@@ -143,7 +143,7 @@ fun ChangeCategoryDialog(
                                 Text(
                                     text = checkbox.value.visualName,
                                     style = MaterialTheme.typography.bodyMedium.merge(),
-                                    modifier = Modifier.padding(horizontal = MaterialTheme.padding.medium),
+                                    modifier = Modifier.padding(start = MaterialTheme.padding.medium),
                                 )
                             }
                         }

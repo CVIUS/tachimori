@@ -115,6 +115,10 @@ class HistoryScreenModel(
         setDialog(Dialog.Delete(historyId, mangaId))
     }
 
+    fun showDeleteAllDialog() {
+        setDialog(Dialog.DeleteAll)
+    }
+
     fun setDialog(dialog: Dialog?) {
         mutableState.update { it.copy(dialog = dialog) }
     }

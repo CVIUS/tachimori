@@ -22,12 +22,12 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.tachiyomi.R
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Divider
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.isScrolledToEnd
 import tachiyomi.presentation.core.util.isScrolledToStart
 
@@ -84,8 +84,8 @@ fun MultiSelectListPreferenceWidget(
                                     )
                                     Text(
                                         text = current.value,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.padding(start = 24.dp),
+                                        style = MaterialTheme.typography.bodyMedium.merge(),
+                                        modifier = Modifier.padding(start = MaterialTheme.padding.large),
                                     )
                                 }
                             }

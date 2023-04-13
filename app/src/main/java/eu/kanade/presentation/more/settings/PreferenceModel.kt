@@ -117,9 +117,10 @@ sealed class Preference {
             override val enabled: Boolean = true,
             override val onValueChanged: suspend (newValue: String) -> Boolean = { true },
 
+            val error: String? = null,
             val hasAdditionalButton: Boolean = false,
             val onClickAdditional: suspend () -> Boolean = { false },
-            val onClickAdditionalString: String = "",
+            val onClickAdditionalString: String? = null,
         ) : PreferenceItem<String>()
 
         /**

@@ -21,6 +21,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.util.fastAll
 import cafe.adriel.voyager.core.model.rememberScreenModel
@@ -31,7 +32,7 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.presentation.category.ChangeCategoryDialog
-import eu.kanade.presentation.library.DeleteLibraryMangaDialog
+import eu.kanade.presentation.components.DialogWithCheckbox
 import eu.kanade.presentation.library.LibrarySettingsDialog
 import eu.kanade.presentation.library.components.LibraryContent
 import eu.kanade.presentation.library.components.LibraryToolbar
@@ -220,13 +221,23 @@ object LibraryTab : Tab {
                 )
             }
             is LibraryScreenModel.Dialog.DeleteManga -> {
-                DeleteLibraryMangaDialog(
-                    containsLocalManga = dialog.manga.any(Manga::isLocal),
+                val downloadCount = screenModel.allDownloadCount(dialog.manga)
+                val hasDownloads = screenModel.hasDownloads(dialog.manga)
+                DialogWithCheckbox(
                     onDismissRequest = onDismissRequest,
-                    onConfirm = { deleteManga, deleteChapter ->
-                        screenModel.removeMangas(dialog.manga, deleteManga, deleteChapter)
+                    title = stringResource(R.string.remove_from_library_),
+                    text = pluralStringResource(id = R.plurals.dialog_remove_manga_desc, count = dialog.manga.size, dialog.manga.size),
+                    confirmText = stringResource(android.R.string.ok),
+                    onConfirm = { confirm ->
+                        screenModel.removeMangas(dialog.manga, deleteChapters = confirm)
                         screenModel.clearSelection()
                     },
+                    withCheckbox = hasDownloads,
+                    checkboxText = pluralStringResource(
+                        id = R.plurals.dialog_with_checkbox_delete,
+                        count = downloadCount,
+                        downloadCount,
+                    ).takeIf { hasDownloads },
                 )
             }
             null -> {}

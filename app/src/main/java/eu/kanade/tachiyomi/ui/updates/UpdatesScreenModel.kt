@@ -39,6 +39,7 @@ import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChapter
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
+import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.updates.interactor.GetUpdates
@@ -59,6 +60,7 @@ class UpdatesScreenModel(
     private val getChapter: GetChapter = Injekt.get(),
     private val libraryPreferences: LibraryPreferences = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
+    downloadPreferences: DownloadPreferences = Injekt.get(),
     uiPreferences: UiPreferences = Injekt.get(),
 ) : StateScreenModel<UpdatesState>(UpdatesState()) {
 
@@ -67,6 +69,7 @@ class UpdatesScreenModel(
 
     val lastUpdated by libraryPreferences.libraryUpdateLastTimestamp().asState(coroutineScope)
     val relativeTime by uiPreferences.relativeTime().asState(coroutineScope)
+    val removeBookmarkedChapters by downloadPreferences.removeBookmarkedChapters().asState(coroutineScope)
 
     // First and last selected index in list
     private val selectedPositions: Array<Int> = arrayOf(-1, -1)
@@ -419,4 +422,6 @@ data class UpdatesItem(
     val downloadStateProvider: () -> Download.State,
     val downloadProgressProvider: () -> Int,
     val selected: Boolean = false,
-)
+) {
+    val isDownloaded = downloadStateProvider() == Download.State.DOWNLOADED
+}

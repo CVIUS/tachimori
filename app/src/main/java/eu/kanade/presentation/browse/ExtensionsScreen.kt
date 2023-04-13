@@ -404,6 +404,7 @@ fun ExtensionTrustDialog(
     onDismissRequest: () -> Unit,
 ) {
     AlertDialog(
+        onDismissRequest = onDismissRequest,
         title = {
             Text(text = stringResource(R.string.untrusted_extension))
         },
@@ -418,16 +419,25 @@ fun ExtensionTrustDialog(
                 if (!listState.isScrolledToEnd()) Divider(modifier = Modifier.align(Alignment.BottomCenter))
             }
         },
-        confirmButton = {
-            TextButton(onClick = onClickConfirm) {
-                Text(text = stringResource(R.string.ext_trust))
-            }
-        },
         dismissButton = {
-            TextButton(onClick = onClickDismiss) {
+            TextButton(
+                onClick = {
+                    onClickDismiss()
+                    onDismissRequest()
+                },
+            ) {
                 Text(text = stringResource(R.string.ext_uninstall))
             }
         },
-        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onClickConfirm()
+                    onDismissRequest()
+                },
+            ) {
+                Text(text = stringResource(R.string.ext_trust), color = MaterialTheme.colorScheme.error)
+            }
+        },
     )
 }

@@ -48,6 +48,7 @@ import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.home.HomeScreen
 import eu.kanade.tachiyomi.ui.manga.track.TrackInfoDialogHomeScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
+import eu.kanade.tachiyomi.ui.setting.SettingsScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import eu.kanade.tachiyomi.util.system.toShareIntent
@@ -141,8 +142,9 @@ class MangaScreen(
                 screenModel.snackbar.collectLatest { snackbar ->
                     when (snackbar) {
                         MangaInfoScreenModel.Snackbar.DeleteDownloadedChapters -> {
+                            val allDownloadCount = screenModel.getDownloadCount()
                             val result = snackbarHostState.showSnackbar(
-                                message = context.getString(R.string.delete_downloads_for_manga),
+                                message = context.resources.getQuantityString(R.plurals.snackbar_delete_chapters, allDownloadCount, allDownloadCount),
                                 actionLabel = context.getString(R.string.action_delete),
                             )
                             if (result == SnackbarResult.ActionPerformed) {
@@ -204,8 +206,9 @@ class MangaScreen(
                                 }
                             }
                         }
-                        MangaInfoScreenModel.Snackbar.UpdateDefaultChapterSettings -> {
-                            snackbarHostState.showSnackbar(context.getString(R.string.chapter_settings_updated))
+                        is MangaInfoScreenModel.Snackbar.UpdateDefaultChapterSettings -> {
+                            val textRes = if (snackbar.applyToExisting) R.string.chapter_settings_updated_library else R.string.chapter_settings_updated_entry
+                            snackbarHostState.showSnackbar(context.getString(textRes))
                         }
                     }
                 }
@@ -229,9 +232,12 @@ class MangaScreen(
             is MangaInfoScreenModel.Dialog.DeleteChapters -> {
                 DeleteChaptersDialog(
                     onDismissRequest = onDismissRequest,
-                    onConfirm = {
+                    selected = dialog.chapterItems,
+                    removeBookmarkedChapters = screenModel.removeBookmarkedChapters,
+                    onConfirm = { screenModel.deleteChapters(dialog.chapterItems) },
+                    goToSettings = {
                         screenModel.toggleAllSelection(false)
-                        screenModel.deleteChapters(dialog.chapters)
+                        navigator.push(SettingsScreen.toDownloadScreen())
                     },
                 )
             }

@@ -237,19 +237,14 @@ object SettingsBackupScreen : SearchableSettings {
                         onDismissRequest = onDismissRequest,
                         title = { Text(text = stringResource(R.string.invalid_backup_file)) },
                         text = { Text(text = "${errorDialogKey.uri}\n\n${errorDialogKey.message}") },
-                        dismissButton = {
+                        confirmButton = {
                             TextButton(
                                 onClick = {
                                     context.copyToClipboard(errorDialogKey.message, errorDialogKey.message)
                                     onDismissRequest()
                                 },
                             ) {
-                                Text(text = stringResource(android.R.string.copy))
-                            }
-                        },
-                        confirmButton = {
-                            TextButton(onClick = onDismissRequest) {
-                                Text(text = stringResource(android.R.string.ok))
+                                Text(text = stringResource(R.string.action_copy_log))
                             }
                         },
                     )

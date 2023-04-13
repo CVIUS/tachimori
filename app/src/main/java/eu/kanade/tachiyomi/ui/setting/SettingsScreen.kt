@@ -14,6 +14,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.more.settings.screen.AboutScreen
 import eu.kanade.presentation.more.settings.screen.SettingsBackupScreen
+import eu.kanade.presentation.more.settings.screen.SettingsDownloadScreen
 import eu.kanade.presentation.more.settings.screen.SettingsGeneralScreen
 import eu.kanade.presentation.more.settings.screen.SettingsMainScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
@@ -25,6 +26,7 @@ import tachiyomi.presentation.core.components.TwoPanelBox
 class SettingsScreen private constructor(
     val toBackup: Boolean,
     val toAbout: Boolean,
+    val toDownload: Boolean,
 ) : Screen() {
 
     @Composable
@@ -36,6 +38,8 @@ class SettingsScreen private constructor(
                     SettingsBackupScreen
                 } else if (toAbout) {
                     AboutScreen
+                } else if (toDownload) {
+                    SettingsDownloadScreen
                 } else {
                     SettingsMainScreen
                 },
@@ -79,10 +83,12 @@ class SettingsScreen private constructor(
     }
 
     companion object {
-        fun toMainScreen() = SettingsScreen(toBackup = false, toAbout = false)
+        fun toMainScreen() = SettingsScreen(toBackup = false, toAbout = false, toDownload = false)
 
-        fun toBackupScreen() = SettingsScreen(toBackup = true, toAbout = false)
+        fun toBackupScreen() = SettingsScreen(toBackup = true, toAbout = false, toDownload = false)
 
-        fun toAboutScreen() = SettingsScreen(toBackup = false, toAbout = true)
+        fun toAboutScreen() = SettingsScreen(toBackup = false, toAbout = true, toDownload = false)
+
+        fun toDownloadScreen() = SettingsScreen(toBackup = false, toAbout = false, toDownload = true)
     }
 }

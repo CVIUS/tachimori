@@ -114,7 +114,7 @@ fun MangaScreen(
     onMultiBookmarkClicked: (List<Chapter>, bookmarked: Boolean) -> Unit,
     onMultiMarkAsReadClicked: (List<Chapter>, markAsRead: Boolean) -> Unit,
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
-    onMultiDeleteClicked: (List<Chapter>) -> Unit,
+    onMultiDeleteClicked: (List<ChapterItem>) -> Unit,
 
     // Chapter selection
     onChapterSelected: (ChapterItem, Boolean, Boolean, Boolean) -> Unit,
@@ -231,7 +231,7 @@ private fun MangaScreenSmallImpl(
     onMultiBookmarkClicked: (List<Chapter>, bookmarked: Boolean) -> Unit,
     onMultiMarkAsReadClicked: (List<Chapter>, markAsRead: Boolean) -> Unit,
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
-    onMultiDeleteClicked: (List<Chapter>) -> Unit,
+    onMultiDeleteClicked: (List<ChapterItem>) -> Unit,
 
     // Chapter selection
     onChapterSelected: (ChapterItem, Boolean, Boolean, Boolean) -> Unit,
@@ -302,12 +302,12 @@ private fun MangaScreenSmallImpl(
             ) {
                 ExtendedFloatingActionButton(
                     text = {
-                        val id = if (chapters.fastAny { it.chapter.read }) {
+                        val textRes = if (chapters.fastAny { it.chapter.read }) {
                             R.string.action_resume
                         } else {
                             R.string.action_start
                         }
-                        Text(text = stringResource(id))
+                        Text(text = stringResource(textRes))
                     },
                     icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
                     onClick = onContinueReading,
@@ -448,7 +448,7 @@ fun MangaScreenLargeImpl(
     onMultiBookmarkClicked: (List<Chapter>, bookmarked: Boolean) -> Unit,
     onMultiMarkAsReadClicked: (List<Chapter>, markAsRead: Boolean) -> Unit,
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
-    onMultiDeleteClicked: (List<Chapter>) -> Unit,
+    onMultiDeleteClicked: (List<ChapterItem>) -> Unit,
 
     // Chapter selection
     onChapterSelected: (ChapterItem, Boolean, Boolean, Boolean) -> Unit,
@@ -528,12 +528,12 @@ fun MangaScreenLargeImpl(
                 ) {
                     ExtendedFloatingActionButton(
                         text = {
-                            val id = if (chapters.fastAny { it.chapter.read }) {
+                            val textRes = if (chapters.fastAny { it.chapter.read }) {
                                 R.string.action_resume
                             } else {
                                 R.string.action_start
                             }
-                            Text(text = stringResource(id))
+                            Text(text = stringResource(textRes))
                         },
                         icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
                         onClick = onContinueReading,
@@ -633,7 +633,7 @@ private fun SharedMangaBottomActionMenu(
     onMultiMarkAsReadClicked: (List<Chapter>, markAsRead: Boolean) -> Unit,
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
     onDownloadChapter: ((List<ChapterItem>, ChapterDownloadAction) -> Unit)?,
-    onMultiDeleteClicked: (List<Chapter>) -> Unit,
+    onMultiDeleteClicked: (List<ChapterItem>) -> Unit,
     fillFraction: Float,
 ) {
     MangaBottomActionMenu(
@@ -657,12 +657,12 @@ private fun SharedMangaBottomActionMenu(
         onDownloadClicked = {
             onDownloadChapter!!(selected.toList(), ChapterDownloadAction.START)
         }.takeIf {
-            onDownloadChapter != null && selected.fastAny { it.downloadState != Download.State.DOWNLOADED }
+            onDownloadChapter != null && selected.fastAny { it.downloadStateProvider() != Download.State.DOWNLOADED }
         },
         onDeleteClicked = {
-            onMultiDeleteClicked(selected.fastMap { it.chapter })
+            onMultiDeleteClicked(selected)
         }.takeIf {
-            onDownloadChapter != null && selected.fastAny { it.downloadState == Download.State.DOWNLOADED }
+            onDownloadChapter != null && selected.fastAny { it.downloadStateProvider() == Download.State.DOWNLOADED }
         },
     )
 }
@@ -715,7 +715,7 @@ private fun LazyListScope.sharedChapterItems(
             bookmark = chapterItem.chapter.bookmark,
             selected = chapterItem.selected,
             downloadIndicatorEnabled = chapters.fastAll { !it.selected },
-            downloadStateProvider = { chapterItem.downloadState },
+            downloadStateProvider = chapterItem.downloadStateProvider,
             downloadProgressProvider = { chapterItem.downloadProgress },
             onLongClick = {
                 onChapterSelected(chapterItem, !chapterItem.selected, true, true)

@@ -165,7 +165,7 @@ fun SourceOptionsDialog(
     source: Source,
     onClickPin: () -> Unit,
     onClickDisable: () -> Unit,
-    onDismiss: () -> Unit,
+    onDismissRequest: () -> Unit,
 ) {
     AlertDialog(
         title = {
@@ -190,9 +190,9 @@ fun SourceOptionsDialog(
                 }
             }
         },
-        onDismissRequest = onDismiss,
+        onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismissRequest) {
                 Text(text = stringResource(R.string.action_cancel))
             }
         },

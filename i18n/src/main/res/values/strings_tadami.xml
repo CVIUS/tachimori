@@ -17,7 +17,6 @@
     <string name="migration_copy_failed">Cannot copy this entry because it may be the same entry</string>
     <string name="action_just_add">Just add</string>
     <string name="extras">Extras</string>
-    <string name="error_already_exists">Already exists!</string>
     <string name="not_allowed">Not allowed</string>
     <string name="error_random_manga">Error opening random entry</string>
     <string name="pref_aggressively_load_pages">Aggressively load pages</string>
@@ -30,7 +29,53 @@
     <string name="pref_preload_amount_12_pages">12 pages</string>
     <string name="pref_preload_amount_15_pages">15 pages</string>
     <string name="pref_reader_cache_size">Reader cache size</string>
-    <string name="dialog_clear_database_confirmation">Read chapters and progress of non-library entries will be lost</string>
+    <string name="error_ua_cannot_blank">User agent cannot be blank!</string>
+    <string name="error_default_category">\"Default\" is a system category!</string>
+    <string name="dialog_clear_database_confirmation_desc">Read chapters and progress of non-library entries will be lost.</string>
     <string name="dialog_with_checkbox_exclude">Keep entries with read/partially read chapters</string>
+    <string name="dialog_with_checkbox_remove_history_desc">Read date of this chapter will be removed.</string>
+    <plurals name="dialog_remove_manga_desc">
+        <item quantity="one">%1$d entry will be removed from the library.</item>
+        <item quantity="other">%1$d entries will be removed from the library.</item>
+    </plurals>
+    <plurals name="dialog_with_checkbox_delete">
+        <item quantity="one">Delete %1$d downloaded chapter</item>
+        <item quantity="other">Delete %1$d downloaded chapters</item>
+    </plurals>
+    <plurals name="snackbar_delete_chapters">
+        <item quantity="one">Delete %1$d downloaded chapter?</item>
+        <item quantity="other">Delete %1$d downloaded chapters?</item>
+    </plurals>
+    <string name="dialog_clear_all_history_desc">All history will be lost.</string>
+    <plurals name="dialog_confirm_delete_chapters_desc">
+        <item quantity="one">%1$d downloaded chapter will be deleted.</item>
+        <item quantity="other">%1$d downloaded chapters will be deleted.</item>
+    </plurals>
+    <string name="dialog_duplicate_desc">An entry in your library with the same title already exists.</string>
+    <string name="action_choose">Choose an action</string>
+    <string name="please_wait">Please wait</string>
+    <string name="chapter_settings_updated_entry">Updated default chapter settings for this entry</string>
+    <string name="chapter_settings_updated_library">Updated default chapter settings for all entries in library</string>
+    <string name="action_copy_log">Copy log</string>
+    <string name="action_apply">Apply</string>
+    <string name="action_learn_more">Learn more</string>
+    <string name="action_clear">Clear</string>
+    <string name="remove_history">Remove history?</string>
+    <string name="remove_all_history">Remove all history?</string>
+    <string name="delete_category_">Delete category?</string>
+    <string name="delete_downloads">Delete downloads?</string>
+    <string name="dialog_delete_category_desc">\"%s\" category will be deleted.</string>
+    <string name="dialog_chapter_settings_desc">Do you want to save these settings as default?</string>
+    <string name="remove_from_library_">Remove from library?</string>
+    <string name="dialog_with_checkbox_chapter_settings_library">Apply to all entries in library</string>
+    <plurals name="dialog_delete_bookmarked_not_allowed_only">
+        <item quantity="one">It appears that %1$d downloaded bookmarked chapter cannot be deleted.</item>
+        <item quantity="other">It appears that %1$d downloaded bookmarked chapters cannot be deleted.</item>
+    </plurals>
+    <string name="dialog_delete_bookmarked_not_allowed">However, %1$d of them have been bookmarked and will not be deleted.</string>
+    <string name="go_to_settings">Go to settings</string>
+    <string name="clear_database">Clear database?</string>
+    <string name="hmmm">Hmmm…</string>
+    <string name="action_rename">Rename</string>
 
 </resources>

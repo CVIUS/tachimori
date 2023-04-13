@@ -7,6 +7,8 @@ import android.provider.Settings
 import android.webkit.WebStorage
 import android.webkit.WebView
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -18,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -280,6 +283,7 @@ object SettingsAdvancedScreen : SearchableSettings {
                         }
                         true
                     },
+                    error = stringResource(R.string.error_ua_cannot_blank),
                     hasAdditionalButton = remember(userAgent) { userAgent != userAgentPref.defaultValue() },
                     onClickAdditional = {
                         userAgentPref.delete()
@@ -302,11 +306,12 @@ object SettingsAdvancedScreen : SearchableSettings {
             title = stringResource(R.string.label_library),
             preferenceItems = listOf(
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(R.string.pref_refresh_library_covers),
-                    onClick = { LibraryUpdateJob.startNow(context, target = LibraryUpdateJob.Target.COVERS) },
+                    title = stringResource(R.string.pref_refresh_library_details),
+                    subtitle = stringResource(R.string.pref_refresh_library_details_summary),
+                    onClick = { LibraryUpdateJob.startNow(context, target = LibraryUpdateJob.Target.DETAILS) },
                 ),
                 Preference.PreferenceItem.TextPreference(
-                    title = stringResource(R.string.pref_refresh_library_tracking),
+                    title = stringResource(R.string.pref_refresh_library_trackers),
                     subtitle = stringResource(R.string.pref_refresh_library_tracking_summary),
                     enabled = trackManager.hasLoggedServices(),
                     onClick = { LibraryUpdateJob.startNow(context, target = LibraryUpdateJob.Target.TRACKING) },
@@ -342,24 +347,33 @@ object SettingsAdvancedScreen : SearchableSettings {
         var shizukuMissing by rememberSaveable { mutableStateOf(false) }
 
         if (shizukuMissing) {
-            val dismiss = { shizukuMissing = false }
+            val onDismissRequest = { shizukuMissing = false }
             AlertDialog(
-                onDismissRequest = dismiss,
+                onDismissRequest = onDismissRequest,
                 title = { Text(text = stringResource(R.string.ext_installer_shizuku)) },
                 text = { Text(text = stringResource(R.string.ext_installer_shizuku_unavailable_dialog)) },
-                dismissButton = {
-                    TextButton(onClick = dismiss) {
-                        Text(text = stringResource(R.string.action_cancel))
-                    }
-                },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            dismiss()
-                            uriHandler.openUri("https://shizuku.rikka.app/download")
-                        },
-                    ) {
-                        Text(text = stringResource(android.R.string.ok))
+                    Row {
+                        TextButton(
+                            onClick = {
+                                onDismissRequest()
+                                uriHandler.openUri("https://tachiyomi.org/help/faq/#shizuku")
+                            },
+                        ) {
+                            Text(text = stringResource(R.string.action_learn_more))
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                        TextButton(onClick = onDismissRequest) {
+                            Text(text = stringResource(R.string.action_cancel))
+                        }
+                        TextButton(
+                            onClick = {
+                                onDismissRequest()
+                                uriHandler.openUri("https://shizuku.rikka.app/download")
+                            },
+                        ) {
+                            Text(text = stringResource(R.string.action_install))
+                        }
                     }
                 },
             )

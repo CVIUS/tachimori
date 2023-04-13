@@ -136,14 +136,15 @@ class DownloadCache(
     /**
      * Returns the amount of downloaded chapters for a manga.
      *
-     * @param manga the manga to check.
+     * @param title the title used to check manga directory.
+     * @param sourceId the source id used to check source directory.
      */
-    fun getDownloadCount(manga: Manga): Int {
+    fun getDownloadCount(title: String, sourceId: Long): Int {
         renewCache()
 
-        val sourceDir = rootDownloadsDir.sourceDirs[manga.source]
+        val sourceDir = rootDownloadsDir.sourceDirs[sourceId]
         if (sourceDir != null) {
-            val mangaDir = sourceDir.mangaDirs[provider.getMangaDirName(manga.title)]
+            val mangaDir = sourceDir.mangaDirs[provider.getMangaDirName(title)]
             if (mangaDir != null) {
                 return mangaDir.chapterDirs.size
             }
