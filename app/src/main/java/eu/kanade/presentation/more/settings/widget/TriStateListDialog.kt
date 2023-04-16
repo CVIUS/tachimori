@@ -90,7 +90,6 @@ fun <T> TriStateListDialog(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Icon(
-                                    modifier = Modifier.padding(end = 20.dp),
                                     imageVector = when (state) {
                                         State.UNCHECKED -> Icons.Rounded.CheckBoxOutlineBlank
                                         State.CHECKED -> Icons.Rounded.CheckBox
