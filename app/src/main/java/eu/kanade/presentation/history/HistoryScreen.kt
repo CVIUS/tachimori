@@ -19,16 +19,19 @@ import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.LoadingScreen
+import java.text.DateFormat
 import java.util.Date
 
 @Composable
 fun HistoryScreen(
     state: HistoryState,
     snackbarHostState: SnackbarHostState,
+    relativeTime: Int,
+    dateFormat: DateFormat,
     onSearchQueryChange: (String?) -> Unit,
     onClickCover: (mangaId: Long) -> Unit,
     onClickResume: (mangaId: Long, chapterId: Long) -> Unit,
-    onClickDelete: (historyId: Long, mangaId: Long) -> Unit,
+    onClickDelete: (historyId: Long, mangaId: Long, title: String, preferredChapterName: String) -> Unit,
     onClickDeleteAll: () -> Unit,
 ) {
     Scaffold(
@@ -66,10 +69,19 @@ fun HistoryScreen(
             } else {
                 HistoryContent(
                     history = it,
+                    relativeTime = relativeTime,
+                    dateFormat = dateFormat,
                     contentPadding = contentPadding,
                     onClickCover = { history -> onClickCover(history.mangaId) },
                     onClickResume = { history -> onClickResume(history.mangaId, history.chapterId) },
-                    onClickDelete = { history -> onClickDelete(history.id, history.mangaId) },
+                    onClickDelete = { history, preferredChapterName ->
+                        onClickDelete(
+                            history.id,
+                            history.mangaId,
+                            history.title,
+                            preferredChapterName,
+                        )
+                    },
                 )
             }
         }
@@ -78,5 +90,5 @@ fun HistoryScreen(
 
 sealed class HistoryUiModel {
     data class Header(val date: Date) : HistoryUiModel()
-    data class Item(val item: HistoryWithRelations) : HistoryUiModel()
+    data class Item(val history: HistoryWithRelations) : HistoryUiModel()
 }

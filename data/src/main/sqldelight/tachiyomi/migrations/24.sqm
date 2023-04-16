@@ -1,3 +1,6 @@
+DROP VIEW IF EXISTS historyView;
+DROP VIEW IF EXISTS updatesView;
+
 CREATE VIEW historyView AS
 SELECT
     history._id AS id,
@@ -27,41 +30,25 @@ JOIN (
 ) AS max_last_read
 ON chapters.manga_id = max_last_read.manga_id;
 
-history:
+CREATE VIEW updatesView AS
 SELECT
-id,
-mangaId,
-chapterId,
-title,
-thumbnailUrl,
-source,
-favorite,
-cover_last_modified,
-chapterName,
-chapterNumber,
-readAt,
-readDuration
-FROM historyView
-WHERE historyView.readAt > 0
-AND maxReadAtChapterId = historyView.chapterId
-AND lower(historyView.title) LIKE ('%' || :query || '%')
-ORDER BY readAt DESC;
-
-getLatestHistory:
-SELECT
-id,
-mangaId,
-chapterId,
-title,
-thumbnailUrl,
-source,
-favorite,
-cover_last_modified,
-chapterName,
-chapterNumber,
-readAt,
-readDuration
-FROM historyView
-WHERE historyView.readAt > 0
-ORDER BY readAt DESC
-LIMIT 1;
+    mangas._id AS mangaId,
+    mangas.title AS mangaTitle,
+    chapters._id AS chapterId,
+    chapters.name AS chapterName,
+    chapters.chapter_number AS chapterNumber,
+    chapters.scanlator,
+    chapters.read,
+    chapters.bookmark,
+    chapters.last_page_read,
+    mangas.source,
+    mangas.favorite,
+    mangas.thumbnail_url AS thumbnailUrl,
+    mangas.cover_last_modified AS coverLastModified,
+    chapters.date_upload AS dateUpload,
+    chapters.date_fetch AS datefetch
+FROM mangas JOIN chapters
+ON mangas._id = chapters.manga_id
+WHERE favorite = 1
+AND date_fetch > date_added
+ORDER BY date_fetch DESC;

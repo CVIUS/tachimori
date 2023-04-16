@@ -2,10 +2,14 @@ package eu.kanade.tachiyomi.ui.history
 
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
+import eu.kanade.core.preference.asState
 import eu.kanade.core.util.insertSeparators
 import eu.kanade.domain.history.interactor.GetNextChapters
+import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.history.HistoryUiModel
 import eu.kanade.tachiyomi.util.lang.toDateKey
 import kotlinx.coroutines.Dispatchers
@@ -35,11 +39,15 @@ class HistoryScreenModel(
     private val getHistory: GetHistory = Injekt.get(),
     private val getNextChapters: GetNextChapters = Injekt.get(),
     private val removeHistory: RemoveHistory = Injekt.get(),
+    uiPreferences: UiPreferences = Injekt.get(),
     val snackbarHostState: SnackbarHostState = SnackbarHostState(),
 ) : StateScreenModel<HistoryState>(HistoryState()) {
 
     private val _events: Channel<Event> = Channel(Channel.CONFLATED)
     val events: Flow<Event> = _events.receiveAsFlow()
+
+    val relativeTime by uiPreferences.relativeTime().asState(coroutineScope)
+    val dateFormat by mutableStateOf(UiPreferences.dateFormat(uiPreferences.dateFormat().get()))
 
     init {
         coroutineScope.launch {
@@ -62,8 +70,8 @@ class HistoryScreenModel(
     private fun List<HistoryWithRelations>.toHistoryUiModels(): List<HistoryUiModel> {
         return map { HistoryUiModel.Item(it) }
             .insertSeparators { before, after ->
-                val beforeDate = before?.item?.readAt?.time?.toDateKey() ?: Date(0)
-                val afterDate = after?.item?.readAt?.time?.toDateKey() ?: Date(0)
+                val beforeDate = before?.history?.readAt?.time?.toDateKey() ?: Date(0)
+                val afterDate = after?.history?.readAt?.time?.toDateKey() ?: Date(0)
                 when {
                     beforeDate.time != afterDate.time && afterDate.time != 0L -> HistoryUiModel.Header(afterDate)
                     // Return null to avoid adding a separator between two items.
@@ -111,8 +119,8 @@ class HistoryScreenModel(
         mutableState.update { it.copy(searchQuery = query) }
     }
 
-    fun showDeleteDialog(historyId: Long, mangaId: Long) {
-        setDialog(Dialog.Delete(historyId, mangaId))
+    fun showDeleteDialog(historyId: Long, mangaId: Long, title: String, preferredChapterName: String) {
+        setDialog(Dialog.Delete(historyId, mangaId, title, preferredChapterName))
     }
 
     fun showDeleteAllDialog() {
@@ -125,7 +133,12 @@ class HistoryScreenModel(
 
     sealed class Dialog {
         object DeleteAll : Dialog()
-        data class Delete(val historyId: Long, val mangaId: Long) : Dialog()
+        data class Delete(
+            val historyId: Long,
+            val mangaId: Long,
+            val title: String,
+            val preferredChapterName: String,
+        ) : Dialog()
     }
 
     sealed class Event {

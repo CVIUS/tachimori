@@ -75,8 +75,6 @@ import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.domain.track.interactor.GetTracks
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
 
 class MangaInfoScreenModel(
     val context: Context,
@@ -982,12 +980,6 @@ data class ChapterItem(
 ) {
     val isDownloaded = downloadStateProvider() == Download.State.DOWNLOADED
 }
-
-val chapterDecimalFormat = DecimalFormat(
-    "#.###",
-    DecimalFormatSymbols()
-        .apply { decimalSeparator = '.' },
-)
 
 private val Throwable.snackbarMessage: String
     get() = when (val className = this::class.simpleName) {

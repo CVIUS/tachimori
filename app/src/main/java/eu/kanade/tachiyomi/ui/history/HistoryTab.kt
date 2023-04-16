@@ -62,6 +62,8 @@ object HistoryTab : Tab {
         HistoryScreen(
             state = state,
             snackbarHostState = snackbarHostState,
+            relativeTime = screenModel.relativeTime,
+            dateFormat = screenModel.dateFormat,
             onSearchQueryChange = screenModel::updateSearchQuery,
             onClickCover = { mangaId -> navigator.push(MangaScreen(mangaId)) },
             onClickResume = screenModel::getNextChapterForManga,
@@ -75,7 +77,7 @@ object HistoryTab : Tab {
                 DialogWithCheckbox(
                     onDismissRequest = onDismissRequest,
                     title = stringResource(R.string.remove_history),
-                    text = stringResource(R.string.dialog_with_checkbox_remove_history_desc),
+                    text = stringResource(R.string.dialog_with_checkbox_remove_history_desc, dialog.title, dialog.preferredChapterName),
                     confirmText = stringResource(R.string.action_remove),
                     onConfirm = { all ->
                         if (all) {
@@ -84,7 +86,7 @@ object HistoryTab : Tab {
                             screenModel.removeFromHistory(dialog.historyId)
                         }
                     },
-                    checkboxText = stringResource(R.string.dialog_with_checkbox_reset),
+                    checkboxText = stringResource(R.string.dialog_with_checkbox_reset_history),
                 )
             }
             is HistoryScreenModel.Dialog.DeleteAll -> {

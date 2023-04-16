@@ -1,6 +1,7 @@
 package eu.kanade.presentation.history.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -17,27 +18,38 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.util.chapter.chapterDecimalFormat
 import eu.kanade.tachiyomi.util.lang.toTimestampString
 import tachiyomi.domain.history.model.HistoryWithRelations
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.material.padding
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
 
 private val HISTORY_ITEM_HEIGHT = 96.dp
 
 @Composable
 fun HistoryItem(
+    manga: Manga?,
     modifier: Modifier = Modifier,
     history: HistoryWithRelations,
     onClickCover: () -> Unit,
     onClickResume: () -> Unit,
-    onClickDelete: () -> Unit,
+    onClickDelete: (String) -> Unit,
 ) {
+    val displayNumber = remember(manga) { manga?.displayMode == Manga.CHAPTER_DISPLAY_NUMBER && history.chapterNumber >= 0f }
+    val prefChapName = if (displayNumber) {
+        stringResource(
+            R.string.display_mode_chapter,
+            chapterDecimalFormat.format(history.chapterNumber.toDouble()),
+        )
+    } else {
+        history.chapterName
+    }
+    val msg = prefChapName.takeIf { manga != null } ?: history.chapterName
+
     Row(
         modifier = modifier
             .clickable(onClick = onClickResume)
@@ -54,32 +66,29 @@ fun HistoryItem(
             modifier = Modifier
                 .weight(1f)
                 .padding(start = MaterialTheme.padding.medium, end = MaterialTheme.padding.small),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            val textStyle = MaterialTheme.typography.bodyMedium
             Text(
                 text = history.title,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
+                maxLines = 1,
+                style = MaterialTheme.typography.titleSmall,
                 overflow = TextOverflow.Ellipsis,
-                style = textStyle,
             )
-            val readAt = remember { history.readAt?.toTimestampString() ?: "" }
+            val readAt = remember { history.readAt?.toTimestampString() }
             Text(
-                text = if (history.chapterNumber > -1) {
-                    stringResource(
-                        R.string.recent_manga_time,
-                        chapterFormatter.format(history.chapterNumber),
-                        readAt,
-                    )
-                } else {
-                    readAt
-                },
-                modifier = Modifier.padding(top = 4.dp),
-                style = textStyle,
+                text = msg,
+                maxLines = 1,
+                style = MaterialTheme.typography.bodyMedium,
             )
+            if (readAt != null) {
+                Text(
+                    text = readAt,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
 
-        IconButton(onClick = onClickDelete) {
+        IconButton(onClick = { onClickDelete(msg) }) {
             Icon(
                 imageVector = Icons.Outlined.Delete,
                 contentDescription = stringResource(R.string.action_delete),
@@ -88,8 +97,3 @@ fun HistoryItem(
         }
     }
 }
-
-private val chapterFormatter = DecimalFormat(
-    "#.###",
-    DecimalFormatSymbols().apply { decimalSeparator = '.' },
-)

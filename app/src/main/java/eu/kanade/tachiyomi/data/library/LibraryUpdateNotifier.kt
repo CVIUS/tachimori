@@ -19,6 +19,7 @@ import eu.kanade.tachiyomi.data.notification.NotificationHandler
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.ui.main.MainActivity
+import eu.kanade.tachiyomi.util.chapter.chapterDecimalFormat
 import eu.kanade.tachiyomi.util.lang.chop
 import eu.kanade.tachiyomi.util.system.notification
 import eu.kanade.tachiyomi.util.system.notificationBuilder
@@ -28,8 +29,6 @@ import tachiyomi.core.util.lang.launchUI
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.manga.model.Manga
 import uy.kohesive.injekt.injectLazy
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
 
 class LibraryUpdateNotifier(private val context: Context) {
 
@@ -280,16 +279,11 @@ class LibraryUpdateNotifier(private val context: Context) {
     }
 
     private fun getNewChaptersDescription(chapters: Array<Chapter>): String {
-        val formatter = DecimalFormat(
-            "#.###",
-            DecimalFormatSymbols()
-                .apply { decimalSeparator = '.' },
-        )
 
         val displayableChapterNumbers = chapters
             .filter { it.isRecognizedNumber }
             .sortedBy { it.chapterNumber }
-            .map { formatter.format(it.chapterNumber) }
+            .map { chapterDecimalFormat.format(it.chapterNumber) }
             .toSet()
 
         return when (displayableChapterNumbers.size) {

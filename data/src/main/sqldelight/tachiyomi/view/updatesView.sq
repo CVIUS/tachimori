@@ -4,6 +4,7 @@ SELECT
     mangas.title AS mangaTitle,
     chapters._id AS chapterId,
     chapters.name AS chapterName,
+    chapters.chapter_number AS chapterNumber,
     chapters.scanlator,
     chapters.read,
     chapters.bookmark,

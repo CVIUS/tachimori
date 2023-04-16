@@ -42,11 +42,17 @@ import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
+import eu.kanade.tachiyomi.util.chapter.chapterDecimalFormat
+import kotlinx.coroutines.runBlocking
+import tachiyomi.domain.manga.interactor.GetManga
+import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.presentation.core.components.ListGroupHeader
 import tachiyomi.presentation.core.components.material.ReadItemAlpha
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.selectedBackground
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import java.util.Date
 import kotlin.time.Duration.Companion.minutes
 
@@ -116,6 +122,7 @@ fun LazyListScope.updatesUiItems(
                 val updatesItem = item.item
                 UpdatesUiItem(
                     modifier = Modifier.animateItemPlacement(),
+                    manga = runBlocking { Injekt.get<GetManga>().await(updatesItem.update.mangaId) },
                     update = updatesItem.update,
                     selected = updatesItem.selected,
                     readProgress = updatesItem.update.lastPageRead
@@ -151,6 +158,7 @@ fun LazyListScope.updatesUiItems(
 @Composable
 fun UpdatesUiItem(
     modifier: Modifier,
+    manga: Manga?,
     update: UpdatesWithRelations,
     selected: Boolean,
     readProgress: String?,
@@ -163,6 +171,16 @@ fun UpdatesUiItem(
     downloadProgressProvider: () -> Int,
 ) {
     val textAlpha = if (update.read) ReadItemAlpha else 1f
+
+    val displayNumber = remember(manga) { manga?.displayMode == Manga.CHAPTER_DISPLAY_NUMBER && update.chapterNumber >= 0f }
+    val textRes = if (displayNumber) {
+        stringResource(
+            R.string.display_mode_chapter,
+            chapterDecimalFormat.format(update.chapterNumber.toDouble()),
+        )
+    } else {
+        update.chapterName
+    }
 
     Row(
         modifier = modifier
@@ -212,7 +230,7 @@ fun UpdatesUiItem(
                 }
 
                 Text(
-                    text = update.chapterName,
+                    text = textRes.takeIf { manga != null } ?: update.chapterName,
                     maxLines = 1,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = LocalContentColor.current.copy(alpha = textAlpha),

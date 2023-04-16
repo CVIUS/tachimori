@@ -33,7 +33,7 @@
     <string name="error_default_category">\"Default\" is a system category!</string>
     <string name="dialog_clear_database_confirmation_desc">Read chapters and progress of non-library entries will be lost.</string>
     <string name="dialog_with_checkbox_exclude">Keep entries with read/partially read chapters</string>
-    <string name="dialog_with_checkbox_remove_history_desc">Read date of this chapter will be removed.</string>
+    <string name="dialog_with_checkbox_remove_history_desc">Read date of \"%1$s - %2$s\" will be removed.</string>
     <plurals name="dialog_remove_manga_desc">
         <item quantity="one">%1$d entry will be removed from the library.</item>
         <item quantity="other">%1$d entries will be removed from the library.</item>
@@ -77,5 +77,6 @@
     <string name="clear_database">Clear database?</string>
     <string name="hmmm">Hmmm…</string>
     <string name="action_rename">Rename</string>
+    <string name="dialog_with_checkbox_reset_history">Reset all chapters read date</string>
 
 </resources>
