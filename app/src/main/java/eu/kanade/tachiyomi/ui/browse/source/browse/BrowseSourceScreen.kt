@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FilterList
-import androidx.compose.material.icons.outlined.NewReleases
+import androidx.compose.material.icons.outlined.Upcoming
 import androidx.compose.material.icons.outlined.Whatshot
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -170,7 +170,7 @@ data class BrowseSourceScreen(
                                 },
                                 leadingIcon = {
                                     Icon(
-                                        imageVector = Icons.Outlined.NewReleases,
+                                        imageVector = Icons.Outlined.Upcoming,
                                         contentDescription = "",
                                         modifier = Modifier
                                             .size(FilterChipDefaults.IconSize),

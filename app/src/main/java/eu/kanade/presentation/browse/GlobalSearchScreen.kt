@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchEmptyResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -21,6 +20,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.LazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.util.plus
 
@@ -77,7 +77,7 @@ fun GlobalSearchContent(
     onLongClickItem: (Manga) -> Unit,
 ) {
     LazyColumn(
-        contentPadding = contentPadding + PaddingValues(top = 8.dp),
+        contentPadding = contentPadding + topSmallPaddingValues,
     ) {
         items.forEach { (source, result) ->
             item(key = source.id) {
