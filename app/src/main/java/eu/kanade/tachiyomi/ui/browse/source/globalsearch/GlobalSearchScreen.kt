@@ -13,7 +13,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 
 class GlobalSearchScreen(
     val searchQuery: String = "",
-    val extensionFilter: String = "",
+    private val extensionFilter: String = "",
 ) : Screen() {
 
     @Composable
@@ -31,7 +31,8 @@ class GlobalSearchScreen(
         GlobalSearchScreen(
             state = state,
             navigateUp = navigator::pop,
-            pinnedSourcesOnlyEmpty = screenModel.pinnedSources.get().isEmpty() && screenModel.searchPinnedSourcesOnly.get(),
+            pinnedSources = screenModel.pinnedSources.get(),
+            pinnedSourcesOnly = screenModel.searchPinnedSourcesOnly.get(),
             onChangeSearchQuery = screenModel::updateSearchQuery,
             onSearch = screenModel::search,
             getManga = { source, manga ->

@@ -24,7 +24,6 @@ fun HistoryContent(
     onClickResume: (HistoryWithRelations) -> Unit,
     onClickDelete: (HistoryWithRelations, preferredChapterName: String) -> Unit,
 ) {
-
     FastScrollLazyColumn(
         contentPadding = contentPadding,
     ) {

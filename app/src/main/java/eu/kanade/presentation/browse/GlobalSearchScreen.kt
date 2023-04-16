@@ -1,11 +1,19 @@
 package eu.kanade.presentation.browse
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchEmptyResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
@@ -20,6 +28,7 @@ import eu.kanade.tachiyomi.util.system.LocaleHelper
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.presentation.core.components.LazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.util.plus
@@ -28,7 +37,8 @@ import tachiyomi.presentation.core.util.plus
 fun GlobalSearchScreen(
     state: GlobalSearchState,
     navigateUp: () -> Unit,
-    pinnedSourcesOnlyEmpty: Boolean,
+    pinnedSources: Set<String>,
+    pinnedSourcesOnly: Boolean,
     onChangeSearchQuery: (String?) -> Unit,
     onSearch: (String) -> Unit,
     getManga: @Composable (CatalogueSource, Manga) -> State<Manga>,
@@ -48,11 +58,16 @@ fun GlobalSearchScreen(
             )
         },
     ) { paddingValues ->
-        if (pinnedSourcesOnlyEmpty) {
+        if (pinnedSourcesOnly && pinnedSources.isEmpty() && state.items.isEmpty()) {
             EmptyScreen(
                 message = stringResource(R.string.no_pinned_sources),
                 modifier = Modifier.padding(paddingValues),
             )
+            return@Scaffold
+        }
+
+        if (state.items.isEmpty()) {
+            GlobalSearchEmptyContent(modifier = Modifier.padding(paddingValues))
             return@Scaffold
         }
 
@@ -109,6 +124,25 @@ fun GlobalSearchContent(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun GlobalSearchEmptyContent(modifier: Modifier) {
+    Box(
+        contentAlignment = Alignment.TopCenter,
+        modifier = modifier.fillMaxSize(),
+    ) {
+        Column {
+            Spacer(modifier = Modifier.padding(top = MaterialTheme.padding.large))
+            Text(
+                text = stringResource(R.string.try_searching),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold,
+                ),
+            )
         }
     }
 }
