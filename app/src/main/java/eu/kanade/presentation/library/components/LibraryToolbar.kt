@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FlipToBack
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.SelectAll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,16 +20,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.components.AppBarFilterAction
 import eu.kanade.presentation.components.SearchToolbar
 import eu.kanade.tachiyomi.R
+import tachiyomi.domain.category.model.Category
 import tachiyomi.presentation.core.components.Pill
 
 @Composable
 fun LibraryToolbar(
-    hasActiveFilters: Boolean,
-    tabVisible: Boolean,
-    selectedCount: Int,
     title: LibraryToolbarTitle,
+    categories: List<Category>,
+    hasActiveFilters: Boolean,
+    showCategoryTabs: Boolean,
+    selectedCount: Int,
     onClickUnselectAll: () -> Unit,
     onClickSelectAll: () -> Unit,
     onClickInvertSelection: () -> Unit,
@@ -47,8 +51,9 @@ fun LibraryToolbar(
     )
     else -> LibraryRegularToolbar(
         title = title,
-        hasFilters = hasActiveFilters,
-        tabVisible = tabVisible,
+        categories = categories,
+        hasActiveFilters = hasActiveFilters,
+        showCategoryTabs = showCategoryTabs,
         searchQuery = searchQuery,
         onSearchQueryChange = onSearchQueryChange,
         onClickFilter = onClickFilter,
@@ -61,8 +66,9 @@ fun LibraryToolbar(
 @Composable
 fun LibraryRegularToolbar(
     title: LibraryToolbarTitle,
-    hasFilters: Boolean,
-    tabVisible: Boolean,
+    categories: List<Category>,
+    hasActiveFilters: Boolean,
+    showCategoryTabs: Boolean,
     searchQuery: String?,
     onSearchQueryChange: (String?) -> Unit,
     onClickFilter: () -> Unit,
@@ -80,6 +86,7 @@ fun LibraryRegularToolbar(
                     modifier = Modifier.weight(1f, false),
                     overflow = TextOverflow.Ellipsis,
                 )
+                val tabVisible = showCategoryTabs && categories.size > 1
                 if (title.numberOfManga != null && title.numberOfManga != 0 && !tabVisible) {
                     Pill(
                         text = "${title.numberOfManga}",
@@ -92,19 +99,41 @@ fun LibraryRegularToolbar(
         searchQuery = searchQuery,
         onChangeSearchQuery = onSearchQueryChange,
         actions = {
+            val userCat = categories.filterNot(Category::isSystemCategory)
+            val onClick: () -> Unit = {
+                if (userCat.isNotEmpty()) {
+                    if (showCategoryTabs) {
+                        onClickGlobalUpdate()
+                    } else {
+                        onClickRefresh()
+                    }
+                } else {
+                    onClickGlobalUpdate()
+                }
+            }
+            val text: @Composable () -> String = {
+                if (userCat.isNotEmpty()) {
+                    if (showCategoryTabs) {
+                        stringResource(R.string.action_update_library)
+                    } else {
+                        stringResource(R.string.action_update_category)
+                    }
+                } else {
+                    stringResource(R.string.action_update_library)
+                }
+            }
+
+            AppBarFilterAction(
+                onClick = onClickFilter,
+                hasActiveFilters = hasActiveFilters,
+            )
+
             AppBarActions(
                 actions = listOf(
-                    AppBar.FilterAction(
-                        onClick = onClickFilter,
-                        hasFilters = hasFilters,
-                    ),
-                    AppBar.OverflowAction(
-                        title = stringResource(R.string.pref_category_library_update),
-                        onClick = onClickGlobalUpdate,
-                    ),
-                    AppBar.OverflowAction(
-                        title = stringResource(R.string.action_update_category),
-                        onClick = onClickRefresh,
+                    AppBar.Action(
+                        icon = Icons.Outlined.Refresh,
+                        title = text(),
+                        onClick = onClick,
                     ),
                 ),
             )

@@ -33,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -50,6 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.tachiyomi.R
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.runOnEnterKeyPressed
 import tachiyomi.presentation.core.util.secondaryItemAlpha
 
@@ -194,18 +194,6 @@ fun AppBarActions(
         }
     }
 
-    actions.filterIsInstance<AppBar.FilterAction>().map {
-        IconButton(onClick = it.onClick) {
-            // paddings are necessary since the parent clips the shape to circle
-            BadgedBox(badge = { if (it.hasFilters) Badge(Modifier.padding(top = 16.dp, end = 8.dp)) }) {
-                Icon(
-                    imageVector = Icons.Outlined.FilterList,
-                    contentDescription = stringResource(R.string.action_filter),
-                )
-            }
-        }
-    }
-
     val overflowActions = actions.filterIsInstance<AppBar.OverflowAction>()
     if (overflowActions.isNotEmpty()) {
         IconButton(onClick = { showMenu = !showMenu }) {
@@ -225,6 +213,33 @@ fun AppBarActions(
                     text = { Text(it.title, fontWeight = FontWeight.Normal) },
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun AppBarFilterAction(
+    onClick: () -> Unit,
+    hasActiveFilters: Boolean,
+) {
+    IconButton(onClick = onClick) {
+        BadgedBox(
+            badge = {
+                if (hasActiveFilters) {
+                    Badge(
+                        modifier = Modifier
+                            .padding(
+                                top = MaterialTheme.padding.medium,
+                                end = MaterialTheme.padding.small,
+                            ), // Paddings are necessary since the parent clips the shape to circle
+                    )
+                }
+            },
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.FilterList,
+                contentDescription = stringResource(R.string.action_filter),
+            )
         }
     }
 }
@@ -250,7 +265,7 @@ fun SearchToolbar(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val focusRequester = remember { FocusRequester() }
-    var searchClickCount by rememberSaveable { mutableStateOf(0) }
+    var searchClickCount by remember { mutableStateOf(0) }
 
     AppBar(
         titleContent = {
@@ -353,11 +368,6 @@ sealed interface AppBar {
         val icon: ImageVector,
         val onClick: () -> Unit,
         val enabled: Boolean = true,
-    ) : AppBarAction
-
-    data class FilterAction(
-        val onClick: () -> Unit,
-        val hasFilters: Boolean = false,
     ) : AppBarAction
 
     data class OverflowAction(

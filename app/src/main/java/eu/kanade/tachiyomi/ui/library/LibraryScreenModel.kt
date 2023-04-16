@@ -778,10 +778,10 @@ class LibraryScreenModel(
             val categoryName = category.let {
                 if (it.isSystemCategory) {
                     val userCat = categories.filterNot(Category::isSystemCategory)
-                    if (userCat.isEmpty()) {
-                        defaultTitle
-                    } else {
+                    if (userCat.isNotEmpty()) {
                         defaultCategoryTitle
+                    } else {
+                        defaultTitle
                     }
                 } else {
                     it.name

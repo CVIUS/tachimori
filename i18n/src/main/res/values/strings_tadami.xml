@@ -87,5 +87,6 @@
     <string name="pref_refresh_library_details">Refresh library metadata</string>
     <string name="pref_refresh_library_details_summary">Updates covers, genres, description, and status information</string>
     <string name="try_searching">Try searching your favorite series</string>
+    <string name="updating_category_">Updating %1$s</string>
 
 </resources>

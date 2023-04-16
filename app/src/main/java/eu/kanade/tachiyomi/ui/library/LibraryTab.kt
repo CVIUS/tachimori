@@ -32,6 +32,7 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import eu.kanade.domain.manga.model.isLocal
 import eu.kanade.presentation.category.ChangeCategoryDialog
+import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.components.DialogWithCheckbox
 import eu.kanade.presentation.library.LibrarySettingsDialog
 import eu.kanade.presentation.library.components.LibraryContent
@@ -98,10 +99,11 @@ object LibraryTab : Tab {
                 )
                 val tabVisible = state.showCategoryTabs && state.categories.size > 1
                 LibraryToolbar(
-                    hasActiveFilters = state.hasActiveFilters,
-                    tabVisible = tabVisible,
-                    selectedCount = state.selection.size,
                     title = title,
+                    categories = state.categories,
+                    hasActiveFilters = state.hasActiveFilters,
+                    showCategoryTabs = state.showCategoryTabs,
+                    selectedCount = state.selection.size,
                     onClickUnselectAll = screenModel::clearSelection,
                     onClickSelectAll = { screenModel.selectAll(screenModel.activeCategoryIndex) },
                     onClickInvertSelection = { screenModel.invertSelection(screenModel.activeCategoryIndex) },
@@ -150,7 +152,7 @@ object LibraryTab : Tab {
                         contentPadding = contentPadding,
                         currentPage = { screenModel.activeCategoryIndex },
                         hasActiveFilters = state.hasActiveFilters,
-                        showPageTabs = state.showCategoryTabs || !state.searchQuery.isNullOrEmpty(),
+                        showCategoryTabs = state.showCategoryTabs || !state.searchQuery.isNullOrEmpty(),
                         onChangeCurrentPage = { screenModel.activeCategoryIndex = it },
                         onMangaClicked = { navigator.push(MangaScreen(it)) },
                         onContinueReadingClicked = { it: LibraryManga ->
@@ -271,12 +273,16 @@ object LibraryTab : Tab {
                         snackbarHostState.showSnackbar(message = context.getString(R.string.no_next_chapter), withDismissAction = true)
                     }
                     is LibraryScreenModel.Snackbar.LibraryUpdateTriggered -> {
-                        val msgRes = when (snackbar.started) {
-                            true -> if (snackbar.category != null) R.string.updating_category else R.string.updating_library
-                            false -> R.string.update_already_running
+                        val msg = when (snackbar.started) {
+                            true -> if (snackbar.category != null) {
+                                context.getString(R.string.updating_category_, snackbar.category.visualName(context))
+                            } else {
+                                context.getString(R.string.updating_library)
+                            }
+                            false -> context.getString(R.string.update_already_running)
                         }
                         val result = snackbarHostState.showSnackbar(
-                            message = context.getString(msgRes),
+                            message = msg,
                             actionLabel = context.getString(R.string.action_cancel).takeIf { snackbar.started },
                             duration = SnackbarDuration.Short,
                         )

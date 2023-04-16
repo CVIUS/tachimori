@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -35,7 +34,7 @@ fun LibraryContent(
     contentPadding: PaddingValues,
     currentPage: () -> Int,
     hasActiveFilters: Boolean,
-    showPageTabs: Boolean,
+    showCategoryTabs: Boolean,
     onChangeCurrentPage: (Int) -> Unit,
     onMangaClicked: (Long) -> Unit,
     onContinueReadingClicked: ((LibraryManga) -> Unit)?,
@@ -63,9 +62,9 @@ fun LibraryContent(
         val pagerState = rememberPagerState(coercedCurrentPage)
 
         val scope = rememberCoroutineScope()
-        var isRefreshing by rememberSaveable(pagerState.currentPage) { mutableStateOf(false) }
+        var isRefreshing by remember(pagerState.currentPage) { mutableStateOf(false) }
 
-        if (showPageTabs && categories.size > 1) {
+        if (showCategoryTabs && categories.size > 1) {
             if (categories.size <= pagerState.currentPage) {
                 pagerState.currentPage = categories.size - 1
             }
@@ -76,9 +75,9 @@ fun LibraryContent(
             ) { scope.launch { pagerState.animateScrollToPage(it) } }
         }
 
-        val notSelectionMode = selection.isEmpty()
+        val selectionMode = selection.isNotEmpty()
         val onClickManga = { manga: LibraryManga ->
-            if (notSelectionMode) {
+            if (!selectionMode) {
                 onMangaClicked(manga.manga.id)
             } else {
                 onToggleSelection(manga)
@@ -88,7 +87,19 @@ fun LibraryContent(
         PullRefresh(
             refreshing = isRefreshing,
             onRefresh = {
-                val started = onRefresh(categories[currentPage()])
+                val started = categories[currentPage()].let {
+                    if (it.isSystemCategory) {
+                        val userCat = categories.filterNot(Category::isSystemCategory)
+                        if (userCat.isNotEmpty()) {
+                            onRefresh(it)
+                        } else {
+                            onRefresh(null)
+                        }
+                    } else {
+                        onRefresh(it)
+                    }
+                }
+
                 if (!started) return@PullRefresh
                 scope.launch {
                     // Fake refresh status but hide it after a second as it's a long running task
@@ -97,7 +108,7 @@ fun LibraryContent(
                     isRefreshing = false
                 }
             },
-            enabled = notSelectionMode,
+            enabled = !selectionMode,
         ) {
             LibraryPager(
                 state = pagerState,
