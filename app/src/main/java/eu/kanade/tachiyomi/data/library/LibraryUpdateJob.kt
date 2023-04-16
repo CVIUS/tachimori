@@ -147,7 +147,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             try {
                 when (target) {
                     Target.CHAPTERS -> updateChapterList()
-                    Target.COVERS -> updateCovers()
+                    Target.DETAILS -> updateDetails()
                     Target.TRACKING -> updateTrackings()
                 }
                 Result.success()
@@ -250,6 +250,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                     currentlyUpdatingManga,
                                     progressCount,
                                     manga,
+                                    Target.CHAPTERS,
                                 ) {
                                     when {
                                         MANGA_NON_COMPLETED in restrictions && manga.status.toInt() == SManga.COMPLETED ->
@@ -338,31 +339,41 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
      * @return a pair of the inserted and removed chapters.
      */
     private suspend fun updateManga(manga: Manga): List<Chapter> {
-        val source = sourceManager.getOrStub(manga.source)
-
-        // Update manga metadata if needed
-        if (libraryPreferences.autoUpdateMetadata().get()) {
-            val networkManga = source.getMangaDetails(manga.toSManga())
-            updateManga.awaitUpdateFromSource(manga, networkManga, manualFetch = false, coverCache)
+        // Update manga covers if needed
+        if (libraryPreferences.autoUpdateCovers().get()) {
+            try {
+                val onlineSource = sourceManager.get(manga.source)
+                val networkManga = onlineSource?.getMangaDetails(manga.toSManga())
+                val updatedManga = manga.prepUpdateCover(coverCache, networkManga, true)
+                    .copyFrom(networkManga)
+                try {
+                    updateManga.await(updatedManga.toMangaUpdate())
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR) { "Manga doesn't exist anymore" }
+                }
+            } catch (e: Throwable) {
+                // Ignore errors and continue
+                logcat(LogPriority.ERROR, e)
+            }
         }
 
-        val chapters = source.getChapterList(manga.toSManga())
+        val safeSource = sourceManager.getOrStub(manga.source)
+        val chapters = safeSource.getChapterList(manga.toSManga())
 
         // Get manga from database to account for if it was removed during the update and
         // to get latest data so it doesn't get overwritten later on
         val dbManga = getManga.await(manga.id)?.takeIf { it.favorite } ?: return emptyList()
 
-        return syncChaptersWithSource.await(chapters, dbManga, source)
+        return syncChaptersWithSource.await(chapters, dbManga, safeSource)
     }
 
-    private suspend fun updateCovers() {
+    private suspend fun updateDetails() {
         val semaphore = Semaphore(5)
         val progressCount = AtomicInteger(0)
         val currentlyUpdatingManga = CopyOnWriteArrayList<Manga>()
 
         coroutineScope {
-            mangaToUpdate.groupBy { it.manga.source }
-                .values
+            mangaToUpdate.groupBy { it.manga.source }.values
                 .map { mangaInSource ->
                     async {
                         semaphore.withPermit {
@@ -374,21 +385,11 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                     currentlyUpdatingManga,
                                     progressCount,
                                     manga,
+                                    Target.DETAILS,
                                 ) {
-                                    val source = sourceManager.get(manga.source) ?: return@withUpdateNotification
-                                    try {
-                                        val networkManga = source.getMangaDetails(manga.toSManga())
-                                        val updatedManga = manga.prepUpdateCover(coverCache, networkManga, true)
-                                            .copyFrom(networkManga)
-                                        try {
-                                            updateManga.await(updatedManga.toMangaUpdate())
-                                        } catch (e: Exception) {
-                                            logcat(LogPriority.ERROR) { "Manga doesn't exist anymore" }
-                                        }
-                                    } catch (e: Throwable) {
-                                        // Ignore errors and continue
-                                        logcat(LogPriority.ERROR, e)
-                                    }
+                                    val source = sourceManager.getOrStub(manga.source)
+                                    val networkManga = source.getMangaDetails(manga.toSManga())
+                                    updateManga.awaitUpdateFromSource(manga, networkManga, manualFetch = false, coverCache)
                                 }
                             }
                         }
@@ -405,19 +406,24 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
      * background thread, so it's safe to do heavy operations or network calls here.
      */
     private suspend fun updateTrackings() {
+        val currentlyUpdatingManga = CopyOnWriteArrayList<Manga>()
+        val progressCount = AtomicInteger(0)
+
         coroutineScope {
-            var progressCount = 0
             val loggedServices = trackManager.services.filter { it.isLogged }
 
             mangaToUpdate.forEach { libraryManga ->
                 val manga = libraryManga.manga
 
                 ensureActive()
-
-                notifier.showProgressNotification(listOf(manga), progressCount++, mangaToUpdate.size)
-
-                // Update the tracking details.
-                updateTrackings(manga, loggedServices)
+                withUpdateNotification(
+                    currentlyUpdatingManga,
+                    progressCount,
+                    manga,
+                    Target.TRACKING,
+                ) {
+                    updateTrackings(manga, loggedServices)
+                }
             }
 
             notifier.cancelProgressNotification()
@@ -454,6 +460,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         updatingManga: CopyOnWriteArrayList<Manga>,
         completed: AtomicInteger,
         manga: Manga,
+        target: Target,
         block: suspend () -> Unit,
     ) {
         coroutineScope {
@@ -464,6 +471,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 updatingManga,
                 completed.get(),
                 mangaToUpdate.size,
+                target,
             )
 
             block()
@@ -476,6 +484,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                 updatingManga,
                 completed.get(),
                 mangaToUpdate.size,
+                target,
             )
         }
     }
@@ -515,7 +524,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
      */
     enum class Target {
         CHAPTERS, // Manga chapters
-        COVERS, // Manga covers
+        DETAILS, // Manga metadata
         TRACKING, // Tracking metadata
     }
 

@@ -69,17 +69,21 @@ class LibraryUpdateNotifier(private val context: Context) {
      * @param current the current progress.
      * @param total the total progress.
      */
-    fun showProgressNotification(manga: List<Manga>, current: Int, total: Int) {
-        if (preferences.hideNotificationContent().get()) {
-            progressNotificationBuilder
-                .setContentTitle(context.getString(R.string.notification_check_updates))
-                .setContentText("($current/$total)")
-        } else {
-            val updatingText = manga.joinToString("\n") { it.title.chop(40) }
-            progressNotificationBuilder
-                .setContentTitle(context.getString(R.string.notification_updating, current, total))
-                .setStyle(NotificationCompat.BigTextStyle().bigText(updatingText))
+    fun showProgressNotification(manga: List<Manga>, current: Int, total: Int, target: LibraryUpdateJob.Target) {
+        val hideNotificationContent = preferences.hideNotificationContent().get()
+        val msg = buildString {
+            val textRes = when (target) {
+                LibraryUpdateJob.Target.DETAILS -> R.string.notification_check_details
+                LibraryUpdateJob.Target.TRACKING -> R.string.notification_check_trackers
+                else -> R.string.notification_check_library
+            }
+            append(context.getString(textRes)).append("… ($current/$total)")
         }
+
+        val updatingText = manga.joinToString("\n") { it.title.chop(40) }
+        progressNotificationBuilder
+            .setContentTitle(msg)
+            .setStyle(if (!hideNotificationContent) NotificationCompat.BigTextStyle().bigText(updatingText) else null)
 
         context.notificationManager.notify(
             Notifications.ID_LIBRARY_PROGRESS,
@@ -279,7 +283,6 @@ class LibraryUpdateNotifier(private val context: Context) {
     }
 
     private fun getNewChaptersDescription(chapters: Array<Chapter>): String {
-
         val displayableChapterNumbers = chapters
             .filter { it.isRecognizedNumber }
             .sortedBy { it.chapterNumber }

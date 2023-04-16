@@ -49,7 +49,9 @@ fun Manga.toSManga(): SManga = SManga.create().also {
     it.initialized = initialized
 }
 
-fun Manga.copyFrom(other: SManga): Manga {
+fun Manga.copyFrom(other: SManga?): Manga {
+    if (other == null) return this
+
     val author = other.author ?: author
     val artist = other.artist ?: artist
     val description = other.description ?: description

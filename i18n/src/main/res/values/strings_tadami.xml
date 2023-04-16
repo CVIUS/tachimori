@@ -78,5 +78,13 @@
     <string name="hmmm">Hmmm…</string>
     <string name="action_rename">Rename</string>
     <string name="dialog_with_checkbox_reset_history">Reset all chapters read date</string>
+    <string name="notification_check_details">Refreshing details</string>
+    <string name="notification_check_trackers">Refreshing trackers</string>
+    <string name="notification_check_library">Updating library</string>
+    <string name="pref_library_update_refresh_covers">Automatically refresh covers</string>
+    <string name="pref_library_update_refresh_covers_summary">Check for new covers when updating library</string>
+    <string name="pref_refresh_library_trackers">Refresh tracking metadata</string>
+    <string name="pref_refresh_library_details">Refresh library metadata</string>
+    <string name="pref_refresh_library_details_summary">Updates covers, genres, description, and status information</string>
 
 </resources>

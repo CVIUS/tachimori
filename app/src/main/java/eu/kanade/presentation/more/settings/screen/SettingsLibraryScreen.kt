@@ -252,9 +252,9 @@ object SettingsLibraryScreen : SearchableSettings {
                     onClick = { showDialog = true },
                 ),
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = libraryPreferences.autoUpdateMetadata(),
-                    title = stringResource(R.string.pref_library_update_refresh_metadata),
-                    subtitle = stringResource(R.string.pref_library_update_refresh_metadata_summary),
+                    pref = libraryPreferences.autoUpdateCovers(),
+                    title = stringResource(R.string.pref_library_update_refresh_covers),
+                    subtitle = stringResource(R.string.pref_library_update_refresh_covers_summary),
                 ),
                 Preference.PreferenceItem.SwitchPreference(
                     pref = libraryPreferences.autoUpdateTrackers(),

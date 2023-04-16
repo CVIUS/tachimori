@@ -29,7 +29,7 @@ class LibraryPreferences(
     fun libraryUpdateDeviceRestriction() = preferenceStore.getStringSet("library_update_restriction", setOf(DEVICE_ONLY_ON_WIFI))
     fun libraryUpdateMangaRestriction() = preferenceStore.getStringSet("library_update_manga_restriction", setOf(MANGA_HAS_UNREAD, MANGA_NON_COMPLETED, MANGA_NON_READ))
 
-    fun autoUpdateMetadata() = preferenceStore.getBoolean("auto_update_metadata", false)
+    fun autoUpdateCovers() = preferenceStore.getBoolean("auto_update_covers", true)
 
     fun autoUpdateTrackers() = preferenceStore.getBoolean("auto_update_trackers", false)
 
@@ -62,6 +62,7 @@ class LibraryPreferences(
     fun languageBadge() = preferenceStore.getBoolean("display_language_badge", false)
 
     fun newShowUpdatesCount() = preferenceStore.getBoolean("library_show_updates_count", true)
+
     fun newUpdatesCount() = preferenceStore.getInt("library_unseen_updates_count", 0)
 
     // endregion
