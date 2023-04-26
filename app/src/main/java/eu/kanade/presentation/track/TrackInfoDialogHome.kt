@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.presentation.components.DropdownMenuItem
 import eu.kanade.presentation.track.components.TrackLogoIcon
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.track.TrackService
@@ -294,14 +294,14 @@ private fun TrackInfoItemMenu(
             onDismissRequest = { expanded = false },
         ) {
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.action_open_in_browser)) },
+                text = stringResource(R.string.action_open_in_browser),
                 onClick = {
                     onOpenInBrowser()
                     expanded = false
                 },
             )
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.action_remove)) },
+                text = stringResource(R.string.action_remove),
                 onClick = {
                     onRemoved()
                     expanded = false

@@ -1,7 +1,5 @@
 package eu.kanade.presentation.components
 
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -26,9 +24,9 @@ fun DownloadDropdownMenu(
             DownloadAction.NEXT_25_CHAPTERS to pluralStringResource(R.plurals.download_amount, 25, 25),
             DownloadAction.UNREAD_CHAPTERS to stringResource(R.string.download_unread),
             (DownloadAction.ALL_CHAPTERS to stringResource(R.string.download_all)).takeIf { includeDownloadAllOption },
-        ).map { (downloadAction, string) ->
+        ).map { (downloadAction, text) ->
             DropdownMenuItem(
-                text = { Text(text = string) },
+                text = text,
                 onClick = {
                     onDownloadClicked(downloadAction)
                     onDismissRequest()

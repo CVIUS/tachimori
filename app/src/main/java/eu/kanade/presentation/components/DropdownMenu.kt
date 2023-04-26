@@ -1,7 +1,9 @@
 package eu.kanade.presentation.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
@@ -11,6 +13,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.MenuItemColors
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
@@ -42,6 +48,31 @@ fun DropdownMenu(
         offset = offset,
         properties = properties,
         content = content,
+    )
+}
+
+@Composable
+fun DropdownMenuItem(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    enabled: Boolean = true,
+    colors: MenuItemColors = MenuDefaults.itemColors(),
+    contentPadding: PaddingValues = MenuDefaults.DropdownMenuItemContentPadding,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+) {
+    DropdownMenuItem(
+        text = { Text(text = text, fontWeight = FontWeight.Normal) },
+        onClick = onClick,
+        modifier = modifier,
+        leadingIcon = leadingIcon,
+        trailingIcon = trailingIcon,
+        enabled = enabled,
+        colors = colors,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
     )
 }
 

@@ -36,7 +36,6 @@ import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Sync
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
@@ -66,6 +65,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.presentation.components.DropdownMenuItem
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.system.copyToClipboard
@@ -248,15 +249,27 @@ fun ExpandableMangaDescription(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
                 ) {
+                    Text(
+                        text = tagSelected,
+                        maxLines = 1,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                        modifier = Modifier.padding(
+                            horizontal = 12.dp,
+                            vertical = MaterialTheme.padding.small,
+                        ),
+                    )
                     DropdownMenuItem(
-                        text = { Text(text = stringResource(R.string.action_search)) },
+                        text = stringResource(R.string.action_search),
                         onClick = {
                             onTagSearch(tagSelected)
                             showMenu = false
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text(text = stringResource(R.string.action_copy_to_clipboard)) },
+                        text = stringResource(R.string.action_copy_to_clipboard),
                         onClick = {
                             onCopyTagToClipboard(tagSelected)
                             showMenu = false

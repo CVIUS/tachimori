@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import eu.kanade.domain.manga.model.downloadedFilter
 import eu.kanade.domain.manga.model.forceDownloaded
 import eu.kanade.presentation.components.DialogWithCheckbox
+import eu.kanade.presentation.components.DropdownMenuItem
 import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.presentation.components.TriStateItem
@@ -58,7 +57,7 @@ fun ChapterSettingsDialog(
         ),
         tabOverflowMenuContent = { closeMenu ->
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.set_chapter_settings_as_default)) },
+                text = stringResource(R.string.set_chapter_settings_as_default),
                 onClick = {
                     showSetAsDefaultDialog = true
                     closeMenu()

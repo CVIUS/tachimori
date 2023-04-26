@@ -16,13 +16,11 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +42,7 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.size.Size
 import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.presentation.components.DropdownMenuItem
 import eu.kanade.presentation.manga.EditCoverAction
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
@@ -123,14 +122,14 @@ fun MangaCoverDialog(
                                     offset = DpOffset(8.dp, 0.dp),
                                 ) {
                                     DropdownMenuItem(
-                                        text = { Text(text = stringResource(R.string.action_edit)) },
+                                        text = stringResource(R.string.action_edit),
                                         onClick = {
                                             onEditClick(EditCoverAction.EDIT)
                                             expanded = false
                                         },
                                     )
                                     DropdownMenuItem(
-                                        text = { Text(text = stringResource(R.string.action_delete)) },
+                                        text = stringResource(R.string.action_delete),
                                         onClick = {
                                             onEditClick(EditCoverAction.DELETE)
                                             expanded = false

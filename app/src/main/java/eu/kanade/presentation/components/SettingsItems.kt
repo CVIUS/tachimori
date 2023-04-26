@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckBox
 import androidx.compose.material.icons.rounded.CheckBoxOutlineBlank
 import androidx.compose.material.icons.rounded.DisabledByDefault
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
@@ -119,7 +118,7 @@ fun SelectItem(
         ) {
             options.forEachIndexed { index, text ->
                 DropdownMenuItem(
-                    text = { Text(text.toString()) },
+                    text = text.toString(),
                     onClick = {
                         onSelect(index)
                         expanded = false

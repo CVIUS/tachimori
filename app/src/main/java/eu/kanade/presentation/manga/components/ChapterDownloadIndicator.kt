@@ -12,11 +12,9 @@ import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.DropdownMenu
+import eu.kanade.presentation.components.DropdownMenuItem
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import tachiyomi.presentation.core.components.material.IconButtonTokens
@@ -155,14 +154,14 @@ private fun DownloadingIndicator(
         }
         DropdownMenu(expanded = isMenuExpanded, onDismissRequest = { isMenuExpanded = false }) {
             DropdownMenuItem(
-                text = { Text(text = stringResource(R.string.action_start_downloading_now)) },
+                text = stringResource(R.string.action_start_downloading_now),
                 onClick = {
                     onClick(ChapterDownloadAction.START_NOW)
                     isMenuExpanded = false
                 },
             )
             DropdownMenuItem(
-                text = { Text(text = stringResource(R.string.action_cancel)) },
+                text = stringResource(R.string.action_cancel),
                 onClick = {
                     onClick(ChapterDownloadAction.CANCEL)
                     isMenuExpanded = false
@@ -203,7 +202,7 @@ private fun DownloadedIndicator(
         )
         DropdownMenu(expanded = isMenuExpanded, onDismissRequest = { isMenuExpanded = false }) {
             DropdownMenuItem(
-                text = { Text(text = stringResource(R.string.action_delete)) },
+                text = stringResource(R.string.action_delete),
                 onClick = {
                     onClick(ChapterDownloadAction.DELETE)
                     isMenuExpanded = false
