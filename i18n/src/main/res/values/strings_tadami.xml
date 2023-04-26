@@ -88,5 +88,9 @@
     <string name="pref_refresh_library_details_summary">Updates covers, genres, description, and status information</string>
     <string name="try_searching">Try searching your favorite series</string>
     <string name="updating_category_">Updating %1$s</string>
+    <string name="action_start_reading">Start reading</string>
+    <string name="action_continue_reading">Continue reading</string>
+    <string name="all_chapters_read">All chapters read</string>
+
 
 </resources>

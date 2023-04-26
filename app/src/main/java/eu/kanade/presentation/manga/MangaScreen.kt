@@ -50,6 +50,7 @@ import androidx.compose.ui.util.fastMap
 import eu.kanade.domain.manga.model.chaptersFiltered
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterHeaderItem
+import eu.kanade.presentation.manga.components.ContinueReadingItem
 import eu.kanade.presentation.manga.components.ExpandableMangaDescription
 import eu.kanade.presentation.manga.components.MangaActionRow
 import eu.kanade.presentation.manga.components.MangaBottomActionMenu
@@ -82,6 +83,7 @@ import java.util.Date
 fun MangaScreen(
     state: MangaScreenState.Success,
     snackbarHostState: SnackbarHostState,
+    nextChapter: Chapter?,
     dateRelativeTime: Int,
     dateFormat: DateFormat,
     isTabletUi: Boolean,
@@ -132,6 +134,7 @@ fun MangaScreen(
         MangaScreenSmallImpl(
             state = state,
             snackbarHostState = snackbarHostState,
+            nextChapter = nextChapter,
             dateRelativeTime = dateRelativeTime,
             dateFormat = dateFormat,
             onBackClicked = onBackClicked,
@@ -199,6 +202,7 @@ fun MangaScreen(
 private fun MangaScreenSmallImpl(
     state: MangaScreenState.Success,
     snackbarHostState: SnackbarHostState,
+    nextChapter: Chapter?,
     dateRelativeTime: Int,
     dateFormat: DateFormat,
     onBackClicked: () -> Unit,
@@ -294,27 +298,6 @@ private fun MangaScreenSmallImpl(
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        floatingActionButton = {
-            AnimatedVisibility(
-                visible = chapters.fastAny { !it.chapter.read } && chapters.fastAll { !it.selected },
-                enter = fadeIn(),
-                exit = fadeOut(),
-            ) {
-                ExtendedFloatingActionButton(
-                    text = {
-                        val textRes = if (chapters.fastAny { it.chapter.read }) {
-                            R.string.action_resume
-                        } else {
-                            R.string.action_start
-                        }
-                        Text(text = stringResource(textRes))
-                    },
-                    icon = { Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null) },
-                    onClick = onContinueReading,
-                    expanded = chapterListState.isScrollingUp() || chapterListState.isScrolledToEnd(),
-                )
-            }
-        },
     ) { contentPadding ->
         val topPadding = contentPadding.calculateTopPadding()
 
@@ -383,6 +366,18 @@ private fun MangaScreenSmallImpl(
                             tagsProvider = { state.manga.genre },
                             onTagSearch = onTagSearch,
                             onCopyTagToClipboard = onCopyTagToClipboard,
+                        )
+                    }
+
+                    item(
+                        key = MangaScreenItem.CONTINUE_BUTTON,
+                        contentType = MangaScreenItem.CONTINUE_BUTTON,
+                    ) {
+                        ContinueReadingItem(
+                            nextChapter = nextChapter,
+                            chapters = chapters.map { it.chapter },
+                            enabled = chapters.fastAll { !it.selected },
+                            onClick = onContinueReading,
                         )
                     }
 
@@ -685,7 +680,6 @@ private fun LazyListScope.sharedChapterItems(
         val context = LocalContext.current
 
         MangaChapterListItem(
-            modifier = Modifier.animateItemPlacement(),
             title = if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER && chapterItem.chapter.isRecognizedNumber) {
                 stringResource(
                     R.string.display_mode_chapter,
