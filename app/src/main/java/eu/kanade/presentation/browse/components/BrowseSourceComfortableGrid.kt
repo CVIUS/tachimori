@@ -6,9 +6,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import eu.kanade.presentation.browse.InLibraryBadge
@@ -40,7 +40,7 @@ fun BrowseSourceComfortableGrid(
         }
 
         items(mangaList.itemCount) { index ->
-            val manga by mangaList[index]?.collectAsState() ?: return@items
+            val manga by mangaList[index]?.collectAsStateWithLifecycle() ?: return@items
             BrowseSourceComfortableGridItem(
                 manga = manga,
                 onClick = { onMangaClick(manga) },

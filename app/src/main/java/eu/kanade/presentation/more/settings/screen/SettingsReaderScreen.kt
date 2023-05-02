@@ -10,7 +10,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.util.collectAsState
+import eu.kanade.presentation.util.collectAsStateWithLifecycle
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.ReaderHideThreshold
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.TappingInvertMode
@@ -33,7 +33,7 @@ object SettingsReaderScreen : SearchableSettings {
         val readerPref = remember { Injekt.get<ReaderPreferences>() }
 
         val aggressivePageLoadingPref = readerPref.aggressivePageLoading()
-        val aggressivePageLoading = aggressivePageLoadingPref.collectAsState()
+        val aggressivePageLoading = aggressivePageLoadingPref.collectAsStateWithLifecycle()
 
         return listOf(
             Preference.PreferenceItem.ListPreference(
@@ -115,7 +115,7 @@ object SettingsReaderScreen : SearchableSettings {
     @Composable
     private fun getDisplayGroup(readerPreferences: ReaderPreferences): Preference.PreferenceGroup {
         val fullscreenPref = readerPreferences.fullscreen()
-        val fullscreen by fullscreenPref.collectAsState()
+        val fullscreen by fullscreenPref.collectAsStateWithLifecycle()
         return Preference.PreferenceGroup(
             title = stringResource(R.string.pref_category_display),
             preferenceItems = listOf(
@@ -189,9 +189,9 @@ object SettingsReaderScreen : SearchableSettings {
         val imageScaleTypePref = readerPreferences.imageScaleType()
         val dualPageSplitPref = readerPreferences.dualPageSplitPaged()
 
-        val navMode by navModePref.collectAsState()
-        val imageScaleType by imageScaleTypePref.collectAsState()
-        val dualPageSplit by dualPageSplitPref.collectAsState()
+        val navMode by navModePref.collectAsStateWithLifecycle()
+        val imageScaleType by imageScaleTypePref.collectAsStateWithLifecycle()
+        val dualPageSplit by dualPageSplitPref.collectAsStateWithLifecycle()
 
         return Preference.PreferenceGroup(
             title = stringResource(R.string.pager_viewer),
@@ -270,8 +270,8 @@ object SettingsReaderScreen : SearchableSettings {
         val navModePref = readerPreferences.navigationModeWebtoon()
         val dualPageSplitPref = readerPreferences.dualPageSplitWebtoon()
 
-        val navMode by navModePref.collectAsState()
-        val dualPageSplit by dualPageSplitPref.collectAsState()
+        val navMode by navModePref.collectAsStateWithLifecycle()
+        val dualPageSplit by dualPageSplitPref.collectAsStateWithLifecycle()
 
         return Preference.PreferenceGroup(
             title = stringResource(R.string.webtoon_viewer),
@@ -343,7 +343,7 @@ object SettingsReaderScreen : SearchableSettings {
     @Composable
     private fun getNavigationGroup(readerPreferences: ReaderPreferences): Preference.PreferenceGroup {
         val readWithVolumeKeysPref = readerPreferences.readWithVolumeKeys()
-        val readWithVolumeKeys by readWithVolumeKeysPref.collectAsState()
+        val readWithVolumeKeys by readWithVolumeKeysPref.collectAsStateWithLifecycle()
         return Preference.PreferenceGroup(
             title = stringResource(R.string.pref_reader_navigation),
             preferenceItems = listOf(

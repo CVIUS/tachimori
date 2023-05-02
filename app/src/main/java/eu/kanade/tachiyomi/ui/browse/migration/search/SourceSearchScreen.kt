@@ -4,13 +4,13 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -45,10 +45,10 @@ data class SourceSearchScreen(
         val scope = rememberCoroutineScope()
 
         val screenModel = rememberScreenModel { BrowseSourceScreenModel(sourceId, query) }
-        val state by screenModel.state.collectAsState()
+        val state by screenModel.state.collectAsStateWithLifecycle()
         val snackbarHostState = remember { screenModel.snackbarHostState }
 
-        val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsState()
+        val pagingFlow by screenModel.mangaPagerFlowFlow.collectAsStateWithLifecycle()
         val mangaList = pagingFlow.collectAsLazyPagingItems()
 
         Scaffold(

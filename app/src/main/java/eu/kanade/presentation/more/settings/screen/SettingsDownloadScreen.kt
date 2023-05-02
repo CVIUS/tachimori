@@ -7,7 +7,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,11 +17,12 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.util.fastMap
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hippo.unifile.UniFile
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.widget.TriStateListDialog
-import eu.kanade.presentation.util.collectAsState
+import eu.kanade.presentation.util.collectAsStateWithLifecycle
 import eu.kanade.tachiyomi.R
 import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.category.interactor.GetCategories
@@ -42,7 +42,7 @@ object SettingsDownloadScreen : SearchableSettings {
     @Composable
     override fun getPreferences(): List<Preference> {
         val getCategories = remember { Injekt.get<GetCategories>() }
-        val allCategories by getCategories.subscribe().collectAsState(initial = runBlocking { getCategories.await() })
+        val allCategories by getCategories.subscribe().collectAsStateWithLifecycle(initialValue = runBlocking { getCategories.await() })
 
         val downloadPreferences = remember { Injekt.get<DownloadPreferences>() }
         return listOf(
@@ -78,7 +78,7 @@ object SettingsDownloadScreen : SearchableSettings {
     ): Preference.PreferenceItem.ListPreference<String> {
         val context = LocalContext.current
         val currentDirPref = downloadPreferences.downloadsDirectory()
-        val currentDir by currentDirPref.collectAsState()
+        val currentDir by currentDirPref.collectAsStateWithLifecycle()
 
         val pickLocation = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree(),
@@ -190,10 +190,10 @@ object SettingsDownloadScreen : SearchableSettings {
         val downloadNewChapterCategoriesPref = downloadPreferences.downloadNewChapterCategories()
         val downloadNewChapterCategoriesExcludePref = downloadPreferences.downloadNewChapterCategoriesExclude()
 
-        val downloadNewChapters by downloadNewChaptersPref.collectAsState()
+        val downloadNewChapters by downloadNewChaptersPref.collectAsStateWithLifecycle()
 
-        val included by downloadNewChapterCategoriesPref.collectAsState()
-        val excluded by downloadNewChapterCategoriesExcludePref.collectAsState()
+        val included by downloadNewChapterCategoriesPref.collectAsStateWithLifecycle()
+        val excluded by downloadNewChapterCategoriesExcludePref.collectAsStateWithLifecycle()
         var showDialog by rememberSaveable { mutableStateOf(false) }
         if (showDialog) {
             TriStateListDialog(

@@ -2,9 +2,9 @@ package eu.kanade.presentation.browse.components
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
@@ -35,7 +35,7 @@ fun BrowseSourceList(
 
         items(mangaList) { mangaflow ->
             mangaflow ?: return@items
-            val manga by mangaflow.collectAsState()
+            val manga by mangaflow.collectAsStateWithLifecycle()
             BrowseSourceListItem(
                 manga = manga,
                 onClick = { onMangaClick(manga) },

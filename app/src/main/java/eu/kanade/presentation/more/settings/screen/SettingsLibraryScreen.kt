@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +27,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastMap
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -36,7 +36,7 @@ import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.presentation.category.visualName
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.widget.TriStateListDialog
-import eu.kanade.presentation.util.collectAsState
+import eu.kanade.presentation.util.collectAsStateWithLifecycle
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.data.preference.DEVICE_BATTERY_NOT_LOW
@@ -68,7 +68,7 @@ object SettingsLibraryScreen : SearchableSettings {
     override fun getPreferences(): List<Preference> {
         val getCategories = remember { Injekt.get<GetCategories>() }
         val libraryPreferences = remember { Injekt.get<LibraryPreferences>() }
-        val allCategories by getCategories.subscribe().collectAsState(initial = runBlocking { getCategories.await() })
+        val allCategories by getCategories.subscribe().collectAsStateWithLifecycle(initialValue = runBlocking { getCategories.await() })
 
         return mutableListOf(
             getDisplayGroup(libraryPreferences),
@@ -80,8 +80,8 @@ object SettingsLibraryScreen : SearchableSettings {
     @Composable
     private fun getDisplayGroup(libraryPreferences: LibraryPreferences): Preference.PreferenceGroup {
         val scope = rememberCoroutineScope()
-        val portraitColumns by libraryPreferences.portraitColumns().stateIn(scope).collectAsState()
-        val landscapeColumns by libraryPreferences.landscapeColumns().stateIn(scope).collectAsState()
+        val portraitColumns by libraryPreferences.portraitColumns().stateIn(scope).collectAsStateWithLifecycle()
+        val landscapeColumns by libraryPreferences.landscapeColumns().stateIn(scope).collectAsStateWithLifecycle()
 
         var showDialog by rememberSaveable { mutableStateOf(false) }
         if (showDialog) {
@@ -120,7 +120,7 @@ object SettingsLibraryScreen : SearchableSettings {
         val scope = rememberCoroutineScope()
         val userCategoriesCount = allCategories.filterNot(Category::isSystemCategory).size
 
-        val defaultCategory by libraryPreferences.defaultCategory().collectAsState()
+        val defaultCategory by libraryPreferences.defaultCategory().collectAsStateWithLifecycle()
         val selectedCategory = allCategories.find { it.id == defaultCategory.toLong() }
 
         // For default category
@@ -176,10 +176,10 @@ object SettingsLibraryScreen : SearchableSettings {
         val libraryUpdateCategoriesPref = libraryPreferences.libraryUpdateCategories()
         val libraryUpdateCategoriesExcludePref = libraryPreferences.libraryUpdateCategoriesExclude()
 
-        val libraryUpdateInterval by libraryUpdateIntervalPref.collectAsState()
+        val libraryUpdateInterval by libraryUpdateIntervalPref.collectAsStateWithLifecycle()
 
-        val included by libraryUpdateCategoriesPref.collectAsState()
-        val excluded by libraryUpdateCategoriesExcludePref.collectAsState()
+        val included by libraryUpdateCategoriesPref.collectAsStateWithLifecycle()
+        val excluded by libraryUpdateCategoriesExcludePref.collectAsStateWithLifecycle()
         var showDialog by rememberSaveable { mutableStateOf(false) }
         if (showDialog) {
             TriStateListDialog(

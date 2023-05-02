@@ -16,7 +16,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -28,6 +27,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.asFlow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkQuery
@@ -55,9 +55,9 @@ object WorkerInfoScreen : Screen() {
         val clipboardManager = LocalClipboardManager.current
 
         val screenModel = rememberScreenModel { Model(context) }
-        val enqueued by screenModel.enqueued.collectAsState()
-        val finished by screenModel.finished.collectAsState()
-        val running by screenModel.running.collectAsState()
+        val enqueued by screenModel.enqueued.collectAsStateWithLifecycle()
+        val finished by screenModel.finished.collectAsStateWithLifecycle()
+        val running by screenModel.running.collectAsStateWithLifecycle()
 
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()

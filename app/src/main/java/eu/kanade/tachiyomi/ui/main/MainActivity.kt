@@ -27,7 +27,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -46,6 +45,7 @@ import androidx.core.util.Consumer
 import androidx.core.view.WindowCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
@@ -62,7 +62,7 @@ import eu.kanade.presentation.components.IncognitoModeBannerBackgroundColor
 import eu.kanade.presentation.components.IndexingBannerBackgroundColor
 import eu.kanade.presentation.util.AssistContentScreen
 import eu.kanade.presentation.util.DefaultNavigatorScreenTransition
-import eu.kanade.presentation.util.collectAsState
+import eu.kanade.presentation.util.collectAsStateWithLifecycle
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.Migrations
 import eu.kanade.tachiyomi.R
@@ -152,9 +152,9 @@ class MainActivity : BaseActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setComposeContent {
-            val incognito by preferences.incognitoMode().collectAsState()
-            val downloadOnly by preferences.downloadedOnly().collectAsState()
-            val indexing by downloadCache.isInitializing.collectAsState()
+            val incognito by preferences.incognitoMode().collectAsStateWithLifecycle()
+            val downloadOnly by preferences.downloadedOnly().collectAsStateWithLifecycle()
+            val indexing by downloadCache.isInitializing.collectAsStateWithLifecycle()
 
             // Set statusbar color considering the top app state banner
             val systemUiController = rememberSystemUiController()
@@ -291,7 +291,7 @@ class MainActivity : BaseActivity() {
     @Composable
     private fun ConfirmExit() {
         val scope = rememberCoroutineScope()
-        val confirmExit by preferences.confirmExit().collectAsState()
+        val confirmExit by preferences.confirmExit().collectAsStateWithLifecycle()
         var waitingConfirmation by rememberSaveable { mutableStateOf(false) }
         BackHandler(enabled = !waitingConfirmation && confirmExit) {
             scope.launch {

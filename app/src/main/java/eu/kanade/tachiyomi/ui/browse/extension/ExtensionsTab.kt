@@ -3,9 +3,9 @@ package eu.kanade.tachiyomi.ui.browse.extension
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.browse.ExtensionScreen
@@ -21,7 +21,7 @@ fun extensionsTab(
     extensionsScreenModel: ExtensionsScreenModel,
 ): TabContent {
     val navigator = LocalNavigator.currentOrThrow
-    val state by extensionsScreenModel.state.collectAsState()
+    val state by extensionsScreenModel.state.collectAsStateWithLifecycle()
 
     return TabContent(
         titleRes = R.string.label_extensions,

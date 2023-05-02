@@ -30,7 +30,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.util.collectAsState
+import eu.kanade.presentation.util.collectAsStateWithLifecycle
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.download.DownloadCache
@@ -215,7 +215,7 @@ object SettingsAdvancedScreen : SearchableSettings {
         val networkHelper = remember { Injekt.get<NetworkHelper>() }
 
         val userAgentPref = networkPreferences.defaultUserAgent()
-        val userAgent by userAgentPref.collectAsState()
+        val userAgent by userAgentPref.collectAsStateWithLifecycle()
 
         return Preference.PreferenceGroup(
             title = stringResource(R.string.label_network),

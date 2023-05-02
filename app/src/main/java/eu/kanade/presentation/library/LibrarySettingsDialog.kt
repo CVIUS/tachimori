@@ -13,7 +13,7 @@ import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.presentation.components.TabbedDialog
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.presentation.components.TriStateItem
-import eu.kanade.presentation.util.collectAsState
+import eu.kanade.presentation.util.collectAsStateWithLifecycle
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.library.LibrarySettingsScreenModel
 import tachiyomi.domain.category.model.Category
@@ -75,8 +75,8 @@ fun LibrarySettingsDialog(
 private fun ColumnScope.FilterPage(
     screenModel: LibrarySettingsScreenModel,
 ) {
-    val filterDownloaded by screenModel.libraryPreferences.filterDownloaded().collectAsState()
-    val downloadedOnly by screenModel.preferences.downloadedOnly().collectAsState()
+    val filterDownloaded by screenModel.libraryPreferences.filterDownloaded().collectAsStateWithLifecycle()
+    val downloadedOnly by screenModel.preferences.downloadedOnly().collectAsStateWithLifecycle()
     TriStateItem(
         label = stringResource(R.string.label_downloaded),
         state = if (downloadedOnly) {
@@ -87,25 +87,25 @@ private fun ColumnScope.FilterPage(
         enabled = !downloadedOnly,
         onClick = { screenModel.toggleFilter(LibraryPreferences::filterDownloaded) },
     )
-    val filterUnread by screenModel.libraryPreferences.filterUnread().collectAsState()
+    val filterUnread by screenModel.libraryPreferences.filterUnread().collectAsStateWithLifecycle()
     TriStateItem(
         label = stringResource(R.string.action_filter_unread),
         state = filterUnread,
         onClick = { screenModel.toggleFilter(LibraryPreferences::filterUnread) },
     )
-    val filterStarted by screenModel.libraryPreferences.filterStarted().collectAsState()
+    val filterStarted by screenModel.libraryPreferences.filterStarted().collectAsStateWithLifecycle()
     TriStateItem(
         label = stringResource(R.string.label_started),
         state = filterStarted,
         onClick = { screenModel.toggleFilter(LibraryPreferences::filterStarted) },
     )
-    val filterBookmarked by screenModel.libraryPreferences.filterBookmarked().collectAsState()
+    val filterBookmarked by screenModel.libraryPreferences.filterBookmarked().collectAsStateWithLifecycle()
     TriStateItem(
         label = stringResource(R.string.action_filter_bookmarked),
         state = filterBookmarked,
         onClick = { screenModel.toggleFilter(LibraryPreferences::filterBookmarked) },
     )
-    val filterCompleted by screenModel.libraryPreferences.filterCompleted().collectAsState()
+    val filterCompleted by screenModel.libraryPreferences.filterCompleted().collectAsStateWithLifecycle()
     TriStateItem(
         label = stringResource(R.string.completed),
         state = filterCompleted,
@@ -118,7 +118,7 @@ private fun ColumnScope.FilterPage(
         }
         1 -> {
             val service = screenModel.trackServices[0]
-            val filterTracker by screenModel.libraryPreferences.filterTracking(service.id.toInt()).collectAsState()
+            val filterTracker by screenModel.libraryPreferences.filterTracking(service.id.toInt()).collectAsStateWithLifecycle()
             TriStateItem(
                 label = stringResource(R.string.action_filter_tracked),
                 state = filterTracker,
@@ -128,7 +128,7 @@ private fun ColumnScope.FilterPage(
         else -> {
             HeadingItem(R.string.action_filter_tracked)
             screenModel.trackServices.map { service ->
-                val filterTracker by screenModel.libraryPreferences.filterTracking(service.id.toInt()).collectAsState()
+                val filterTracker by screenModel.libraryPreferences.filterTracking(service.id.toInt()).collectAsStateWithLifecycle()
                 TriStateItem(
                     label = stringResource(service.nameRes()),
                     state = filterTracker,
@@ -191,8 +191,8 @@ private fun ColumnScope.DisplayPage(
         )
     }
     HeadingItem(R.string.badges_header)
-    val downloadBadge by screenModel.libraryPreferences.downloadBadge().collectAsState()
-    val downloadedOnly by screenModel.preferences.downloadedOnly().collectAsState()
+    val downloadBadge by screenModel.libraryPreferences.downloadBadge().collectAsStateWithLifecycle()
+    val downloadedOnly by screenModel.preferences.downloadedOnly().collectAsStateWithLifecycle()
     CheckboxItem(
         label = stringResource(R.string.action_display_download_badge),
         checked = downloadBadge || downloadedOnly,
@@ -201,8 +201,8 @@ private fun ColumnScope.DisplayPage(
             screenModel.togglePreference(LibraryPreferences::downloadBadge)
         },
     )
-    val unreadBadge by screenModel.libraryPreferences.unreadBadge().collectAsState()
-    val showContinueReadingButton by screenModel.libraryPreferences.showContinueReadingButton().collectAsState()
+    val unreadBadge by screenModel.libraryPreferences.unreadBadge().collectAsStateWithLifecycle()
+    val showContinueReadingButton by screenModel.libraryPreferences.showContinueReadingButton().collectAsStateWithLifecycle()
     CheckboxItem(
         label = stringResource(R.string.action_display_unread_badge),
         checked = unreadBadge || showContinueReadingButton,
@@ -211,7 +211,7 @@ private fun ColumnScope.DisplayPage(
             screenModel.togglePreference(LibraryPreferences::unreadBadge)
         },
     )
-    val localBadge by screenModel.libraryPreferences.localBadge().collectAsState()
+    val localBadge by screenModel.libraryPreferences.localBadge().collectAsStateWithLifecycle()
     CheckboxItem(
         label = stringResource(R.string.action_display_local_badge),
         checked = localBadge || downloadedOnly,
@@ -220,7 +220,7 @@ private fun ColumnScope.DisplayPage(
             screenModel.togglePreference(LibraryPreferences::localBadge)
         },
     )
-    val languageBadge by screenModel.libraryPreferences.languageBadge().collectAsState()
+    val languageBadge by screenModel.libraryPreferences.languageBadge().collectAsStateWithLifecycle()
     CheckboxItem(
         label = stringResource(R.string.action_display_language_badge),
         checked = languageBadge,
@@ -230,7 +230,7 @@ private fun ColumnScope.DisplayPage(
     )
 
     HeadingItem(R.string.tabs_header)
-    val categoryTabs by screenModel.libraryPreferences.categoryTabs().collectAsState()
+    val categoryTabs by screenModel.libraryPreferences.categoryTabs().collectAsStateWithLifecycle()
     CheckboxItem(
         label = stringResource(R.string.action_display_show_tabs),
         checked = categoryTabs,
@@ -238,7 +238,7 @@ private fun ColumnScope.DisplayPage(
             screenModel.togglePreference(LibraryPreferences::categoryTabs)
         },
     )
-    val categoryNumberOfItems by screenModel.libraryPreferences.categoryNumberOfItems().collectAsState()
+    val categoryNumberOfItems by screenModel.libraryPreferences.categoryNumberOfItems().collectAsStateWithLifecycle()
     CheckboxItem(
         label = stringResource(R.string.action_display_show_number_of_items),
         checked = categoryNumberOfItems,

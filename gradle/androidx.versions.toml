@@ -18,6 +18,7 @@ glance = "androidx.glance:glance-appwidget:1.0.0-alpha03"
 profileinstaller = "androidx.profileinstaller:profileinstaller:1.2.2"
 
 lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref = "lifecycle_version" }
+lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle_version" }
 lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle_version" }
 lifecycle-runtimektx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle_version" }
 
@@ -33,5 +34,5 @@ test-espresso-core = "androidx.test.espresso:espresso-core:3.5.1"
 test-uiautomator = "androidx.test.uiautomator:uiautomator:2.2.0"
 
 [bundles]
-lifecycle = ["lifecycle-common", "lifecycle-process", "lifecycle-runtimektx"]
+lifecycle = ["lifecycle-common", "lifecycle-compose", "lifecycle-process", "lifecycle-runtimektx"]
 workmanager = ["work-runtime", "guava"]

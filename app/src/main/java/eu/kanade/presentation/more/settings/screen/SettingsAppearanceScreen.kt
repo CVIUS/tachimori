@@ -17,7 +17,7 @@ import eu.kanade.domain.ui.model.TabletUiMode
 import eu.kanade.domain.ui.model.ThemeMode
 import eu.kanade.domain.ui.model.setAppCompatDelegateThemeMode
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.util.collectAsState
+import eu.kanade.presentation.util.collectAsStateWithLifecycle
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
@@ -52,7 +52,7 @@ object SettingsAppearanceScreen : SearchableSettings {
         uiPreferences: UiPreferences,
     ): Preference.PreferenceGroup {
         val themeModePref = uiPreferences.themeMode()
-        val themeMode by themeModePref.collectAsState()
+        val themeMode by themeModePref.collectAsStateWithLifecycle()
         val appThemePref = uiPreferences.appTheme()
         val amoledPref = uiPreferences.themeDarkAmoled()
 

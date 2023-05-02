@@ -3,10 +3,10 @@ package eu.kanade.tachiyomi.ui.browse.migration.sources
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -25,7 +25,7 @@ class MigrationSourceScreen : Screen() {
         val uriHandler = LocalUriHandler.current
         val navigator = LocalNavigator.currentOrThrow
         val screenModel = rememberScreenModel { MigrateSourceScreenModel() }
-        val state by screenModel.state.collectAsState()
+        val state by screenModel.state.collectAsStateWithLifecycle()
 
         Scaffold(
             topBar = { scrollBehavior ->

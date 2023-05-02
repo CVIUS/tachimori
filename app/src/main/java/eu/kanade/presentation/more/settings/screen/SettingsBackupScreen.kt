@@ -38,7 +38,7 @@ import androidx.core.net.toUri
 import com.hippo.unifile.UniFile
 import eu.kanade.presentation.extensions.RequestStoragePermission
 import eu.kanade.presentation.more.settings.Preference
-import eu.kanade.presentation.util.collectAsState
+import eu.kanade.presentation.util.collectAsStateWithLifecycle
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.backup.BackupConst
 import eu.kanade.tachiyomi.data.backup.BackupCreatorJob
@@ -331,9 +331,9 @@ object SettingsBackupScreen : SearchableSettings {
     ): Preference.PreferenceGroup {
         val context = LocalContext.current
         val backupIntervalPref = backupPreferences.backupInterval()
-        val backupInterval by backupIntervalPref.collectAsState()
+        val backupInterval by backupIntervalPref.collectAsStateWithLifecycle()
         val backupDirPref = backupPreferences.backupsDirectory()
-        val backupDir by backupDirPref.collectAsState()
+        val backupDir by backupDirPref.collectAsStateWithLifecycle()
         val pickBackupLocation = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree(),
         ) { uri ->

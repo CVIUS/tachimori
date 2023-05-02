@@ -21,7 +21,7 @@ import eu.kanade.presentation.more.settings.widget.MultiSelectListPreferenceWidg
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TrackingPreferenceWidget
-import eu.kanade.presentation.util.collectAsState
+import eu.kanade.presentation.util.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import tachiyomi.core.preference.PreferenceStore
 import uy.kohesive.injekt.Injekt
@@ -62,7 +62,7 @@ internal fun PreferenceItem(
     ) {
         when (item) {
             is Preference.PreferenceItem.SwitchPreference -> {
-                val value by item.pref.collectAsState()
+                val value by item.pref.collectAsStateWithLifecycle()
                 SwitchPreferenceWidget(
                     title = item.title,
                     subtitle = item.subtitle,
@@ -78,7 +78,7 @@ internal fun PreferenceItem(
                 )
             }
             is Preference.PreferenceItem.ListPreference<*> -> {
-                val value by item.pref.collectAsState()
+                val value by item.pref.collectAsStateWithLifecycle()
                 ListPreferenceWidget(
                     value = value,
                     title = item.title,
@@ -105,7 +105,7 @@ internal fun PreferenceItem(
                 )
             }
             is Preference.PreferenceItem.MultiSelectListPreference -> {
-                val values by item.pref.collectAsState()
+                val values by item.pref.collectAsStateWithLifecycle()
                 MultiSelectListPreferenceWidget(
                     preference = item,
                     values = values,
@@ -127,7 +127,7 @@ internal fun PreferenceItem(
                 )
             }
             is Preference.PreferenceItem.EditTextPreference -> {
-                val values by item.pref.collectAsState()
+                val values by item.pref.collectAsStateWithLifecycle()
                 EditTextPreferenceWidget(
                     title = item.title,
                     subtitle = item.subtitle,
@@ -145,8 +145,8 @@ internal fun PreferenceItem(
                 )
             }
             is Preference.PreferenceItem.AppThemePreference -> {
-                val value by item.pref.collectAsState()
-                val amoled by Injekt.get<UiPreferences>().themeDarkAmoled().collectAsState()
+                val value by item.pref.collectAsStateWithLifecycle()
+                val amoled by Injekt.get<UiPreferences>().themeDarkAmoled().collectAsStateWithLifecycle()
                 AppThemePreferenceWidget(
                     title = item.title,
                     value = value,
@@ -157,7 +157,7 @@ internal fun PreferenceItem(
             is Preference.PreferenceItem.TrackingPreference -> {
                 val uName by Injekt.get<PreferenceStore>()
                     .getString(TrackPreferences.trackUsername(item.service.id))
-                    .collectAsState()
+                    .collectAsStateWithLifecycle()
                 item.service.run {
                     TrackingPreferenceWidget(
                         service = this,
