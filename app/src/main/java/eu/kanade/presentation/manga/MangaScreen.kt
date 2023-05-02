@@ -62,7 +62,7 @@ import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.ui.manga.ChapterItem
 import eu.kanade.tachiyomi.ui.manga.MangaScreenState
-import eu.kanade.tachiyomi.util.chapter.chapterDecimalFormat
+import eu.kanade.tachiyomi.util.chapter.preferredChapterName
 import eu.kanade.tachiyomi.util.lang.toRelativeString
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import tachiyomi.domain.chapter.model.Chapter
@@ -680,14 +680,7 @@ private fun LazyListScope.sharedChapterItems(
         val context = LocalContext.current
 
         MangaChapterListItem(
-            title = if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER && chapterItem.chapter.isRecognizedNumber) {
-                stringResource(
-                    R.string.display_mode_chapter,
-                    chapterDecimalFormat.format(chapterItem.chapter.chapterNumber.toDouble()),
-                )
-            } else {
-                chapterItem.chapter.name
-            },
+            title = chapterItem.chapter.preferredChapterName(manga),
             date = chapterItem.chapter.dateUpload
                 .takeIf { it > 0L }
                 ?.let {

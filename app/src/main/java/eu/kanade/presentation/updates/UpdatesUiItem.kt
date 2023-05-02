@@ -42,7 +42,7 @@ import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
-import eu.kanade.tachiyomi.util.chapter.chapterDecimalFormat
+import eu.kanade.tachiyomi.util.chapter.preferredChapterName
 import kotlinx.coroutines.runBlocking
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.manga.model.Manga
@@ -170,18 +170,7 @@ fun UpdatesUiItem(
     downloadStateProvider: () -> Download.State,
     downloadProgressProvider: () -> Int,
 ) {
-    val textAlpha = if (update.read) ReadItemAlpha else 1f
-
-    val displayNumber = remember(manga) { manga?.displayMode == Manga.CHAPTER_DISPLAY_NUMBER && update.chapterNumber >= 0f }
-    val textRes = if (displayNumber) {
-        stringResource(
-            R.string.display_mode_chapter,
-            chapterDecimalFormat.format(update.chapterNumber.toDouble()),
-        )
-    } else {
-        update.chapterName
-    }
-
+    val textAlpha = if (update.read) ReadItemAlpha else 1
     Row(
         modifier = modifier
             .selectedBackground(selected)
@@ -230,7 +219,7 @@ fun UpdatesUiItem(
                 }
 
                 Text(
-                    text = textRes.takeIf { manga != null } ?: update.chapterName,
+                    text = manga.preferredChapterName(update.chapterName, update.chapterNumber),
                     maxLines = 1,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = LocalContentColor.current.copy(alpha = textAlpha),

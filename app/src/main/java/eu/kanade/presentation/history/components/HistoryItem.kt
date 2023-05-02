@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.tachiyomi.R
-import eu.kanade.tachiyomi.util.chapter.chapterDecimalFormat
+import eu.kanade.tachiyomi.util.chapter.preferredChapterName
 import eu.kanade.tachiyomi.util.lang.toTimestampString
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.domain.manga.model.Manga
@@ -39,17 +39,7 @@ fun HistoryItem(
     onClickResume: () -> Unit,
     onClickDelete: (String) -> Unit,
 ) {
-    val displayNumber = remember(manga) { manga?.displayMode == Manga.CHAPTER_DISPLAY_NUMBER && history.chapterNumber >= 0f }
-    val prefChapName = if (displayNumber) {
-        stringResource(
-            R.string.display_mode_chapter,
-            chapterDecimalFormat.format(history.chapterNumber.toDouble()),
-        )
-    } else {
-        history.chapterName
-    }
-    val msg = prefChapName.takeIf { manga != null } ?: history.chapterName
-
+    val chapterName = manga.preferredChapterName(history.chapterName, history.chapterNumber)
     Row(
         modifier = modifier
             .clickable(onClick = onClickResume)
@@ -76,7 +66,7 @@ fun HistoryItem(
             )
             val readAt = remember { history.readAt?.toTimestampString() }
             Text(
-                text = msg,
+                text = chapterName,
                 maxLines = 1,
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -88,7 +78,7 @@ fun HistoryItem(
             }
         }
 
-        IconButton(onClick = { onClickDelete(msg) }) {
+        IconButton(onClick = { onClickDelete(chapterName) }) {
             Icon(
                 imageVector = Icons.Outlined.Delete,
                 contentDescription = stringResource(R.string.action_delete),

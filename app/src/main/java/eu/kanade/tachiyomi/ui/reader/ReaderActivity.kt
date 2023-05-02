@@ -67,7 +67,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
-import eu.kanade.tachiyomi.util.chapter.chapterDecimalFormat
+import eu.kanade.tachiyomi.util.chapter.preferredChapterName
 import eu.kanade.tachiyomi.util.preference.toggle
 import eu.kanade.tachiyomi.util.system.applySystemAnimatorScale
 import eu.kanade.tachiyomi.util.system.createReaderThemeContext
@@ -746,14 +746,7 @@ class ReaderActivity : BaseActivity() {
         val chapter = viewerChapters.currChapter.chapter
         binding.readerContainer.removeView(loadingIndicator)
         viewer?.setChapters(viewerChapters)
-        binding.toolbar.subtitle = if (manga.displayMode == Manga.CHAPTER_DISPLAY_NUMBER && chapter.chapter_number >= 0f) {
-            getString(
-                R.string.display_mode_chapter,
-                chapterDecimalFormat.format(chapter.chapter_number.toDouble()),
-            )
-        } else {
-            chapter.name
-        }
+        binding.toolbar.subtitle = chapter.preferredChapterName(this, manga)
 
         val currentChapterPageCount = viewerChapters.currChapter.pages?.size ?: 1
         binding.readerSeekbar.isInvisible = currentChapterPageCount == 1

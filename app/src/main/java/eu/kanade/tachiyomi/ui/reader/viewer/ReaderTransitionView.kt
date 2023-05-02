@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.databinding.ReaderTransitionViewBinding
 import eu.kanade.tachiyomi.ui.reader.loader.DownloadPageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
+import eu.kanade.tachiyomi.util.chapter.preferredChapterName
 import eu.kanade.tachiyomi.util.system.dpToPx
 import tachiyomi.domain.manga.model.Manga
 import kotlin.math.roundToInt
@@ -62,7 +63,7 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
             val isCurrentDownloaded = transition.from.pageLoader is DownloadPageLoader
             binding.upperText.text = buildSpannedString {
                 bold { append(context.getString(R.string.transition_previous)) }
-                append("\n${prevChapter.name}")
+                append("\n${prevChapter.preferredChapterName(context, manga)}")
                 if (!prevChapter.scanlator.isNullOrBlank()) {
                     append(DOT_SEPERATOR)
                     append("${prevChapter.scanlator}")
@@ -71,7 +72,7 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
             }
             binding.lowerText.text = buildSpannedString {
                 bold { append(context.getString(R.string.transition_current)) }
-                append("\n${transition.from.chapter.name}")
+                append("\n${transition.from.chapter.preferredChapterName(context, manga)}")
                 if (!transition.from.chapter.scanlator.isNullOrBlank()) {
                     append(DOT_SEPERATOR)
                     append("${transition.from.chapter.scanlator}")
@@ -107,7 +108,7 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
             )
             binding.upperText.text = buildSpannedString {
                 bold { append(context.getString(R.string.transition_finished)) }
-                append("\n${transition.from.chapter.name}")
+                append("\n${transition.from.chapter.preferredChapterName(context, manga)}")
                 if (!transition.from.chapter.scanlator.isNullOrBlank()) {
                     append(DOT_SEPERATOR)
                     append("${transition.from.chapter.scanlator}")
@@ -116,7 +117,7 @@ class ReaderTransitionView @JvmOverloads constructor(context: Context, attrs: At
             }
             binding.lowerText.text = buildSpannedString {
                 bold { append(context.getString(R.string.transition_next)) }
-                append("\n${nextChapter.name}")
+                append("\n${nextChapter.preferredChapterName(context, manga)}")
                 if (!nextChapter.scanlator.isNullOrBlank()) {
                     append(DOT_SEPERATOR)
                     append("${nextChapter.scanlator}")
