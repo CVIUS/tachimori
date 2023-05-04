@@ -62,6 +62,8 @@ class SettingsScreen private constructor(
                     SettingsBackupScreen
                 } else if (toAbout) {
                     AboutScreen
+                } else if (toDownload) {
+                    SettingsDownloadScreen
                 } else {
                     SettingsGeneralScreen
                 },
