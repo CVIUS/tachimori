@@ -39,13 +39,6 @@ object SettingsGeneralScreen : SearchableSettings {
         return mutableListOf<Preference>().apply {
             add(
                 Preference.PreferenceItem.SwitchPreference(
-                    pref = libraryPrefs.newShowUpdatesCount(),
-                    title = stringResource(R.string.pref_library_update_show_tab_badge),
-                ),
-            )
-
-            add(
-                Preference.PreferenceItem.SwitchPreference(
                     pref = prefs.confirmExit(),
                     title = stringResource(R.string.pref_confirm_exit),
                 ),
@@ -65,6 +58,25 @@ object SettingsGeneralScreen : SearchableSettings {
                     ),
                 )
             }
+
+            add(
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = libraryPrefs.newShowUpdatesCount(),
+                    title = stringResource(R.string.pref_library_update_show_tab_badge),
+                ),
+            )
+
+            add(
+                Preference.PreferenceItem.ListPreference(
+                    pref = libraryPrefs.swipeAction(),
+                    title = "Chapter swipe action",
+                    entries = mapOf(
+                        LibraryPreferences.ChapterSwipeAction.Disabled to "Disabled",
+                        LibraryPreferences.ChapterSwipeAction.ToggleRead to "Toggle read",
+                        LibraryPreferences.ChapterSwipeAction.ToggleBookmark to "Toggle bookmark",
+                    ),
+                ),
+            )
 
             val langs = remember { getLangs(context) }
             var currentLanguage by remember { mutableStateOf(AppCompatDelegate.getApplicationLocales().get(0)?.toLanguageTag() ?: "") }

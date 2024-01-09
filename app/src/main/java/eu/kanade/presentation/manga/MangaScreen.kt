@@ -47,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastMap
+import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.manga.model.chaptersFiltered
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterHeaderItem
@@ -118,7 +119,12 @@ fun MangaScreen(
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
     onMultiDeleteClicked: (List<ChapterItem>) -> Unit,
 
-    // Chapter selection
+    // For swipeable actions
+    swipeAction: LibraryPreferences.ChapterSwipeAction,
+    onSwipeToBookmark: (ChapterItem, bookmarked: Boolean) -> Unit,
+    onSwipeToMarkRead: (ChapterItem, markAsRead: Boolean, lastPageRead: Long) -> Unit,
+
+    // For chapter selection
     onChapterSelected: (ChapterItem, Boolean, Boolean, Boolean) -> Unit,
     onAllChapterSelected: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
@@ -159,6 +165,9 @@ fun MangaScreen(
             onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
             onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
             onMultiDeleteClicked = onMultiDeleteClicked,
+            swipeAction = swipeAction,
+            onSwipeToBookmark = onSwipeToBookmark,
+            onSwipeToMarkRead = onSwipeToMarkRead,
             onChapterSelected = onChapterSelected,
             onAllChapterSelected = onAllChapterSelected,
             onInvertSelection = onInvertSelection,
@@ -191,6 +200,9 @@ fun MangaScreen(
             onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
             onMarkPreviousAsReadClicked = onMarkPreviousAsReadClicked,
             onMultiDeleteClicked = onMultiDeleteClicked,
+            swipeAction = swipeAction,
+            onSwipeToBookmark = onSwipeToBookmark,
+            onSwipeToMarkRead = onSwipeToMarkRead,
             onChapterSelected = onChapterSelected,
             onAllChapterSelected = onAllChapterSelected,
             onInvertSelection = onInvertSelection,
@@ -236,6 +248,11 @@ private fun MangaScreenSmallImpl(
     onMultiMarkAsReadClicked: (List<Chapter>, markAsRead: Boolean) -> Unit,
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
     onMultiDeleteClicked: (List<ChapterItem>) -> Unit,
+
+    // For swipeable actions
+    swipeAction: LibraryPreferences.ChapterSwipeAction,
+    onSwipeToBookmark: (ChapterItem, bookmarked: Boolean) -> Unit,
+    onSwipeToMarkRead: (ChapterItem, markAsRead: Boolean, lastPageRead: Long) -> Unit,
 
     // Chapter selection
     onChapterSelected: (ChapterItem, Boolean, Boolean, Boolean) -> Unit,
@@ -400,6 +417,9 @@ private fun MangaScreenSmallImpl(
                         onChapterClicked = onChapterClicked,
                         onDownloadChapter = onDownloadChapter,
                         onChapterSelected = onChapterSelected,
+                        onSwipeToBookmark = onSwipeToBookmark,
+                        onSwipeToMarkRead = onSwipeToMarkRead,
+                        swipeAction = swipeAction,
                     )
                 }
             }
@@ -445,7 +465,12 @@ fun MangaScreenLargeImpl(
     onMarkPreviousAsReadClicked: (Chapter) -> Unit,
     onMultiDeleteClicked: (List<ChapterItem>) -> Unit,
 
-    // Chapter selection
+    // For swipeable actions
+    swipeAction: LibraryPreferences.ChapterSwipeAction,
+    onSwipeToBookmark: (ChapterItem, bookmarked: Boolean) -> Unit,
+    onSwipeToMarkRead: (ChapterItem, markAsRead: Boolean, lastPageRead: Long) -> Unit,
+
+    // For chapter selection
     onChapterSelected: (ChapterItem, Boolean, Boolean, Boolean) -> Unit,
     onAllChapterSelected: (Boolean) -> Unit,
     onInvertSelection: () -> Unit,
@@ -473,6 +498,7 @@ fun MangaScreenLargeImpl(
             if (chapters.fastAny { it.selected }) {
                 onAllChapterSelected(false)
             } else {
+
                 onBackClicked()
             }
         }
@@ -611,6 +637,9 @@ fun MangaScreenLargeImpl(
                                 onChapterClicked = onChapterClicked,
                                 onDownloadChapter = onDownloadChapter,
                                 onChapterSelected = onChapterSelected,
+                                onSwipeToBookmark = onSwipeToBookmark,
+                                onSwipeToMarkRead = onSwipeToMarkRead,
+                                swipeAction = swipeAction,
                             )
                         }
                     }
@@ -670,6 +699,9 @@ private fun LazyListScope.sharedChapterItems(
     onChapterClicked: (Chapter) -> Unit,
     onDownloadChapter: ((List<ChapterItem>, ChapterDownloadAction) -> Unit)?,
     onChapterSelected: (ChapterItem, Boolean, Boolean, Boolean) -> Unit,
+    swipeAction: LibraryPreferences.ChapterSwipeAction,
+    onSwipeToBookmark: (ChapterItem, bookmarked: Boolean) -> Unit,
+    onSwipeToMarkRead: (ChapterItem, markAsRead: Boolean, lastPageRead: Long) -> Unit,
 ) {
     items(
         items = chapters,
@@ -721,6 +753,24 @@ private fun LazyListScope.sharedChapterItems(
                 { onDownloadChapter(listOf(chapterItem), it) }
             } else {
                 null
+            },
+            swipeAction = swipeAction,
+            swipeActionEnabled = chapters.fastAll { !it.selected },
+            onSwipeToBookmark = {
+                onSwipeToBookmark(chapterItem, true)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            },
+            onSwipeToRemoveBookmark = {
+                onSwipeToBookmark(chapterItem, false)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            },
+            onSwipeToMarkRead = {
+                onSwipeToMarkRead(chapterItem, true, chapterItem.chapter.lastPageRead)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            },
+            onSwipeToMarkUnread = {
+                onSwipeToMarkRead(chapterItem, false, 0)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             },
         )
     }

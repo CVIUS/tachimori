@@ -136,11 +136,15 @@ class MangaScreen(
             onChapterSelected = screenModel::toggleSelection,
             onAllChapterSelected = screenModel::toggleAllSelection,
             onInvertSelection = screenModel::invertSelection,
+            swipeAction = screenModel.swipeAction,
+            onSwipeToBookmark = screenModel::onSwipeToBookmark,
+            onSwipeToMarkRead = screenModel::onSwipeToMarkRead,
         )
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(screenModel.snackbar) {
             launch {
-                screenModel.snackbar.collectLatest { snackbar ->
+                var isUndoing = false
+                screenModel.snackbar.collect { snackbar ->
                     when (snackbar) {
                         MangaInfoScreenModel.Snackbar.DeleteDownloadedChapters -> {
                             val allDownloadCount = screenModel.getDownloadCount()
@@ -211,6 +215,39 @@ class MangaScreen(
                             val textRes = if (snackbar.applyToExisting) R.string.chapter_settings_updated_library else R.string.chapter_settings_updated_entry
                             snackbarHostState.showSnackbar(context.getString(textRes))
                         }
+                        is MangaInfoScreenModel.Snackbar.OnSwipeToMarkRead -> {
+                            val textRes = if (snackbar.read) "Marked as read" else "Marked as unread"
+                            val result = snackbarHostState.showSnackbar(
+                                message = textRes,
+                                actionLabel = context.getString(R.string.action_undo),
+                                duration = SnackbarDuration.Short,
+                            )
+                            val item = snackbar.chapter
+                            when (result) {
+                                SnackbarResult.Dismissed -> {
+                                    if (!isUndoing && !item.chapter.read) {
+                                        if (screenModel.removeAfterMarkedAsRead) {
+                                            screenModel.deleteChapters(listOf(item))
+                                        }
+                                    }
+                                }
+                                SnackbarResult.ActionPerformed -> {
+                                    screenModel.onSwipeToMarkRead(item, !snackbar.read, snackbar.lastPageRead, showSnackbar = false)
+                                    isUndoing = !isUndoing
+                                }
+                            }
+                        }
+                        is MangaInfoScreenModel.Snackbar.OnSwipeToBookmark -> {
+                            val textRes = if (snackbar.bookmark) "Bookmarked" else "Unbookmarked"
+                            val result = snackbarHostState.showSnackbar(
+                                message = textRes,
+                                actionLabel = context.getString(R.string.action_undo),
+                                duration = SnackbarDuration.Short,
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                screenModel.onSwipeToBookmark(snackbar.chapter, !snackbar.bookmark, showSnackbar = false)
+                            }
+                        }
                     }
                 }
             }
@@ -233,9 +270,9 @@ class MangaScreen(
             is MangaInfoScreenModel.Dialog.DeleteChapters -> {
                 DeleteChaptersDialog(
                     onDismissRequest = onDismissRequest,
-                    selected = dialog.chapterItems,
+                    selected = dialog.chapters,
                     removeBookmarkedChapters = screenModel.removeBookmarkedChapters,
-                    onConfirm = { screenModel.deleteChapters(dialog.chapterItems) },
+                    onConfirm = { screenModel.deleteChapters(dialog.chapters) },
                     goToSettings = {
                         screenModel.toggleAllSelection(false)
                         navigator.push(SettingsScreen.toDownloadScreen())
@@ -260,7 +297,7 @@ class MangaScreen(
                     screenModel = rememberScreenModel { MigrateDialogScreenModel() },
                     onDismissRequest = onDismissRequest,
                     onClickTitle = {},
-                    onPopScreen = { screenModel.snackbarHostState.currentSnackbarData?.dismiss() },
+                    onPopScreen = { snackbarHostState.currentSnackbarData?.dismiss() },
                 )
             }
             MangaInfoScreenModel.Dialog.SettingsSheet -> {
@@ -309,7 +346,7 @@ class MangaScreen(
                         },
                         onDismissRequest = onDismissRequest,
                     )
-                    LaunchedEffect(Unit) {
+                    LaunchedEffect(sm.snackbar) {
                         launch {
                             sm.snackbar.collectLatest { snackbar ->
                                 when (snackbar) {

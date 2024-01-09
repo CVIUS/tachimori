@@ -17,7 +17,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
@@ -95,7 +95,7 @@ data class TrackInfoDialogHomeScreen(
         val sm = rememberScreenModel { Model(mangaId, sourceId) }
 
         val dateFormat = remember { UiPreferences.dateFormat(Injekt.get<UiPreferences>().dateFormat().get()) }
-        val state by sm.state.collectAsState()
+        val state by sm.state.collectAsStateWithLifecycle()
 
         TrackInfoDialogHome(
             trackItems = state.trackItems,
@@ -279,7 +279,7 @@ private data class TrackStatusSelectorScreen(
                 service = Injekt.get<TrackManager>().getService(serviceId)!!,
             )
         }
-        val state by sm.state.collectAsState()
+        val state by sm.state.collectAsStateWithLifecycle()
         TrackStatusSelector(
             selection = state.selection,
             onSelectionChange = sm::setSelection,
@@ -328,7 +328,7 @@ private data class TrackChapterSelectorScreen(
                 service = Injekt.get<TrackManager>().getService(serviceId)!!,
             )
         }
-        val state by sm.state.collectAsState()
+        val state by sm.state.collectAsStateWithLifecycle()
 
         TrackChapterSelector(
             selection = state.selection,
@@ -383,7 +383,7 @@ private data class TrackScoreSelectorScreen(
                 service = Injekt.get<TrackManager>().getService(serviceId)!!,
             )
         }
-        val state by sm.state.collectAsState()
+        val state by sm.state.collectAsStateWithLifecycle()
 
         TrackScoreSelector(
             selection = state.selection,
@@ -423,15 +423,17 @@ private data class TrackDateSelectorScreen(
     private val track: Track,
     private val serviceId: Long,
     private val start: Boolean,
+    private val trackManager: TrackManager = Injekt.get(),
 ) : Screen() {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val service = trackManager.getService(serviceId)!!
         val sm = rememberScreenModel {
             Model(
                 track = track,
-                service = Injekt.get<TrackManager>().getService(serviceId)!!,
+                service = service,
                 start = start,
             )
         }
@@ -442,7 +444,8 @@ private data class TrackDateSelectorScreen(
             track.finished_reading_date > 0
         }
         TrackDateSelector(
-            title = if (start) {
+            title = stringResource(service.nameRes()),
+            subtitle = if (start) {
                 stringResource(R.string.track_started_reading_date)
             } else {
                 stringResource(R.string.track_finished_reading_date)
@@ -629,7 +632,7 @@ data class TrackServiceSearchScreen(
             )
         }
 
-        val state by sm.state.collectAsState()
+        val state by sm.state.collectAsStateWithLifecycle()
 
         var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(initialQuery)) }
         TrackServiceSearch(

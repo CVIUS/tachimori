@@ -30,7 +30,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.setting.SettingsScreen
 import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel.Snackbar
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 object UpdatesTab : Tab {
 
@@ -76,6 +76,9 @@ object UpdatesTab : Tab {
                 val intent = ReaderActivity.newIntent(context, it.update.mangaId, it.update.chapterId)
                 context.startActivity(intent)
             },
+            swipeAction = screenModel.swipeAction,
+            onSwipeToBookmark = screenModel::onSwipeToBookmark,
+            onSwipeToMarkRead = screenModel::onSwipeToMarkRead,
         )
 
         val onDismissRequest = { screenModel.setDialog(null) }
@@ -95,19 +98,55 @@ object UpdatesTab : Tab {
             null -> {}
         }
 
-        LaunchedEffect(Unit) {
-            screenModel.snackbar.collectLatest { snackbar ->
-                when (snackbar) {
-                    Snackbar.InternalError -> snackbarHostState.showSnackbar(context.getString(R.string.internal_error))
-                    is Snackbar.LibraryUpdateTriggered -> {
-                        val msgRes = if (snackbar.started) R.string.updating_library else R.string.update_already_running
-                        val result = snackbarHostState.showSnackbar(
-                            message = context.getString(msgRes),
-                            actionLabel = context.getString(R.string.action_cancel).takeIf { snackbar.started },
-                            duration = SnackbarDuration.Short,
-                        )
-                        if (result == SnackbarResult.ActionPerformed && snackbar.started) {
-                            screenModel.onLibraryUpdateCancelled()
+        LaunchedEffect(screenModel.snackbar) {
+            launch {
+                var isUndoing = false
+                screenModel.snackbar.collect { snackbar ->
+                    when (snackbar) {
+                        Snackbar.InternalError -> snackbarHostState.showSnackbar(context.getString(R.string.internal_error))
+                        is Snackbar.LibraryUpdateTriggered -> {
+                            val msgRes = if (snackbar.started) R.string.updating_library else R.string.update_already_running
+                            val result = snackbarHostState.showSnackbar(
+                                message = context.getString(msgRes),
+                                actionLabel = context.getString(R.string.action_cancel).takeIf { snackbar.started },
+                                duration = SnackbarDuration.Short,
+                            )
+                            if (result == SnackbarResult.ActionPerformed && snackbar.started) {
+                                screenModel.onLibraryUpdateCancelled()
+                            }
+                        }
+                        is Snackbar.OnSwipeToMarkRead -> {
+                            val textRes = if (snackbar.read) "Marked as read" else "Marked as unread"
+                            val result = snackbarHostState.showSnackbar(
+                                message = textRes,
+                                actionLabel = context.getString(R.string.action_undo),
+                                duration = SnackbarDuration.Short,
+                            )
+                            val item = snackbar.update
+                            when (result) {
+                                SnackbarResult.ActionPerformed -> {
+                                    screenModel.onSwipeToMarkRead(item, !snackbar.read, snackbar.lastPageRead, showSnackbar = false)
+                                    isUndoing = !isUndoing
+                                }
+                                SnackbarResult.Dismissed -> {
+                                    if (!isUndoing && !item.update.read) {
+                                        if (screenModel.removeAfterMarkedAsRead) {
+                                            screenModel.deleteChapters(listOf(item))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        is Snackbar.OnSwipeToBookmark -> {
+                            val textRes = if (snackbar.bookmark) "Bookmarked" else "Unbookmarked"
+                            val result = snackbarHostState.showSnackbar(
+                                message = textRes,
+                                actionLabel = context.getString(R.string.action_undo),
+                                duration = SnackbarDuration.Short,
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                screenModel.onSwipeToBookmark(snackbar.update, !snackbar.bookmark, showSnackbar = false)
+                            }
                         }
                     }
                 }

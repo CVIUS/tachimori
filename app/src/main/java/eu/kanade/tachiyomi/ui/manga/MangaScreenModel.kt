@@ -9,6 +9,7 @@ import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.core.preference.asState
 import eu.kanade.core.util.addOrRemove
+import eu.kanade.domain.chapter.interactor.SetBookmarkStatus
 import eu.kanade.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
@@ -38,6 +39,7 @@ import eu.kanade.tachiyomi.util.shouldDownloadNewChapters
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -60,9 +62,7 @@ import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
-import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.Chapter
-import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.chapter.model.NoChaptersException
 import tachiyomi.domain.chapter.service.getChapterSort
 import tachiyomi.domain.download.service.DownloadPreferences
@@ -90,7 +90,7 @@ class MangaInfoScreenModel(
     private val setMangaChapterFlags: SetMangaChapterFlags = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val setReadStatus: SetReadStatus = Injekt.get(),
-    private val updateChapter: UpdateChapter = Injekt.get(),
+    private val setBookmarkStatus: SetBookmarkStatus = Injekt.get(),
     private val updateManga: UpdateManga = Injekt.get(),
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
@@ -125,6 +125,8 @@ class MangaInfoScreenModel(
     val dateFormat by mutableStateOf(UiPreferences.dateFormat(uiPreferences.dateFormat().get()))
     private val skipFiltered by readerPreferences.skipFiltered().asState(coroutineScope)
     val removeBookmarkedChapters by downloadPreferences.removeBookmarkedChapters().asState(coroutineScope)
+    val swipeAction by libraryPreferences.swipeAction().asState(coroutineScope)
+    val removeAfterMarkedAsRead by downloadPreferences.removeAfterMarkedAsRead().asState(coroutineScope)
 
     private val selectedPositions: Array<Int> = arrayOf(-1, -1) // first and last selected index in list
     private val selectedChapterIds: HashSet<Long> = HashSet()
@@ -200,6 +202,7 @@ class MangaInfoScreenModel(
 
     fun fetchAllFromSource(manualFetch: Boolean = true) {
         coroutineScope.launch {
+
             updateSuccessState { it.copy(isRefreshingData = true) }
             val fetchFromSourceTasks = listOf(
                 async { fetchMangaFromSource(manualFetch) },
@@ -554,7 +557,9 @@ class MangaInfoScreenModel(
         }
 
         if (!isFavorited) {
-            setSnackbar(Snackbar.AddFavorite)
+            coroutineScope.launch {
+                setSnackbar(Snackbar.AddFavorite)
+            }
         }
     }
 
@@ -562,6 +567,7 @@ class MangaInfoScreenModel(
         items: List<ChapterItem>,
         action: ChapterDownloadAction,
     ) {
+
         when (action) {
             ChapterDownloadAction.START -> {
                 startDownload(items.map { it.chapter }, false)
@@ -584,6 +590,7 @@ class MangaInfoScreenModel(
     }
 
     fun runDownloadAction(action: DownloadAction) {
+
         val chaptersToDownload = when (action) {
             DownloadAction.NEXT_1_CHAPTER -> getUnreadChaptersSorted().take(1)
             DownloadAction.NEXT_5_CHAPTERS -> getUnreadChaptersSorted().take(5)
@@ -608,7 +615,7 @@ class MangaInfoScreenModel(
         val chapters = filteredChapters.orEmpty().map { it.chapter }.toList()
         val prevChapters = if (successState.manga.sortDescending()) chapters.asReversed() else chapters
         val pointerPos = prevChapters.indexOf(pointer)
-        if (pointerPos != -1) markChaptersRead(prevChapters.take(pointerPos), true)
+        if (pointerPos != -1) markChaptersRead(prevChapters.take(pointerPos), read = true)
     }
 
     /**
@@ -616,14 +623,21 @@ class MangaInfoScreenModel(
      * @param chapters the list of selected chapters.
      * @param read whether to mark chapters as read or unread.
      */
-    fun markChaptersRead(chapters: List<Chapter>, read: Boolean) {
+    fun markChaptersRead(chapters: List<Chapter>, read: Boolean, lastPageRead: Long? = null) {
         coroutineScope.launchIO {
             setReadStatus.await(
                 read = read,
                 chapters = chapters.toTypedArray(),
+                lastPageRead = lastPageRead,
             )
         }
         toggleAllSelection(false)
+    }
+
+    fun onSwipeToMarkRead(chapter: ChapterItem, read: Boolean, lastPageRead: Long, showSnackbar: Boolean = true) {
+        markChaptersRead(listOf(chapter.chapter), read, lastPageRead)
+        if (!showSnackbar) return
+        setSnackbar(Snackbar.OnSwipeToMarkRead(chapter, read, lastPageRead))
     }
 
     /**
@@ -640,27 +654,33 @@ class MangaInfoScreenModel(
      * Bookmarks the given list of chapters.
      * @param chapters the list of chapters to bookmark.
      */
-    fun bookmarkChapters(chapters: List<Chapter>, bookmarked: Boolean) {
+    fun bookmarkChapters(chapters: List<Chapter>, bookmark: Boolean) {
         coroutineScope.launchIO {
-            chapters
-                .filterNot { it.bookmark == bookmarked }
-                .map { ChapterUpdate(id = it.id, bookmark = bookmarked) }
-                .let { updateChapter.awaitAll(it) }
+            setBookmarkStatus.await(
+                bookmark = bookmark,
+                chapters = chapters.toTypedArray(),
+            )
         }
         toggleAllSelection(false)
+    }
+
+    fun onSwipeToBookmark(chapter: ChapterItem, bookmark: Boolean, showSnackbar: Boolean = true) {
+        bookmarkChapters(listOf(chapter.chapter), bookmark)
+        if (!showSnackbar) return
+        setSnackbar(Snackbar.OnSwipeToBookmark(chapter, bookmark))
     }
 
     /**
      * Deletes the given list of chapter.
      *
-     * @param chapterItems the list of [ChapterItem] to delete.
+     * @param chapters the list of [ChapterItem] to delete.
      */
-    fun deleteChapters(chapterItems: List<ChapterItem>) {
+    fun deleteChapters(chapters: List<ChapterItem>) {
         coroutineScope.launchNonCancellable {
             try {
                 successState?.let { state ->
                     downloadManager.deleteChapters(
-                        chapterItems.map { it.chapter },
+                        chapters.map { it.chapter },
                         state.manga,
                         state.source,
                     )
@@ -883,6 +903,8 @@ class MangaInfoScreenModel(
 
     private fun setSnackbar(snackbar: Snackbar) {
         coroutineScope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            delay(225)
             _snackbar.send(snackbar)
         }
     }
@@ -891,7 +913,7 @@ class MangaInfoScreenModel(
 
     sealed class Dialog {
         data class ChangeCategory(val manga: Manga, val initialSelection: List<CheckboxState<Category>>) : Dialog()
-        data class DeleteChapters(val chapterItems: List<ChapterItem>) : Dialog()
+        data class DeleteChapters(val chapters: List<ChapterItem>) : Dialog()
         data class DuplicateManga(val manga: Manga, val duplicate: Manga) : Dialog()
         data class MigrateManga(val oldManga: Manga, val newManga: Manga) : Dialog()
         object SettingsSheet : Dialog()
@@ -904,6 +926,12 @@ class MangaInfoScreenModel(
         object AddFavorite : Snackbar()
         object ToggleFavorite : Snackbar()
         object DefaultCategorySet : Snackbar()
+        data class OnSwipeToMarkRead(
+            val chapter: ChapterItem,
+            val read: Boolean,
+            val lastPageRead: Long,
+        ) : Snackbar()
+        data class OnSwipeToBookmark(val chapter: ChapterItem, val bookmark: Boolean) : Snackbar()
         data class UpdateDefaultChapterSettings(val applyToExisting: Boolean) : Snackbar()
         data class OnRemoveManga(val manga: Manga) : Snackbar()
         data class InternalError(val error: String) : Snackbar()
@@ -916,6 +944,7 @@ class MangaInfoScreenModel(
     }
 
     fun setDialog(dialog: Dialog?) {
+
         mutableState.update { state ->
             when (state) {
                 MangaScreenState.Loading -> state

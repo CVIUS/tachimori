@@ -5,6 +5,7 @@ import eu.kanade.domain.category.interactor.CreateCategoryWithName
 import eu.kanade.domain.category.interactor.ResetCategoryFlags
 import eu.kanade.domain.category.interactor.SetDisplayModeForCategory
 import eu.kanade.domain.category.interactor.SetSortModeForCategory
+import eu.kanade.domain.chapter.interactor.SetBookmarkStatus
 import eu.kanade.domain.chapter.interactor.SetMangaDefaultChapterFlags
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
@@ -114,6 +115,7 @@ class DomainModule : InjektModule {
         addFactory { GetChapterByMangaId(get()) }
         addFactory { UpdateChapter(get()) }
         addFactory { SetReadStatus(get(), get(), get(), get()) }
+        addFactory { SetBookmarkStatus(get()) }
         addFactory { ShouldUpdateDbChapter() }
         addFactory { SyncChaptersWithSource(get(), get(), get(), get()) }
         addFactory { SyncChaptersWithTrackServiceTwoWay(get(), get()) }

@@ -35,9 +35,12 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAny
+import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadIndicator
 import eu.kanade.presentation.manga.components.DotSeparatorText
+import eu.kanade.presentation.manga.components.MangaChapterListItemSwipeActions
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -49,6 +52,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.updates.model.UpdatesWithRelations
 import tachiyomi.presentation.core.components.ListGroupHeader
 import tachiyomi.presentation.core.components.material.ReadItemAlpha
+import tachiyomi.presentation.core.components.material.SecondaryItemAlpha
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.util.selectedBackground
 import uy.kohesive.injekt.Injekt
@@ -93,6 +97,9 @@ fun LazyListScope.updatesUiItems(
     onClickCover: (UpdatesItem) -> Unit,
     onClickUpdate: (UpdatesItem) -> Unit,
     onDownloadChapter: (List<UpdatesItem>, ChapterDownloadAction) -> Unit,
+    swipeAction: LibraryPreferences.ChapterSwipeAction,
+    onSwipeToBookmark: (UpdatesItem, bookmarked: Boolean) -> Unit,
+    onSwipeToMarkRead: (UpdatesItem, markAsRead: Boolean, lastPageRead: Long) -> Unit,
 ) {
     items(
         items = uiModels,
@@ -149,6 +156,24 @@ fun LazyListScope.updatesUiItems(
                     }.takeIf { !selectionMode },
                     downloadStateProvider = updatesItem.downloadStateProvider,
                     downloadProgressProvider = updatesItem.downloadProgressProvider,
+                    swipeAction = swipeAction,
+                    swipeActionEnabled = uiModels.fastAny { !updatesItem.selected },
+                    onSwipeToBookmark = {
+                        onSwipeToBookmark(updatesItem, true)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    },
+                    onSwipeToRemoveBookmark = {
+                        onSwipeToBookmark(updatesItem, false)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    },
+                    onSwipeToMarkRead = {
+                        onSwipeToMarkRead(updatesItem, true, updatesItem.update.lastPageRead)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    },
+                    onSwipeToMarkUnread = {
+                        onSwipeToMarkRead(updatesItem, false, 0)
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    },
                 )
             }
         }
@@ -169,8 +194,57 @@ fun UpdatesUiItem(
     // Download Indicator
     downloadStateProvider: () -> Download.State,
     downloadProgressProvider: () -> Int,
+    swipeAction: LibraryPreferences.ChapterSwipeAction,
+    swipeActionEnabled: Boolean,
+    onSwipeToBookmark: () -> Unit,
+    onSwipeToRemoveBookmark: () -> Unit,
+    onSwipeToMarkRead: () -> Unit,
+    onSwipeToMarkUnread: () -> Unit,
 ) {
-    val textAlpha = if (update.read) ReadItemAlpha else 1
+    MangaChapterListItemSwipeActions(
+        read = update.read,
+        bookmark = update.bookmark,
+        swipeAction = swipeAction,
+        swipeActionEnabled = swipeActionEnabled,
+        onSwipeToBookmark = onSwipeToBookmark,
+        onSwipeToRemoveBookmark = onSwipeToRemoveBookmark,
+        onSwipeToMarkRead = onSwipeToMarkRead,
+        onSwipeToMarkUnread = onSwipeToMarkUnread,
+    ) {
+        UpdatesUiContent(
+            modifier = modifier,
+            manga = manga,
+            update = update,
+            selected = selected,
+            readProgress = readProgress,
+            onClick = onClick,
+            onLongClick = onLongClick,
+            onClickCover = onClickCover,
+            onDownloadChapter = onDownloadChapter,
+            downloadStateProvider = downloadStateProvider,
+            downloadProgressProvider = downloadProgressProvider,
+        )
+    }
+}
+
+@Composable
+fun UpdatesUiContent(
+    modifier: Modifier,
+    manga: Manga?,
+    update: UpdatesWithRelations,
+    selected: Boolean,
+    readProgress: String?,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    onClickCover: (() -> Unit)?,
+    onDownloadChapter: ((ChapterDownloadAction) -> Unit)?,
+    // Download Indicator
+    downloadStateProvider: () -> Download.State,
+    downloadProgressProvider: () -> Int,
+) {
+    val textAlpha = if (update.read) ReadItemAlpha else 1f
+    val textSubtitleAlpha = if (update.read) ReadItemAlpha else SecondaryItemAlpha
+
     Row(
         modifier = modifier
             .selectedBackground(selected)
@@ -199,7 +273,8 @@ fun UpdatesUiItem(
                 text = update.mangaTitle,
                 maxLines = 1,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Medium,
+                    color = LocalContentColor.current.copy(alpha = textAlpha),
+                    fontWeight = if (!update.read) FontWeight.Medium else LocalTextStyle.current.fontWeight,
                 ),
                 overflow = TextOverflow.Ellipsis,
             )
@@ -213,7 +288,7 @@ fun UpdatesUiItem(
                         contentDescription = stringResource(R.string.action_filter_bookmarked),
                         modifier = Modifier
                             .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
-                        tint = MaterialTheme.colorScheme.secondary,
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                     Spacer(modifier = Modifier.width(2.dp))
                 }
@@ -222,8 +297,7 @@ fun UpdatesUiItem(
                     text = manga.preferredChapterName(update.chapterName, update.chapterNumber),
                     maxLines = 1,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = LocalContentColor.current.copy(alpha = textAlpha),
-                        fontWeight = if (!update.read) FontWeight(450) else LocalTextStyle.current.fontWeight,
+                        color = LocalContentColor.current.copy(alpha = textSubtitleAlpha),
                     ),
                     overflow = TextOverflow.Ellipsis,
                     onTextLayout = { textHeight = it.size.height },
@@ -238,7 +312,6 @@ fun UpdatesUiItem(
                         maxLines = 1,
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = LocalContentColor.current.copy(alpha = ReadItemAlpha),
-                            fontWeight = if (!update.read) FontWeight(450) else LocalTextStyle.current.fontWeight,
                         ),
                     )
                 }

@@ -112,4 +112,15 @@ class LibraryPreferences(
     fun autoClearChapterCache() = preferenceStore.getBoolean("auto_clear_chapter_cache", false)
 
     // endregion
+
+    // region Swipe Actions
+
+    fun swipeAction() = preferenceStore.getEnum("pref_chapter_swipe_action", ChapterSwipeAction.ToggleBookmark)
+
+    enum class ChapterSwipeAction {
+        ToggleRead,
+        ToggleBookmark,
+        Disabled,
+    }
+    // endregion
 }

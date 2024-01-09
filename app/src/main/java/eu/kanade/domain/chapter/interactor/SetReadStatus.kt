@@ -1,6 +1,7 @@
 package eu.kanade.domain.chapter.interactor
 
 import eu.kanade.domain.download.interactor.DeleteDownload
+import kotlinx.coroutines.isActive
 import logcat.LogPriority
 import tachiyomi.core.util.lang.withNonCancellableContext
 import tachiyomi.core.util.system.logcat
@@ -18,35 +19,54 @@ class SetReadStatus(
     private val chapterRepository: ChapterRepository,
 ) {
 
-    private val mapper = { chapter: Chapter, read: Boolean ->
+    private val mapper = { chapter: Chapter, read: Boolean, lastPageRead: Long ->
         ChapterUpdate(
-            read = read,
-            lastPageRead = if (!read) 0 else null,
             id = chapter.id,
+            read = read,
+            lastPageRead = lastPageRead,
         )
     }
 
-    suspend fun await(read: Boolean, vararg chapters: Chapter): Result = withNonCancellableContext {
-        val chaptersToUpdate = chapters.filter {
-            when (read) {
-                true -> !it.read
-                false -> it.read || it.lastPageRead > 0
+    suspend fun await(read: Boolean, lastPageRead: Long? = null, vararg chapters: Chapter): Result = withNonCancellableContext {
+        val chaptersToUpdate = chapters.map {
+            it.copy(
+                read = when (read) {
+                    true -> it.read
+                    false -> !it.read
+                },
+                lastPageRead = when (lastPageRead) {
+                    null -> 0L
+                    else -> it.lastPageRead
+                },
+            )
+        }.run {
+            if (!isActive) {
+                this.filter {
+                    when (read) {
+                        true -> !it.read
+                        false -> it.read || it.lastPageRead > 0
+                    }
+                }
+            } else {
+                this
             }
         }
+
         if (chaptersToUpdate.isEmpty()) {
             return@withNonCancellableContext Result.NoChapters
         }
 
         try {
             chapterRepository.updateAll(
-                chaptersToUpdate.map { mapper(it, read) },
+                chaptersToUpdate.map { mapper(it, read, lastPageRead ?: 0) },
             )
         } catch (e: Exception) {
             logcat(LogPriority.ERROR, e)
             return@withNonCancellableContext Result.InternalError(e)
         }
 
-        if (read && downloadPreferences.removeAfterMarkedAsRead().get()) {
+        // Handled by snackbar result
+        if (read && lastPageRead == null && downloadPreferences.removeAfterMarkedAsRead().get()) {
             chaptersToUpdate
                 .groupBy { it.mangaId }
                 .forEach { (mangaId, chapters) ->

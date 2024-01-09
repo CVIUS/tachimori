@@ -134,6 +134,7 @@ fun TrackScoreSelector(
 @Composable
 fun TrackDateSelector(
     title: String,
+    subtitle: String,
     initialSelectedDateMillis: Long,
     dateValidator: (Long) -> Boolean,
     onConfirm: (Long) -> Unit,
@@ -145,12 +146,14 @@ fun TrackDateSelector(
     )
     AlertDialogContent(
         modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
+        title = { Text(text = title) },
         content = {
             Column {
                 DatePicker(
                     state = pickerState,
-                    title = { Text(text = title) },
                     dateValidator = dateValidator,
+                    title = { Text(text = subtitle) },
+                    headline = null,
                     showModeToggle = false,
                 )
 

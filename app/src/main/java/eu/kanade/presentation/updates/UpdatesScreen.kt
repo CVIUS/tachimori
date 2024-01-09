@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastAny
+import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.MangaBottomActionMenu
@@ -55,6 +56,9 @@ fun UpdateScreen(
     onMultiDeleteClicked: (List<UpdatesItem>) -> Unit,
     onUpdateSelected: (UpdatesItem, Boolean, Boolean, Boolean) -> Unit,
     onOpenChapter: (UpdatesItem) -> Unit,
+    swipeAction: LibraryPreferences.ChapterSwipeAction,
+    onSwipeToBookmark: (UpdatesItem, bookmarked: Boolean) -> Unit,
+    onSwipeToMarkRead: (UpdatesItem, markAsRead: Boolean, lastPageRead: Long) -> Unit,
 ) {
     BackHandler(enabled = state.selectionMode, onBack = { onSelectAll(false) })
 
@@ -121,6 +125,9 @@ fun UpdateScreen(
                             onClickCover = onClickCover,
                             onClickUpdate = onOpenChapter,
                             onDownloadChapter = onDownloadChapter,
+                            swipeAction = swipeAction,
+                            onSwipeToBookmark = onSwipeToBookmark,
+                            onSwipeToMarkRead = onSwipeToMarkRead,
                         )
                     }
                 }

@@ -11,6 +11,7 @@ import cafe.adriel.voyager.core.model.coroutineScope
 import eu.kanade.core.preference.asState
 import eu.kanade.core.util.addOrRemove
 import eu.kanade.core.util.insertSeparators
+import eu.kanade.domain.chapter.interactor.SetBookmarkStatus
 import eu.kanade.domain.chapter.interactor.SetReadStatus
 import eu.kanade.domain.library.service.LibraryPreferences
 import eu.kanade.domain.ui.UiPreferences
@@ -23,6 +24,7 @@ import eu.kanade.tachiyomi.data.library.LibraryUpdateJob
 import eu.kanade.tachiyomi.util.lang.toDateKey
 import eu.kanade.tachiyomi.util.lang.toRelativeString
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -37,8 +39,6 @@ import tachiyomi.core.util.lang.launchIO
 import tachiyomi.core.util.lang.launchNonCancellable
 import tachiyomi.core.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChapter
-import tachiyomi.domain.chapter.interactor.UpdateChapter
-import tachiyomi.domain.chapter.model.ChapterUpdate
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.source.service.SourceManager
@@ -53,8 +53,8 @@ class UpdatesScreenModel(
     private val sourceManager: SourceManager = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val downloadCache: DownloadCache = Injekt.get(),
-    private val updateChapter: UpdateChapter = Injekt.get(),
     private val setReadStatus: SetReadStatus = Injekt.get(),
+    private val setBookmarkStatus: SetBookmarkStatus = Injekt.get(),
     private val getUpdates: GetUpdates = Injekt.get(),
     private val getManga: GetManga = Injekt.get(),
     private val getChapter: GetChapter = Injekt.get(),
@@ -64,12 +64,14 @@ class UpdatesScreenModel(
     uiPreferences: UiPreferences = Injekt.get(),
 ) : StateScreenModel<UpdatesState>(UpdatesState()) {
 
-    private val _snackbar: Channel<Snackbar> = Channel(Int.MAX_VALUE)
+    private val _snackbar: Channel<Snackbar> = Channel(Channel.CONFLATED)
     val snackbar: Flow<Snackbar> = _snackbar.receiveAsFlow()
 
     val lastUpdated by libraryPreferences.libraryUpdateLastTimestamp().asState(coroutineScope)
     val relativeTime by uiPreferences.relativeTime().asState(coroutineScope)
     val removeBookmarkedChapters by downloadPreferences.removeBookmarkedChapters().asState(coroutineScope)
+    val swipeAction by libraryPreferences.swipeAction().asState(coroutineScope)
+    val removeAfterMarkedAsRead by downloadPreferences.removeAfterMarkedAsRead().asState(coroutineScope)
 
     // First and last selected index in list
     private val selectedPositions: Array<Int> = arrayOf(-1, -1)
@@ -89,7 +91,7 @@ class UpdatesScreenModel(
             ) { updates, _ -> updates }
                 .catch {
                     logcat(LogPriority.ERROR, it)
-                    _snackbar.send(Snackbar.InternalError)
+                    setSnackbar(Snackbar.InternalError)
                 }
                 .collectLatest { updates ->
                     mutableState.update {
@@ -133,9 +135,7 @@ class UpdatesScreenModel(
 
     fun onLibraryUpdateTriggered(): Boolean {
         val started = LibraryUpdateJob.startNow(Injekt.get<Application>())
-        coroutineScope.launch {
-            _snackbar.send(Snackbar.LibraryUpdateTriggered(started))
-        }
+        setSnackbar(Snackbar.LibraryUpdateTriggered(started))
         return started
     }
 
@@ -208,16 +208,23 @@ class UpdatesScreenModel(
      * @param updates the list of selected updates.
      * @param read whether to mark chapters as read or unread.
      */
-    fun markUpdatesRead(updates: List<UpdatesItem>, read: Boolean) {
+    fun markUpdatesRead(updates: List<UpdatesItem>, read: Boolean, lastPageRead: Long? = null) {
         coroutineScope.launchIO {
             setReadStatus.await(
                 read = read,
                 chapters = updates
                     .mapNotNull { getChapter.await(it.update.chapterId) }
                     .toTypedArray(),
+                lastPageRead = lastPageRead,
             )
         }
         toggleAllSelection(false)
+    }
+
+    fun onSwipeToMarkRead(update: UpdatesItem, read: Boolean, lastPageRead: Long, showSnackbar: Boolean = true) {
+        markUpdatesRead(listOf(update), read, lastPageRead)
+        if (!showSnackbar) return
+        setSnackbar(Snackbar.OnSwipeToMarkRead(update, read, lastPageRead))
     }
 
     /**
@@ -226,12 +233,20 @@ class UpdatesScreenModel(
      */
     fun bookmarkUpdates(updates: List<UpdatesItem>, bookmark: Boolean) {
         coroutineScope.launchIO {
-            updates
-                .filterNot { it.update.bookmark == bookmark }
-                .map { ChapterUpdate(id = it.update.chapterId, bookmark = bookmark) }
-                .let { updateChapter.awaitAll(it) }
+            setBookmarkStatus.await(
+                bookmark = bookmark,
+                chapters = updates
+                    .mapNotNull { getChapter.await(it.update.chapterId) }
+                    .toTypedArray(),
+            )
         }
         toggleAllSelection(false)
+    }
+
+    fun onSwipeToBookmark(update: UpdatesItem, bookmark: Boolean, showSnackbar: Boolean = true) {
+        bookmarkUpdates(listOf(update), bookmark)
+        if (!showSnackbar) return
+        setSnackbar(Snackbar.OnSwipeToBookmark(update, bookmark))
     }
 
     /**
@@ -282,6 +297,7 @@ class UpdatesScreenModel(
         userSelected: Boolean = false,
         fromLongPress: Boolean = false,
     ) {
+
         mutableState.update { state ->
             val newItems = state.items.toMutableList().apply {
                 val selectedIndex = indexOfFirst { it.update.chapterId == item.update.chapterId }
@@ -369,6 +385,14 @@ class UpdatesScreenModel(
         mutableState.update { it.copy(dialog = dialog) }
     }
 
+    private fun setSnackbar(snackbar: Snackbar) {
+        coroutineScope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            delay(225)
+            _snackbar.send(snackbar)
+        }
+    }
+
     fun resetNewUpdatesCount() {
         libraryPreferences.newUpdatesCount().set(0)
     }
@@ -380,6 +404,12 @@ class UpdatesScreenModel(
     sealed class Snackbar {
         object InternalError : Snackbar()
         data class LibraryUpdateTriggered(val started: Boolean) : Snackbar()
+        data class OnSwipeToMarkRead(
+            val update: UpdatesItem,
+            val read: Boolean,
+            val lastPageRead: Long,
+        ) : Snackbar()
+        data class OnSwipeToBookmark(val update: UpdatesItem, val bookmark: Boolean) : Snackbar()
     }
 }
 
