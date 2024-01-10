@@ -25,6 +25,9 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":presentation-core"))
     api(project(":i18n"))
+    // TDM -->
+    api(project(":i18n-tadami"))
+    // TDM <--
 
     implementation(compose.glance)
     lintChecks(compose.lintchecks)

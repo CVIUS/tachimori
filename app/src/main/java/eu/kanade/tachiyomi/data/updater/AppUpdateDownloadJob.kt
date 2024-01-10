@@ -25,7 +25,7 @@ import okhttp3.internal.http2.ErrorCode
 import okhttp3.internal.http2.StreamResetException
 import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.util.lang.withIOContext
-import tachiyomi.i18n.MR
+import tachiyomi.i18n.tadami.TDMR
 import uy.kohesive.injekt.injectLazy
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
@@ -38,7 +38,7 @@ class AppUpdateDownloadJob(private val context: Context, workerParams: WorkerPar
 
     override suspend fun doWork(): Result {
         val url = inputData.getString(EXTRA_DOWNLOAD_URL)
-        val title = inputData.getString(EXTRA_DOWNLOAD_TITLE) ?: context.stringResource(MR.strings.app_name)
+        val title = inputData.getString(EXTRA_DOWNLOAD_TITLE) ?: context.stringResource(TDMR.strings.tadami_app_name)
 
         if (url.isNullOrEmpty()) {
             return Result.failure()

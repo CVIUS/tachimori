@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.coroutines.flow.collectLatest
 import tachiyomi.domain.storage.service.StoragePreferences
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.tadami.TDMR
 import tachiyomi.presentation.core.components.material.Button
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
@@ -51,7 +52,7 @@ internal class StorageStep : OnboardingStep {
             Text(
                 stringResource(
                     MR.strings.onboarding_storage_info,
-                    stringResource(MR.strings.app_name),
+                    stringResource(TDMR.strings.tadami_app_name),
                     SettingsDataScreen.storageLocationText(storagePref),
                 ),
             )
@@ -74,7 +75,7 @@ internal class StorageStep : OnboardingStep {
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
 
-            Text(stringResource(MR.strings.onboarding_storage_help_info, stringResource(MR.strings.app_name)))
+            Text(stringResource(MR.strings.onboarding_storage_help_info, stringResource(TDMR.strings.tadami_app_name)))
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { handler.openUri(SettingsDataScreen.HELP_URL) },

@@ -23,6 +23,9 @@ android {
 dependencies {
     api(project(":core"))
     api(project(":i18n"))
+    // TDM -->
+    api(project(":i18n-tadami"))
+    // TDM <--
 
     // Compose
     implementation(platform(compose.bom))

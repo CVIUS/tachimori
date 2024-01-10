@@ -19,6 +19,7 @@ import tachiyomi.core.i18n.stringResource
 import tachiyomi.core.util.system.ImageUtil
 import tachiyomi.core.util.system.logcat
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.tadami.TDMR
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -71,7 +72,7 @@ class ImageSaver(
         val imageLocation = (image.location as Location.Pictures).relativePath
         val relativePath = listOf(
             Environment.DIRECTORY_PICTURES,
-            context.stringResource(MR.strings.app_name),
+            context.stringResource(TDMR.strings.tadami_app_name),
             imageLocation,
         ).joinToString(File.separator)
 
@@ -185,7 +186,7 @@ sealed interface Location {
             is Pictures -> {
                 val file = File(
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                    context.stringResource(MR.strings.app_name),
+                    context.stringResource(TDMR.strings.tadami_app_name),
                 )
                 if (relativePath.isNotEmpty()) {
                     return File(

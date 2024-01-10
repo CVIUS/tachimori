@@ -10,6 +10,9 @@ kotlin {
             dependencies {
                 implementation(project(":source-api"))
                 api(project(":i18n"))
+                // TDM -->
+                api(project(":i18n-tadami"))
+                // TDM <--
 
                 implementation(libs.unifile)
                 implementation(libs.junrar)

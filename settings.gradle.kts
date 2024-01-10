@@ -35,9 +35,12 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Tachiyomi"
+rootProject.name = "Tadami"
 include(":app")
 include(":i18n")
+// TDM -->
+include(":i18n-tadami")
+// TDM <--
 include(":source-api")
 include(":core")
 include(":macrobenchmark")

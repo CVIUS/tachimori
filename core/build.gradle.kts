@@ -18,6 +18,9 @@ android {
 
 dependencies {
     implementation(project(":i18n"))
+    // TDM -->
+    implementation(project(":i18n-tadami"))
+    // TDM <--
 
     api(libs.logcat)
 

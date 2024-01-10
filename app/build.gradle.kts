@@ -20,7 +20,7 @@ android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "eu.kanade.tachiyomi"
+        applicationId = "eu.kanade.tachiyomi.tadami"
 
         versionCode = 118
         versionName = "0.15.2"
@@ -143,6 +143,9 @@ android {
 
 dependencies {
     implementation(project(":i18n"))
+    // TDM -->
+    implementation(project(":i18n-tadami"))
+    // TDM <--
     implementation(project(":core"))
     implementation(project(":core-metadata"))
     implementation(project(":source-api"))

@@ -35,6 +35,7 @@ import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.tadami.TDMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.math.RoundingMode
@@ -71,7 +72,7 @@ class LibraryUpdateNotifier(
      */
     val progressNotificationBuilder by lazy {
         context.notificationBuilder(Notifications.CHANNEL_LIBRARY_PROGRESS) {
-            setContentTitle(context.stringResource(MR.strings.app_name))
+            setContentTitle(context.stringResource(TDMR.strings.tadami_app_name))
             setSmallIcon(R.drawable.ic_refresh_24dp)
             setLargeIcon(notificationBitmap)
             setOngoing(true)
