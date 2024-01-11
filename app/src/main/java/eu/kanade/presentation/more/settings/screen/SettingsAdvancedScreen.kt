@@ -88,12 +88,12 @@ object SettingsAdvancedScreen : SearchableSettings {
         return buildList {
             addAll(
                 listOf(
-                    Preference.PreferenceItem.SwitchPreference(
+                    /*Preference.PreferenceItem.SwitchPreference(
                         pref = basePreferences.acraEnabled(),
                         title = stringResource(MR.strings.pref_enable_acra),
                         subtitle = stringResource(MR.strings.pref_acra_summary),
                         enabled = isPreviewBuildType || isReleaseBuildType,
-                    ),
+                    ),*/
                     Preference.PreferenceItem.TextPreference(
                         title = stringResource(MR.strings.pref_dump_crash_logs),
                         subtitle = stringResource(MR.strings.pref_dump_crash_logs_summary),

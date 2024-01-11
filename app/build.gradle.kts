@@ -8,9 +8,9 @@ plugins {
     id("com.github.zellius.shortcut-helper")
 }
 
-if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
+/*if (gradle.startParameter.taskRequests.toString().contains("Standard")) {
     apply<com.google.gms.googleservices.GoogleServicesPlugin>()
-}
+}*/
 
 shortcutHelper.setFilePath("./shortcuts.xml")
 
@@ -32,7 +32,7 @@ android {
         buildConfigField("boolean", "PREVIEW", "false")
 
         // Please disable ACRA or use your own instance in forked versions of the project
-        buildConfigField("String", "ACRA_URI", "\"https://tachiyomi.kanade.eu/crash_report\"")
+        // buildConfigField("String", "ACRA_URI", "\"https://tachiyomi.kanade.eu/crash_report\"")
 
         ndk {
             abiFilters += SUPPORTED_ABIS
@@ -249,8 +249,8 @@ dependencies {
     implementation(libs.logcat)
 
     // Crash reports/analytics
-    implementation(libs.bundles.acra)
-    "standardImplementation"(libs.firebase.analytics)
+    // implementation(libs.bundles.acra)
+    // "standardImplementation"(libs.firebase.analytics)
 
     // Shizuku
     implementation(libs.bundles.shizuku)

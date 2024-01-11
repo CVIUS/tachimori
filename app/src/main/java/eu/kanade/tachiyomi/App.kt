@@ -42,8 +42,6 @@ import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.cancelNotification
-import eu.kanade.tachiyomi.util.system.isPreviewBuildType
-import eu.kanade.tachiyomi.util.system.isReleaseBuildType
 import eu.kanade.tachiyomi.util.system.notify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
@@ -51,13 +49,8 @@ import kotlinx.coroutines.flow.onEach
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogcatLogger
-import org.acra.config.httpSender
-import org.acra.config.scheduler
-import org.acra.ktx.initAcra
-import org.acra.sender.HttpSender
 import org.conscrypt.Conscrypt
 import tachiyomi.core.i18n.stringResource
-import tachiyomi.core.preference.Preference
 import tachiyomi.core.util.system.logcat
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.widget.WidgetManager
@@ -94,7 +87,7 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         Injekt.importModule(AppModule(this))
         Injekt.importModule(DomainModule())
 
-        setupAcra()
+        // setupAcra()
         setupNotificationChannels()
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
@@ -198,7 +191,7 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
         return super.getPackageName()
     }
 
-    private fun setupAcra() {
+    /*private fun setupAcra() {
         if (isPreviewBuildType || isReleaseBuildType) {
             initAcra {
                 buildConfigClass = BuildConfig::class.java
@@ -218,7 +211,7 @@ class App : Application(), DefaultLifecycleObserver, ImageLoaderFactory {
                 }
             }
         }
-    }
+    }*/
 
     private fun setupNotificationChannels() {
         try {
