@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi
 import android.annotation.SuppressLint
 import android.app.Application
 import android.app.PendingIntent
-import android.app.job.JobInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent

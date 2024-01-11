@@ -46,7 +46,12 @@ internal class GuidesStep(
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
 
-            Text(stringResource(MR.strings.onboarding_guides_returning_user, stringResource(TDMR.strings.tadami_app_name)))
+            Text(
+                stringResource(
+                    MR.strings.onboarding_guides_returning_user,
+                    stringResource(TDMR.strings.tadami_app_name),
+                ),
+            )
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onRestoreBackup,
