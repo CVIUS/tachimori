@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="splash">@color/accent_blue</color>
+    <color name="splash">@color/accent_azure</color>
 
     <color name="cover_placeholder">#1F888888</color>
 
@@ -14,6 +14,9 @@
 
     <!-- Blue Theme -->
     <color name="accent_blue">#54759E</color>
+
+    <!-- Tadami Theme -->
+    <color name="accent_azure">#0077FF</color>
 
     <!-- AMOLED Mode -->
     <color name="surface_amoled">#000001</color>
